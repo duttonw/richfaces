@@ -2,12 +2,23 @@
 
     rf.ui = rf.ui || {};
 
+    /**
+     * Backing object for rich:orderingList
+     * 
+     * @extends RichFaces.BaseComponent
+     * @memberOf! RichFaces.ui
+     * @constructs RichFaces.ui.OrderingList
+     * 
+     * @param id
+     * @param options
+     */
     rf.ui.OrderingList = function(id, options) {
         var mergedOptions = $.extend({}, defaultOptions, options);
         $super.constructor.call(this, id, mergedOptions);
         this.namespace = this.namespace || "." + rf.Event.createNamespace(this.name, this.id);
         this.attachToDom();
-        mergedOptions['scrollContainer'] = $(document.getElementById(id + "Items"));
+        mergedOptions['scrollContainer'] = $(document.getElementById(id + "Scroll"));
+        mergedOptions['parentContainer'] = $(document.getElementById(id + "Items"));
         this.orderingList = $(document.getElementById(id));
         this.list = new rf.ui.ListMulti(id+ "List", mergedOptions);
         var hiddenId = mergedOptions['hiddenId'] ===null ? id + "SelValue" : mergedOptions['hiddenId'];
@@ -151,10 +162,23 @@
                 return;
             },
 
+            /**
+             * Get the backing object of the list
+             * 
+             * @method
+             * @name RichFaces.ui.OrderingList#getList
+             * @return {ListMulti} list
+             */
             getList: function() {
                 return this.list;
             },
 
+            /**
+             * Move the selected elements one step up
+             * 
+             * @method
+             * @name RichFaces.ui.OrderingList#up
+             */
             up: function() {
                 this.keepingFocus = true;
                 this.list.setFocus();
@@ -163,6 +187,12 @@
                 this.encodeHiddenValues();
             },
 
+            /**
+             * Move the selected elements one step down
+             * 
+             * @method
+             * @name RichFaces.ui.OrderingList#down
+             */
             down: function() {
                 this.keepingFocus = true;
                 this.list.setFocus();
@@ -171,6 +201,12 @@
                 this.encodeHiddenValues();
             },
 
+            /**
+             * Move the selected elements to the top of the list
+             * 
+             * @method
+             * @name RichFaces.ui.OrderingList#upTop
+             */
             upTop: function() {
                 this.keepingFocus = true;
                 this.list.setFocus();
@@ -180,6 +216,12 @@
                 this.encodeHiddenValues();
             },
 
+            /**
+             * Move the selected elements to the bottom of the list
+             * 
+             * @method
+             * @name RichFaces.ui.OrderingList#downBottom
+             */
             downBottom: function() {
                 this.keepingFocus = true;
                 this.list.setFocus();
@@ -198,6 +240,12 @@
 				}
             },
 
+            /**
+             * Update the state of the buttons based on the current state
+             * 
+             * @method
+             * @name RichFaces.ui.OrderingList#toggleButtons
+             */
             toggleButtons: function() {
                 var list = this.list.__getItems();
                 if (this.disabled || this.list.getSelectedItems().length === 0) {
@@ -221,6 +269,16 @@
                         this.__enableButton(this.downBottomButton);
                     }
                 }
+            },
+
+            /**
+             * Focus the list
+             * 
+             * @method
+             * @name RichFaces.ui.OrderingList#focus
+             */
+            focus: function () {
+                this.list.setFocus();
             },
 
             __disableButton: function (button) {

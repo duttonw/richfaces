@@ -10,6 +10,8 @@
         <cdk:component-family>org.richfaces.Select</cdk:component-family>
         <cdk:renderer-type>org.richfaces.SelectRenderer</cdk:renderer-type>
         <cdk:renders-children>true</cdk:renders-children>
+
+        <cdk:import package="org.richfaces.component" names="AutocompleteMode.*" static="true" />
     </cc:interface>
 
     <cc:implementation>
@@ -26,7 +28,7 @@
                 <input cdk:passThroughWithExclusions="class autocomplete id value disabled name type readonly onchange onblur onfocus onlistshow onlisthide style"
                     id="#{clientId}Input" value="#{label}" disabled="#{disabled}" name="#{clientId}Input" type="text"
                     class="rf-sel-inp#{label == component.attributes['defaultLabel'] ? ' rf-sel-dflt-lbl' : ''}" autocomplete="off"
-                    readonly="#{component.attributes['enableManualInput'] ? '' : 'readonly'}" />
+                    readonly="#{component.attributes['enableManualInput'] || isAutocomplete(component) ? '' : 'readonly'}" />
                 <c:if test="#{component.attributes['showButton']}">
                     <c:if test="#{component.attributes['disabled']}">
                         <span id="#{clientId}Button" class="rf-sel-btn rf-sel-btn-dis">
@@ -44,21 +46,19 @@
             <div id="#{clientId}List" class="#{getListCss(component)}">
                 <cdk:call expression="renderListHandlers(facesContext, component);" />
                 <div class="rf-sel-shdw">
-                    <div class="rf-sel-shdw-t"></div>
                     <div class="rf-sel-shdw-l"></div>
                     <div class="rf-sel-shdw-r"></div>
                     <div class="rf-sel-shdw-b"></div>
 
                     <div class="rf-sel-lst-dcrtn">
                         <div class="rf-sel-lst-scrl" style="#{encodeHeightAndWidth(component)}">
-                            <div id="#{clientId}Items">
-                                <cdk:call expression="encodeItems(facesContext, component, clientSelectItems);" />
-                            </div>
+                            <cdk:call expression="encodeItemsContainer(facesContext, component, clientSelectItems);" />
                         </div>
                     </div>
                 </div>
             </div>
             <script type="text/javascript">
+                <cdk:object name="mode" type="Object" value="#{component.attributes['mode']}" />
                 <cdk:scriptObject name="options">
                     <cdk:scriptOption name="clientSelectItems" value="#{clientSelectItems}" />
                     <cdk:scriptOption name="itemCss" value="rf-sel-opt" />
@@ -67,7 +67,13 @@
                     <cdk:scriptOption attributes="onbegin oncomplete onerror onbeforedomupdate onchange onblur onselectitem onfocus onlistshow onlisthide"
                         wrapper="eventHandler" />
                     <cdk:scriptOption attributes="showControl defaultLabel enableManualInput selectFirst disabled" />
+                    <cdk:scriptOption name="minChars" value="#{getMinCharsOrDefault(component)}" />
                     <cdk:scriptOption name="filterFunction" value="#{getClientFilterFunction(component)}" />
+                    <cdk:scriptOption name="isAutocomplete" value="#{isAutocomplete(component)}" defaultValue="false" />
+                    <cdk:scriptOption name="isCachedAjax" value="#{ajax == mode ? false : true}" defaultValue="true" />
+                    <cdk:scriptOption name="ajaxMode" value="#{client == mode || lazyClient == mode ? false : true}" defaultValue="true" />
+                    <cdk:scriptOption name="lazyClientMode" value="#{lazyClient == mode ? true : false}" defaultValue="false" />
+                    <cdk:scriptOption name="status" value="#{component.attributes['status']}" />
                 </cdk:scriptObject>
                 new RichFaces.ui.Select("#{clientId}", #{toScriptArgs(options)});
             </script>

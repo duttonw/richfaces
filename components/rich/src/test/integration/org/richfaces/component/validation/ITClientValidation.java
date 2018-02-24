@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.richfaces.component.validation;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -33,7 +32,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.richfaces.component.Bean;
-import org.richfaces.integration.UIDeployment;
+import org.richfaces.integration.RichDeployment;
 import org.richfaces.shrinkwrap.descriptor.FaceletAsset;
 
 import category.Smoke;
@@ -44,11 +43,13 @@ public class ITClientValidation extends ValidationTestBase {
 
     @Deployment(testable = false)
     public static WebArchive deployment() {
-        UIDeployment deployment = new UIDeployment(ITClientValidation.class);
+        RichDeployment deployment = new RichDeployment(ITClientValidation.class);
 
         deployment.archive().addClasses(Bean.class);
 
         addIndexPage(deployment);
+
+        deployment.addHibernateValidatorWhenUsingServletContainer();
 
         return deployment.getFinalArchive();
     }
@@ -69,7 +70,7 @@ public class ITClientValidation extends ValidationTestBase {
         submitValueAndCheckMessage("ab", equalTo(""));
     }
 
-    private static void addIndexPage(org.richfaces.deployment.Deployment deployment) {
+    private static void addIndexPage(org.richfaces.deployment.BaseDeployment deployment) {
         FaceletAsset p = new FaceletAsset();
 
         p.body("<h:form id='form'>");
@@ -79,7 +80,9 @@ public class ITClientValidation extends ValidationTestBase {
         p.body("    </h:inputText>");
         p.body("    <h:outputText id='out' value='#{test.value}'></h:outputText>");
         p.body("</h:form>");
-
+        p.body("<br />");
+        p.body("<input id='blurButton' value='blur' type='button' />");
+        p.body("<br />");
         p.body("<rich:message id='uiMessage' for='text' />");
 
         deployment.archive().addAsWebResource(p, "index.xhtml");

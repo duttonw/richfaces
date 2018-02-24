@@ -23,7 +23,6 @@
 package org.richfaces.webapp;
 
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -73,7 +72,7 @@ public final class ServletConfigDefaultsFacade implements ServletConfig {
     public Enumeration getInitParameterNames() {
         Set<String> result = Sets.newHashSet();
 
-        Iterators.addAll(result, (Iterator<? extends String>) defaults.keySet());
+        Iterators.addAll(result, defaults.keySet().iterator());
         Iterators.addAll(result, Iterators.forEnumeration(config.getInitParameterNames()));
         Iterators.addAll(result, Iterators.forEnumeration(config.getServletContext().getInitParameterNames()));
 

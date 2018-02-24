@@ -26,18 +26,23 @@ import org.jboss.arquillian.graphene.wait.FluentWait;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
-import org.richfaces.fragment.common.AdvancedInteractions;
+import org.richfaces.fragment.common.AdvancedVisibleComponentIteractions;
 import org.richfaces.fragment.common.Utils;
+import org.richfaces.fragment.common.VisibleComponentInteractions;
 import org.richfaces.fragment.common.WaitingWrapper;
 import org.richfaces.fragment.common.WaitingWrapperImpl;
 import org.richfaces.fragment.status.RichFacesStatus.AdvancedStatusInteractions;
 
 import com.google.common.base.Predicate;
 
-public class RichFacesStatus implements Status, AdvancedInteractions<AdvancedStatusInteractions> {
+public class RichFacesStatus implements Status, AdvancedVisibleComponentIteractions<AdvancedStatusInteractions> {
+
+    private static final String DISPLAY_NONE_REGEXP = ".*display:\\s?none;?.*";
+    private static final String STYLE = "style";
 
     @Root
     private WebElement rootElement;
+
     @FindBy(className = "rf-st-error")
     private WebElement errorElement;
     @FindBy(className = "rf-st-start")
@@ -52,22 +57,24 @@ public class RichFacesStatus implements Status, AdvancedInteractions<AdvancedSta
         return interactions;
     }
 
-    public AdvancedStatusInteractions getInteractions() {
-        return interactions;
-    }
-
     @Override
     public StatusState getStatusState() {
-        return Utils.isVisible(startElement) ? StatusState.START : Utils.isVisible(stopElement) ? StatusState.STOP : StatusState.ERROR;
+        if (!advanced().getStartElement().getAttribute(STYLE).matches(DISPLAY_NONE_REGEXP)) {
+            return StatusState.START;
+        } else if (!advanced().getStopElement().getAttribute(STYLE).matches(DISPLAY_NONE_REGEXP)) {
+            return StatusState.STOP;
+        } else {
+            return StatusState.ERROR;
+        }
     }
 
     @Override
     public String getStatusText() {
-        return rootElement.getText();
+        return advanced().getRootElement().getText();
         // return Utils.isVisible(start) ? start.getText() : Utils.isVisible(stop) ? stop.getText() : error.getText();
     }
 
-    public class AdvancedStatusInteractions {
+    public class AdvancedStatusInteractions implements VisibleComponentInteractions {
 
         public WebElement getErrorElement() {
             return errorElement;
@@ -83,6 +90,10 @@ public class RichFacesStatus implements Status, AdvancedInteractions<AdvancedSta
 
         public WebElement getStopElement() {
             return stopElement;
+        }
+
+        public boolean isVisible() {
+            return Utils.isVisible(getRootElement());
         }
 
         public WaitingWrapper waitUntilStatusStateChanges(final StatusState state) {

@@ -31,8 +31,9 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Action;
 import org.richfaces.fragment.common.Actions;
-import org.richfaces.fragment.common.AdvancedInteractions;
+import org.richfaces.fragment.common.AdvancedVisibleComponentIteractions;
 import org.richfaces.fragment.common.Utils;
+import org.richfaces.fragment.common.VisibleComponentInteractions;
 import org.richfaces.fragment.common.picker.ChoicePicker;
 import org.richfaces.fragment.common.picker.ChoicePickerHelper;
 import org.richfaces.fragment.common.picker.MultipleChoicePicker;
@@ -42,7 +43,7 @@ import org.richfaces.fragment.list.ListComponent;
  *
  * @author <a href="mailto:jstefek@redhat.com">Jiri Stefek</a>
  */
-public abstract class AbstractOrderingList implements OrderingList, AdvancedInteractions<AbstractOrderingList.AdvancedOrderingListInteractions> {
+public abstract class AbstractOrderingList implements OrderingList, AdvancedVisibleComponentIteractions<AbstractOrderingList.AdvancedOrderingListInteractions> {
 
     @Root
     private WebElement root;
@@ -50,20 +51,11 @@ public abstract class AbstractOrderingList implements OrderingList, AdvancedInte
     @Drone
     private WebDriver driver;
 
-    private final AdvancedOrderingListInteractions interactions = new AdvancedOrderingListInteractions();
     private final OrderingInteraction orderingInteraction = new OrderingInteractionImpl();
     private final PuttingSelectedItem puttingSelectedItem = new PuttingSelectedItemImpl();
 
     @Override
-    public AdvancedOrderingListInteractions advanced() {
-        return interactions;
-    }
-
-    protected abstract OrderingListBodyElements getBody();
-
-    protected WebElement getRoot() {
-        return root;
-    }
+    public abstract AdvancedOrderingListInteractions advanced();
 
     @Override
     public PuttingSelectedItem select(String visibleText) {
@@ -78,15 +70,15 @@ public abstract class AbstractOrderingList implements OrderingList, AdvancedInte
     @Override
     public PuttingSelectedItem select(ChoicePicker picker) {
         unselectAll();
-        selectItem(picker.pick(getBody().getItemsElements()));
-        return puttingSelectedItem;
+        selectItem(picker.pick(advanced().getItemsElements()));
+        return getPuttingSelectedItem();
     }
 
     protected void selectItem(final WebElement item) {
         new Actions(driver).keyDown(Keys.CONTROL).click(item).keyUp(Keys.CONTROL).addAction(new Action() {
             @Override
             public void perform() {
-                Graphene.waitGui().until().element(item).attribute("class").contains(getBody().getStyleForSelectedItem());
+                Graphene.waitGui().until().element(item).attribute("class").contains(advanced().getStyleForSelectedItem());
             }
         }).perform();
     }
@@ -98,21 +90,29 @@ public abstract class AbstractOrderingList implements OrderingList, AdvancedInte
     }
 
     protected void unselectAll() {
-        if (!getBody().getSelectedItems().isEmpty()) {
+        if (!advanced().getSelectedItemsElements().isEmpty()) {
             new Actions(driver)
-                .click(getBody().getItemsElements().get(0))
-                .keyDown(Keys.CONTROL).click(getBody().getItemsElements().get(0))
+                .click(advanced().getItemsElements().get(0))
+                .keyDown(Keys.CONTROL).click(advanced().getItemsElements().get(0))
                 .keyUp(Keys.CONTROL)
                 .addAction(new Action() {
                     @Override
                     public void perform() {
-                        Graphene.waitGui().until().element(getBody().getItemsElements().get(0)).attribute("class").not().contains("rf-ord-sel");
+                        Graphene.waitGui().until().element(advanced().getItemsElements().get(0)).attribute("class").not().contains("rf-ord-sel");
                     }
                 }).perform();
-            if (!getBody().getSelectedItems().isEmpty()) {
+            if (!advanced().getSelectedItemsElements().isEmpty()) {
                 throw new RuntimeException("The unselection was not successfull.");
             }
         }
+    }
+
+    protected OrderingInteraction getOrderingInteraction() {
+        return orderingInteraction;
+    }
+
+    protected PuttingSelectedItem getPuttingSelectedItem() {
+        return puttingSelectedItem;
     }
 
     private class PuttingSelectedItemImpl implements PuttingSelectedItem {
@@ -125,12 +125,12 @@ public abstract class AbstractOrderingList implements OrderingList, AdvancedInte
                 if (min == absBetween) {
                     singleStepMove(differenceBetween);
                 } else if (min == positionTarget) {
-                    orderingInteraction.top();
+                    getOrderingInteraction().top();
                     if (positionTarget != 0) {
                         singleStepMove(positionTarget);
                     }
                 } else {
-                    orderingInteraction.bottom();
+                    getOrderingInteraction().bottom();
                     if (differenceToEnd != 0) {
                         singleStepMove(-differenceToEnd);
                     }
@@ -141,8 +141,8 @@ public abstract class AbstractOrderingList implements OrderingList, AdvancedInte
 
         @Override
         public OrderingList putItAfter(ChoicePicker picker) {
-            int indexOfTargetItem = Utils.getIndexOfElement(picker.pick(getBody().getItemsElements())) + 1;
-            return putAction(Utils.getIndexOfElement(getBody().getSelectedItems().get(0)), indexOfTargetItem, getBody().getItemsElements().size() - indexOfTargetItem);
+            int indexOfTargetItem = Utils.getIndexOfElement(picker.pick(advanced().getItemsElements())) + 1;
+            return putAction(Utils.getIndexOfElement(advanced().getSelectedItemsElements().get(0)), indexOfTargetItem, advanced().getItemsElements().size() - indexOfTargetItem);
         }
 
         @Override
@@ -157,8 +157,8 @@ public abstract class AbstractOrderingList implements OrderingList, AdvancedInte
 
         @Override
         public OrderingList putItBefore(ChoicePicker picker) {
-            int indexOfTargetItem = Utils.getIndexOfElement(picker.pick(getBody().getItemsElements()));
-            return putAction(Utils.getIndexOfElement(getBody().getSelectedItems().get(0)), indexOfTargetItem, getBody().getItemsElements().size() - indexOfTargetItem);
+            int indexOfTargetItem = Utils.getIndexOfElement(picker.pick(advanced().getItemsElements()));
+            return putAction(Utils.getIndexOfElement(advanced().getSelectedItemsElements().get(0)), indexOfTargetItem, advanced().getItemsElements().size() - indexOfTargetItem);
         }
 
         @Override
@@ -174,9 +174,9 @@ public abstract class AbstractOrderingList implements OrderingList, AdvancedInte
         private void singleStepMove(int difference) {
             if (difference == 0) {// no operation
             } else if (difference > 0) {
-                orderingInteraction.down(Math.abs(difference));
+                getOrderingInteraction().down(Math.abs(difference));
             } else {
-                orderingInteraction.up(Math.abs(difference));
+                getOrderingInteraction().up(Math.abs(difference));
             }
         }
     }
@@ -194,69 +194,56 @@ public abstract class AbstractOrderingList implements OrderingList, AdvancedInte
 
         @Override
         public void bottom() {
-            checkIfActionPosibleAndPerform(getBody().getBottomButtonElement(), 1);
+            checkIfActionPosibleAndPerform(advanced().getBottomButtonElement(), 1);
         }
 
         @Override
         public void down(int times) {
-            checkIfActionPosibleAndPerform(getBody().getDownButtonElement(), times);
+            checkIfActionPosibleAndPerform(advanced().getDownButtonElement(), times);
         }
 
         @Override
         public void top() {
-            checkIfActionPosibleAndPerform(getBody().getTopButtonElement(), 1);
+            checkIfActionPosibleAndPerform(advanced().getTopButtonElement(), 1);
         }
 
         @Override
         public void up(int times) {
-            checkIfActionPosibleAndPerform(getBody().getUpButtonElement(), times);
+            checkIfActionPosibleAndPerform(advanced().getUpButtonElement(), times);
         }
     }
 
-    public class AdvancedOrderingListInteractions {
+    public abstract class AdvancedOrderingListInteractions implements VisibleComponentInteractions {
 
-        public WebElement getBottomButtonElement() {
-            return getBody().getBottomButtonElement();
-        }
+        public abstract WebElement getBottomButtonElement();
 
-        public WebElement getCaptionElement() {
-            return getBody().getCaptionElement();
-        }
+        public abstract WebElement getCaptionElement();
 
-        public WebElement getDownButtonElement() {
-            return getBody().getDownButtonElement();
-        }
+        public abstract WebElement getDownButtonElement();
 
-        public WebElement getHeaderElement() {
-            return getBody().getHeaderElement();
-        }
+        public abstract WebElement getHeaderElement();
 
-        public List<WebElement> getItemsElements() {
-            return getBody().getItemsElements();
-        }
+        public abstract List<WebElement> getItemsElements();
 
-        public ListComponent<? extends SelectableListItem> getList() {
-            return getBody().getList();
-        }
+        public abstract ListComponent<? extends SelectableListItem> getList();
 
-        public WebElement getListAreaElement() {
-            return getBody().getListAreaElement();
-        }
+        public abstract WebElement getContentAreaElement();
 
         public WebElement getRootElement() {
-            return getBody().getRootElement();
+            return root;
         }
 
-        public List<WebElement> getSelectedItemsElements() {
-            return getBody().getSelectedItems();
-        }
+        public abstract List<WebElement> getSelectedItemsElements();
 
-        public WebElement getTopButtonElement() {
-            return getBody().getTopButtonElement();
-        }
+        protected abstract String getStyleForSelectedItem();
 
-        public WebElement getUpButtonElement() {
-            return getBody().getUpButtonElement();
+        public abstract WebElement getTopButtonElement();
+
+        public abstract WebElement getUpButtonElement();
+
+        @Override
+        public boolean isVisible() {
+            return Utils.isVisible(getRootElement());
         }
 
         public OrderingInteraction select(String visibleText, String... otherTexts) {
@@ -277,35 +264,8 @@ public abstract class AbstractOrderingList implements OrderingList, AdvancedInte
 
         public OrderingInteraction select(MultipleChoicePicker picker) {
             unselectAll();
-            selectItems(picker.pickMultiple(getBody().getItemsElements()));
-            return orderingInteraction;
+            selectItems(picker.pickMultiple(advanced().getItemsElements()));
+            return getOrderingInteraction();
         }
-    }
-
-    public interface OrderingListBodyElements {
-
-        WebElement getBottomButtonElement();
-
-        WebElement getCaptionElement();
-
-        WebElement getDownButtonElement();
-
-        WebElement getHeaderElement();
-
-        List<WebElement> getItemsElements();
-
-        ListComponent<? extends SelectableListItem> getList();
-
-        WebElement getListAreaElement();
-
-        WebElement getRootElement();
-
-        List<WebElement> getSelectedItems();
-
-        WebElement getTopButtonElement();
-
-        WebElement getUpButtonElement();
-
-        String getStyleForSelectedItem();
     }
 }

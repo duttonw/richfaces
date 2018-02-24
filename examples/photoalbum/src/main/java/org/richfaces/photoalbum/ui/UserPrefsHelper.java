@@ -22,8 +22,8 @@
 package org.richfaces.photoalbum.ui;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.Serializable;
+import java.nio.file.Files;
 
 import javax.enterprise.context.SessionScoped;
 import javax.faces.model.SelectItem;
@@ -81,10 +81,7 @@ public class UserPrefsHelper implements Serializable {
                 f.createNewFile();
             }
 
-            FileOutputStream fos = new FileOutputStream(f);
-            fos.write(file.getData());
-            fos.flush();
-            fos.close();
+            Files.write(f.toPath(), file.getData());
 
             avatarData = f;
         } catch (Exception e) {

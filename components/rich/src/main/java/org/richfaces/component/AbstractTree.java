@@ -51,11 +51,21 @@ import org.ajax4jsf.model.DataVisitor;
 import org.ajax4jsf.model.ExtendedDataModel;
 import org.richfaces.application.FacesMessages;
 import org.richfaces.application.MessageFactory;
+import org.richfaces.application.ServiceTracker;
 import org.richfaces.cdk.annotations.Attribute;
 import org.richfaces.cdk.annotations.EventName;
 import org.richfaces.cdk.annotations.JsfComponent;
 import org.richfaces.cdk.annotations.JsfRenderer;
 import org.richfaces.cdk.annotations.Tag;
+import org.richfaces.component.attribute.AjaxProps;
+import org.richfaces.component.attribute.CoreProps;
+import org.richfaces.component.attribute.EventsKeyProps;
+import org.richfaces.component.attribute.EventsMouseProps;
+import org.richfaces.component.attribute.I18nProps;
+import org.richfaces.component.attribute.ImmediateProps;
+import org.richfaces.component.attribute.SequenceProps;
+import org.richfaces.component.attribute.TreeCommonProps;
+import org.richfaces.component.attribute.TreeProps;
 import org.richfaces.component.util.MessageUtil;
 import org.richfaces.context.ExtendedVisitContext;
 import org.richfaces.context.ExtendedVisitContextMode;
@@ -74,24 +84,15 @@ import org.richfaces.model.TreeDataModel;
 import org.richfaces.model.TreeDataModelTuple;
 import org.richfaces.model.TreeDataVisitor;
 import org.richfaces.model.TreeNode;
-import org.richfaces.component.attribute.AjaxProps;
-import org.richfaces.component.attribute.CoreProps;
-import org.richfaces.component.attribute.EventsKeyProps;
-import org.richfaces.component.attribute.EventsMouseProps;
-import org.richfaces.component.attribute.I18nProps;
-import org.richfaces.component.attribute.ImmediateProps;
-import org.richfaces.component.attribute.SequenceProps;
-import org.richfaces.component.attribute.TreeCommonProps;
-import org.richfaces.component.attribute.TreeProps;
 import org.richfaces.renderkit.MetaComponentRenderer;
-import org.richfaces.application.ServiceTracker;
+import org.richfaces.view.facelets.TreeHandler;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
-import org.richfaces.view.facelets.TreeHandler;
 
 /**
  * <p>The &lt;rich:tree&gt; component provides a hierarchical tree control. Each &lt;rich:tree&gt; component typically
@@ -109,7 +110,7 @@ public abstract class AbstractTree extends UIDataAdaptor implements MetaComponen
     public static final String COMPONENT_FAMILY = "org.richfaces.Tree";
     public static final String SELECTION_META_COMPONENT_ID = "selection";
     public static final String DEFAULT_TREE_NODE_ID = "__defaultTreeNode";
-    public static final String DEFAULT_TREE_NODE_FACET_NAME = DEFAULT_TREE_NODE_ID;
+    public static final String DEFAULT_TREE_NODE_FACET_NAME = "defaultNode";
     private static final String COMPONENT_FOR_MODEL_UNAVAILABLE = "Component is not available for model {0}";
     private static final String CONVERTER_FOR_MODEL_UNAVAILABLE = "Row key converter is not available for model {0}";
 
@@ -163,9 +164,6 @@ public abstract class AbstractTree extends UIDataAdaptor implements MetaComponen
      */
     @Attribute
     public abstract Object getValue();
-
-    @Attribute
-    public abstract boolean isImmediate();
 
     @Attribute
     public abstract String getNodeClass();
@@ -268,7 +266,7 @@ public abstract class AbstractTree extends UIDataAdaptor implements MetaComponen
                     return node;
                 }
             }
-        } else if (Strings.isNullOrEmpty(nodeType)) {
+        } else if (Strings.isNullOrEmpty(nodeType) || isUseDefaultNode()) {
             return (AbstractTreeNode) getFacet(DEFAULT_TREE_NODE_FACET_NAME);
         }
 
@@ -390,7 +388,7 @@ public abstract class AbstractTree extends UIDataAdaptor implements MetaComponen
         if (treeNodeComponent != null) {
             return Iterators.<UIComponent> singletonIterator(treeNodeComponent);
         } else {
-            return Iterators.<UIComponent> emptyIterator();
+            return ImmutableSet.<UIComponent>of().iterator();
         }
     }
 

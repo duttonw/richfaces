@@ -35,10 +35,10 @@ import com.google.common.base.Predicate;
 public class RichFacesTabPanel extends AbstractSwitchableComponent<RichFacesTab> implements TabPanel<RichFacesTab> {
 
     @FindByJQuery(".rf-tab-hdr")
-    private List<WebElement> switcherControllerElements;
+    private List<WebElement> tabHeaders;
 
     @FindByJQuery(".rf-tab:visible")
-    private WebElement rootOfContainerElement;
+    private WebElement visibleContent;
 
     @FindByJQuery(".rf-tab-hdr-act")
     private WebElement activeHeader;
@@ -68,6 +68,14 @@ public class RichFacesTabPanel extends AbstractSwitchableComponent<RichFacesTab>
             return activeHeader;
         }
 
+        public List<WebElement> getTabHeaders() {
+            return getSwitcherControllerElements();
+        }
+
+        public WebElement getVisibleContent() {
+            return getRootOfContainerElement();
+        }
+
         public List<WebElement> getAllInactiveHeadersElements() {
             return Collections.unmodifiableList(allInactiveHeaders);
         }
@@ -85,6 +93,16 @@ public class RichFacesTabPanel extends AbstractSwitchableComponent<RichFacesTab>
         }
 
         @Override
+        protected List<WebElement> getSwitcherControllerElements() {
+            return Collections.unmodifiableList(tabHeaders);
+        }
+
+        @Override
+        protected WebElement getRootOfContainerElement() {
+            return visibleContent;
+        }
+
+        @Override
         protected Predicate<WebDriver> getConditionForContentSwitched(final String textToContain) {
             return new Predicate<WebDriver>() {
                 @Override
@@ -97,16 +115,6 @@ public class RichFacesTabPanel extends AbstractSwitchableComponent<RichFacesTab>
 
     @Override
     public int getNumberOfTabs() {
-        return switcherControllerElements.size();
-    }
-
-    @Override
-    protected List<WebElement> getSwitcherControllerElements() {
-        return Collections.unmodifiableList(switcherControllerElements);
-    }
-
-    @Override
-    protected WebElement getRootOfContainerElement() {
-        return rootOfContainerElement;
+        return advanced().getSwitcherControllerElements().size();
     }
 }

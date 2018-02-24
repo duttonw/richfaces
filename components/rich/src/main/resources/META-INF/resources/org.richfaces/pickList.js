@@ -2,14 +2,27 @@
 
     rf.ui = rf.ui || {};
 
+    /**
+     * Backing object for rich:pickList
+     * 
+     * @extends RichFaces.BaseComponent
+     * @memberOf! RichFaces.ui
+     * @constructs RichFaces.ui.PickList
+     * 
+     * @param id
+     * @param options
+     */
     rf.ui.PickList = function(id, options) {
         var mergedOptions = $.extend({}, defaultOptions, options);
         $super.constructor.call(this, id, mergedOptions);
         this.namespace = this.namespace || "." + rf.Event.createNamespace(this.name, this.id);
         this.attachToDom();
-        mergedOptions['scrollContainer'] = $(document.getElementById(id + "SourceItems"));
+        mergedOptions['scrollContainer'] = $(document.getElementById(id + "SourceScroll"));
+        mergedOptions['parentContainer'] = $(document.getElementById(id + "SourceItems"));
         this.sourceList = new rf.ui.ListMulti(id+ "SourceList", mergedOptions);
-        mergedOptions['scrollContainer'] = $(document.getElementById(id + "TargetItems"));
+        mergedOptions['scrollContainer'] = $(document.getElementById(id + "TargetScroll"));
+        mergedOptions['parentContainer'] = $(document.getElementById(id + "TargetItems"));
+        this.baseSelectItemCss = defaultOptions['selectItemCss'];
         this.selectItemCss = mergedOptions['selectItemCss'];
         var hiddenId = id + "SelValue";
         this.hiddenValues = $(document.getElementById(hiddenId));
@@ -68,6 +81,8 @@
             rf.Event.bind(this, "change" + this.namespace, options['onchange']);
         }
 
+        this.keepSourceOrder = mergedOptions['keepSourceOrder'];
+        
         // TODO: Is there a "Richfaces way" of executing a method after page load?
         $(document).ready($.proxy(this.toggleButtons, this));
     };
@@ -82,6 +97,7 @@
         clickRequiredToSelect: true,
         switchByClick : false,
         switchByDblClick : true,
+        keepSourceOrder : false,
         disabled : false
     };
 
@@ -143,14 +159,64 @@
                 }
             },
 
+            /**
+             * Get the backing object of the source list
+             * 
+             * @method
+             * @name RichFaces.ui.PickList#getSourceList
+             * @return {ListMulti} source list
+             */
             getSourceList: function() {
                 return this.sourceList;
             },
 
+            /**
+             * Get the backing object of the target list
+             * 
+             * @method
+             * @name RichFaces.ui.PickList#getTargetList
+             * @return {ListMulti} target list
+             */
             getTargetList: function() {
                 return this.targetList;
             },
+            
+            __insertSorted: function(items) {
+                var re = new RegExp(this.id + "Item(\\d+)");
+                for (var i = 0; i < items.length; i++) {
+                    var item = items.eq(i),
+                        itemIndex = parseInt(re.exec(item[0].id)[1]),
+                        l = this.sourceList.items.length,
+                        inserted = false;
+                    for (var j = 0; j < l; j++) {
+                        var currentItem = this.sourceList.items.eq(j),
+                            currentItemIndex = parseInt(re.exec(currentItem[0].id)[1]);
+                        if (currentItemIndex > itemIndex) {
+                            item.insertBefore(currentItem);
+                            inserted = true;
+                            break;
+                        }
+                    }
+                    if (!inserted) {
+                        this.sourceList.parentContainer.append(item);
+                    }
+                    this.sourceList.__updateItemsList();
+                }
+                rf.Event.fire(this.sourceList, "additems", this.sourceList.items);
+                this.encodeHiddenValues();
+                this.toggleButtons();
+            },
 
+            __getEnabledSourceItems: function() {
+                return this.sourceList.items.filter(":not(." + this.sourceList.itemDisabledCss + ")");
+            },
+
+            /**
+             * Move selected items from source list to target list
+             * 
+             * @method
+             * @name RichFaces.ui.PickList#add
+             */
             add: function() {
                 this.targetList.setFocus();
                 var items = this.sourceList.removeSelectedItems();
@@ -158,25 +224,52 @@
                 this.encodeHiddenValues();
             },
 
+            /**
+             * Move selected items from target list to source list
+             * 
+             * @method
+             * @name RichFaces.ui.PickList#remove
+             */
             remove: function() {
                 this.sourceList.setFocus();
                 var items = this.targetList.removeSelectedItems();
-                this.sourceList.addItems(items);
-                this.encodeHiddenValues();
+                if (!this.keepSourceOrder) {
+                    this.sourceList.addItems(items);
+                    this.encodeHiddenValues();
+                    return;
+                }
+                this.__insertSorted(items);
             },
 
+            /**
+             * Move all items from source list to target list
+             * 
+             * @method
+             * @name RichFaces.ui.PickList#addAll
+             */
             addAll: function() {
                 this.targetList.setFocus();
-                var items = this.sourceList.removeAllItems();
+                var items = this.__getEnabledSourceItems();
+                this.sourceList.removeItems(items);
                 this.targetList.addItems(items);
                 this.encodeHiddenValues();
             },
 
+            /**
+             * Move all items from target list to source list
+             * 
+             * @method
+             * @name RichFaces.ui.PickList#removeAll
+             */
             removeAll: function() {
                 this.sourceList.setFocus();
                 var items = this.targetList.removeAllItems();
-                this.sourceList.addItems(items);
-                this.encodeHiddenValues();
+                if (!this.keepSourceOrder) {
+                    this.sourceList.addItems(items);
+                    this.encodeHiddenValues();
+                    return;
+                }
+                this.__insertSorted(items);
             },
 
             encodeHiddenValues: function() {
@@ -188,14 +281,30 @@
                 rf.Event.fire(this, "change" + this.namespace, {oldValues : oldValues, newValues : newValues});
             },
 
+            /**
+             * Update the state of the buttons based on the current state
+             * 
+             * @method
+             * @name RichFaces.ui.PickList#toggleButtons
+             */
             toggleButtons: function() {
-                this.__toggleButton(this.addButton, this.sourceList.__getItems().filter('.' + this.selectItemCss).length > 0);
-                this.__toggleButton(this.removeButton, this.targetList.__getItems().filter('.' + this.selectItemCss).length > 0);
-                this.__toggleButton(this.addAllButton, this.sourceList.__getItems().length > 0);
+                this.__toggleButton(this.addButton, this.sourceList.__getItems().filter('.' + this.baseSelectItemCss).length > 0);
+                this.__toggleButton(this.removeButton, this.targetList.__getItems().filter('.' + this.baseSelectItemCss).length > 0);
+                this.__toggleButton(this.addAllButton, this.__getEnabledSourceItems().length > 0);
                 this.__toggleButton(this.removeAllButton, this.targetList.__getItems().length > 0);
                 if (this.orderable) {
                     this.orderingList.toggleButtons();
                 }
+            },
+
+            /**
+             * Focus the source list
+             * 
+             * @method
+             * @name RichFaces.ui.PickList#focus
+             */
+            focus: function () {
+                this.sourceList.setFocus();
             },
 
             __toggleButton: function(button, enabled) {

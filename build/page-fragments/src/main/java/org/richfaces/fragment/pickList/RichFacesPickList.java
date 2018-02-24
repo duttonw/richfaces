@@ -33,7 +33,9 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.support.FindBy;
 import org.richfaces.fragment.common.Actions;
-import org.richfaces.fragment.common.AdvancedInteractions;
+import org.richfaces.fragment.common.AdvancedVisibleComponentIteractions;
+import org.richfaces.fragment.common.Utils;
+import org.richfaces.fragment.common.VisibleComponentInteractions;
 import org.richfaces.fragment.common.picker.ChoicePicker;
 import org.richfaces.fragment.common.picker.ChoicePickerHelper;
 import org.richfaces.fragment.common.picker.MultipleChoicePicker;
@@ -43,9 +45,8 @@ import org.richfaces.fragment.orderingList.AbstractOrderingList;
 import org.richfaces.fragment.orderingList.AbstractSelectableListItem;
 import org.richfaces.fragment.orderingList.OrderingList;
 import org.richfaces.fragment.orderingList.SelectableListItem;
-import org.richfaces.fragment.orderingList.AbstractOrderingList.OrderingListBodyElements;
 
-public class RichFacesPickList implements PickList, AdvancedInteractions<RichFacesPickList.AdvancedPickListInteractions> {
+public class RichFacesPickList implements PickList, AdvancedVisibleComponentIteractions<RichFacesPickList.AdvancedPickListInteractions> {
 
     @Root
     private WebElement root;
@@ -64,20 +65,16 @@ public class RichFacesPickList implements PickList, AdvancedInteractions<RichFac
     private List<WebElement> selectedSourceListItems;
     @FindBy(css = "[id$='SourceItems'] > *")
     private List<WebElement> sourceListItems;
-    @FindBy(css = "[id$='TargetItems'] > .rf-pick-sel")
-    private List<WebElement> selectedTargetListItems;
-    @FindBy(css = "[id$='TargetItems'] > *")
-    private List<WebElement> targetListItems;
     @FindBy(css = "[id$='SourceItems']")
     private SelectableListImpl sourceList;
     @FindBy(css = "[id$='Target']")
     private OrderingListInPickList targetList;
     @FindBy(className = "rf-pick-lst-scrl")
-    private WebElement listAreaElement;
+    private WebElement contentAreaElement;
     @FindBy(className = "rf-pick-src-cptn")
-    private WebElement captionElement;
+    private WebElement sourceCaptionElement;
     @FindBy(css = "thead.rf-pick-lst-hdr > tr.rf-pick-hdr")
-    private WebElement headerElement;
+    private WebElement sourceHeaderElement;
 
     private final AdvancedPickListInteractions interactions = new AdvancedPickListInteractions();
 
@@ -87,19 +84,19 @@ public class RichFacesPickList implements PickList, AdvancedInteractions<RichFac
     }
 
     private void clickAddAllButton() {
-        addAllButtonElement.click();
+        advanced().getAddAllButtonElement().click();
     }
 
     private void clickAddButton() {
-        addButtonElement.click();
+        advanced().getAddButtonElement().click();
     }
 
     private void clickRemoveAllButton() {
-        removeAllButtonElement.click();
+        advanced().getRemoveAllButtonElement().click();
     }
 
     private void clickRemoveButton() {
-        removeButtonElement.click();
+        advanced().getRemoveButtonElement().click();
     }
 
     @Override
@@ -159,28 +156,28 @@ public class RichFacesPickList implements PickList, AdvancedInteractions<RichFac
     }
 
     private void selectAndAdd(ChoicePicker picker) {
-        unselectAll(selectedSourceListItems);
-        selectItem(picker.pick(sourceListItems));
+        unselectAll(advanced().getSelectedSourceListItemsElements());
+        selectItem(picker.pick(advanced().getSourceListItemsElements()));
         clickAddButton();
     }
 
     private void selectAndAddMultiple(MultipleChoicePicker picker) {
-        unselectAll(selectedSourceListItems);
-        for (WebElement item : picker.pickMultiple(sourceListItems)) {
+        unselectAll(advanced().getSelectedSourceListItemsElements());
+        for (WebElement item : picker.pickMultiple(advanced().getSourceListItemsElements())) {
             selectItem(item);
         }
         clickAddButton();
     }
 
     private void selectAndRemove(ChoicePicker picker) {
-        unselectAll(selectedTargetListItems);
-        selectItem(picker.pick(targetListItems));
+        unselectAll(advanced().getSelectedTargetListItemsElements());
+        selectItem(picker.pick(advanced().getTargetListItemsElements()));
         clickRemoveButton();
     }
 
     private void selectAndRemoveMultiple(MultipleChoicePicker picker) {
-        unselectAll(selectedTargetListItems);
-        for (WebElement item : picker.pickMultiple(targetListItems)) {
+        unselectAll(advanced().getSelectedTargetListItemsElements());
+        for (WebElement item : picker.pickMultiple(advanced().getTargetListItemsElements())) {
             selectItem(item);
         }
         clickRemoveButton();
@@ -210,7 +207,7 @@ public class RichFacesPickList implements PickList, AdvancedInteractions<RichFac
         }
     }
 
-    public static class OrderingListInPickList extends AbstractOrderingList implements OrderingListBodyElements {
+    public static class OrderingListInPickList extends AbstractOrderingList {
 
         private static final String SELECTED_ITEM_CLASS = "rf-pick-sel";
 
@@ -232,73 +229,73 @@ public class RichFacesPickList implements PickList, AdvancedInteractions<RichFac
         @FindBy(className = SELECTED_ITEM_CLASS)
         private List<WebElement> selectedItems;
         @FindBy(className = "rf-pick-lst-scrl")
-        private WebElement listAreaElement;
+        private WebElement contentAreaElement;
         @FindBy(css = "[id$='TargetItems']")
         private SelectableListImpl list;
 
-        @Override
-        protected OrderingListBodyElements getBody() {
-            return this;
-        }
+        private final AdvancedOrderingListInPickListInteractions interactions = new AdvancedOrderingListInPickListInteractions();
 
         @Override
-        public WebElement getBottomButtonElement() {
-            return bottomButtonElement;
+        public AdvancedOrderingListInteractions advanced() {
+            return interactions;
         }
 
-        @Override
-        public WebElement getCaptionElement() {
-            return captionElement;
-        }
+        public class AdvancedOrderingListInPickListInteractions extends AdvancedOrderingListInteractions {
 
-        @Override
-        public WebElement getDownButtonElement() {
-            return downButtonElement;
-        }
+            @Override
+            public WebElement getBottomButtonElement() {
+                return bottomButtonElement;
+            }
 
-        @Override
-        public WebElement getHeaderElement() {
-            return headerElement;
-        }
+            @Override
+            public WebElement getCaptionElement() {
+                return captionElement;
+            }
 
-        @Override
-        public List<WebElement> getItemsElements() {
-            return Collections.unmodifiableList(items);
-        }
+            @Override
+            public WebElement getDownButtonElement() {
+                return downButtonElement;
+            }
 
-        @Override
-        public ListComponent<? extends SelectableListItem> getList() {
-            return list;
-        }
+            @Override
+            public WebElement getHeaderElement() {
+                return headerElement;
+            }
 
-        @Override
-        public WebElement getListAreaElement() {
-            return listAreaElement;
-        }
+            @Override
+            public List<WebElement> getItemsElements() {
+                return Collections.unmodifiableList(items);
+            }
 
-        @Override
-        public WebElement getRootElement() {
-            return getRoot();
-        }
+            @Override
+            public ListComponent<? extends SelectableListItem> getList() {
+                return list;
+            }
 
-        @Override
-        public List<WebElement> getSelectedItems() {
-            return Collections.unmodifiableList(selectedItems);
-        }
+            @Override
+            public WebElement getContentAreaElement() {
+                return contentAreaElement;
+            }
 
-        @Override
-        public String getStyleForSelectedItem() {
-            return SELECTED_ITEM_CLASS;
-        }
+            @Override
+            public List<WebElement> getSelectedItemsElements() {
+                return Collections.unmodifiableList(selectedItems);
+            }
 
-        @Override
-        public WebElement getTopButtonElement() {
-            return topButtonElement;
-        }
+            @Override
+            protected String getStyleForSelectedItem() {
+                return SELECTED_ITEM_CLASS;
+            }
 
-        @Override
-        public WebElement getUpButtonElement() {
-            return upButtonElement;
+            @Override
+            public WebElement getTopButtonElement() {
+                return topButtonElement;
+            }
+
+            @Override
+            public WebElement getUpButtonElement() {
+                return upButtonElement;
+            }
         }
     }
 
@@ -312,7 +309,7 @@ public class RichFacesPickList implements PickList, AdvancedInteractions<RichFac
         }
     }
 
-    public class AdvancedPickListInteractions {
+    public class AdvancedPickListInteractions implements VisibleComponentInteractions {
 
         public WebElement getAddAllButtonElement() {
             return addAllButtonElement;
@@ -323,35 +320,35 @@ public class RichFacesPickList implements PickList, AdvancedInteractions<RichFac
         }
 
         public WebElement getBottomButtonElement() {
-            return targetList.getBottomButtonElement();
+            return _getOrderTargetList().advanced().getBottomButtonElement();
         }
 
         public WebElement getSourceCaptionElement() {
-            return captionElement;
+            return sourceCaptionElement;
         }
 
         public WebElement getTargetCaptionElement() {
-            return targetList.getCaptionElement();
+            return _getOrderTargetList().advanced().getCaptionElement();
         }
 
         public WebElement getDownButtonElement() {
-            return targetList.getDownButtonElement();
+            return _getOrderTargetList().advanced().getDownButtonElement();
         }
 
         public WebElement getSourceHeaderElement() {
-            return headerElement;
+            return sourceHeaderElement;
         }
 
         public WebElement getTargetHeaderElement() {
-            return targetList.getHeaderElement();
+            return _getOrderTargetList().advanced().getHeaderElement();
         }
 
-        public WebElement getSourceListAreaElement() {
-            return listAreaElement;
+        public WebElement getSourceListContentAreaElement() {
+            return contentAreaElement;
         }
 
-        public WebElement getTargetListAreaElement() {
-            return targetList.getListAreaElement();
+        public WebElement getTargetListContentAreaElement() {
+            return _getOrderTargetList().advanced().getContentAreaElement();
         }
 
         public WebElement getRemoveAllButtonElement() {
@@ -360,6 +357,22 @@ public class RichFacesPickList implements PickList, AdvancedInteractions<RichFac
 
         public WebElement getRemoveButtonElement() {
             return removeButtonElement;
+        }
+
+        public List<WebElement> getSelectedSourceListItemsElements() {
+            return selectedSourceListItems;
+        }
+
+        public List<WebElement> getSourceListItemsElements() {
+            return sourceListItems;
+        }
+
+        public List<WebElement> getSelectedTargetListItemsElements() {
+            return _getOrderTargetList().advanced().getSelectedItemsElements();
+        }
+
+        public List<WebElement> getTargetListItemsElements() {
+            return _getOrderTargetList().advanced().getItemsElements();
         }
 
         public WebElement getRootElement() {
@@ -371,23 +384,31 @@ public class RichFacesPickList implements PickList, AdvancedInteractions<RichFac
         }
 
         public ListComponent<? extends SelectableListItem> getTargetList() {
-            return targetList.getList();
+            return _getOrderTargetList().advanced().getList();
         }
 
         public WebElement getTopButtonElement() {
-            return targetList.getTopButtonElement();
+            return _getOrderTargetList().advanced().getTopButtonElement();
         }
 
         public WebElement getUpButtonElement() {
-            return targetList.getUpButtonElement();
+            return _getOrderTargetList().advanced().getUpButtonElement();
+        }
+
+        protected OrderingListInPickList _getOrderTargetList() {
+            return targetList;
         }
 
         /**
-         * Operations over the orderable target list.
+         * This method return element which has operations over the orderable target list.
          * If the list is not orderable than some Exception is thrown.
          */
-        public OrderingList orderTargetList() {
-            return targetList;
+        public OrderingList getOrderTargetList() {
+            return _getOrderTargetList();
+        }
+
+        public boolean isVisible() {
+            return Utils.isVisible(getRootElement());
         }
     }
 

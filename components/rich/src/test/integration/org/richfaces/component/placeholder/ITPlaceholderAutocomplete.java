@@ -1,4 +1,4 @@
-/**
+/*
  * JBoss, Home of Professional Open Source
  * Copyright 2012, Red Hat, Inc. and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
@@ -24,7 +24,7 @@ package org.richfaces.component.placeholder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.openqa.selenium.support.FindBy;
-import org.richfaces.integration.UIDeployment;
+import org.richfaces.integration.RichDeployment;
 import org.richfaces.shrinkwrap.descriptor.FaceletAsset;
 
 /**
@@ -37,31 +37,31 @@ public class ITPlaceholderAutocomplete extends AbstractPlaceholderTest {
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
-        UIDeployment deployment = new UIDeployment(ITPlaceholderAutocomplete.class);
+        RichDeployment deployment = new RichDeployment(ITPlaceholderAutocomplete.class);
 
         deployment.archive().addClasses(PlaceHolderValueConverter.class, PlaceHolderValue.class);
 
         FaceletAsset p;
-        p = deployment.baseFacelet("index.xhtml");
+        p = placeholderFacelet("index.xhtml", deployment);
         p.body("<rich:autocomplete id='input'>");
         p.body("    <rich:placeholder id='placeholderID' styleClass='#{param.styleClass}' value='Placeholder Text' />");
         p.body("</rich:autocomplete>");
 
-        p = deployment.baseFacelet("selector.xhtml");
+        p = placeholderFacelet("selector.xhtml", deployment);
         p.body("<rich:autocomplete id='input' />");
         p.body("<rich:placeholder id='placeholderID' value='Placeholder Text' selector='[id=input]' />");
 
-        p = deployment.baseFacelet("rendered.xhtml");
+        p = placeholderFacelet("rendered.xhtml", deployment);
         p.body("<rich:autocomplete id='input'>");
         p.body("    <rich:placeholder id='placeholderID' value='Placeholder Text' rendered='false' />");
         p.body("</rich:autocomplete>");
 
-        p = deployment.baseFacelet("converter.xhtml");
+        p = placeholderFacelet("converter.xhtml", deployment);
         p.body("<rich:autocomplete id='input' >");
         p.body("    <rich:placeholder id='placeholderID' converter='placeHolderValueConverter' value='#{placeHolderValue}' />");
         p.body("</rich:autocomplete>");
 
-        p = deployment.baseFacelet("submit.xhtml");
+        p = placeholderFacelet("submit.xhtml", deployment);
         p.form("<rich:autocomplete id='input' value='#{placeHolderValue.value2}' >");
         p.form("    <rich:placeholder id='placeholderID' value='Placeholder Text' />");
         p.form("</rich:autocomplete>");

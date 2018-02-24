@@ -22,6 +22,7 @@
 package org.richfaces.fragment.extendedDataTable;
 
 import java.util.List;
+
 import org.jboss.arquillian.graphene.Graphene;
 import org.jboss.arquillian.graphene.findby.ByJQuery;
 import org.jboss.arquillian.graphene.findby.FindByJQuery;
@@ -35,13 +36,17 @@ import org.richfaces.fragment.dataTable.AbstractTable;
  *
  * @author <a href="mailto:jhuska@redhat.com">Juraj Huska</a>
  */
-public abstract class RichFacesExtendedDataTable<HEADER, ROW, FOOTER> extends AbstractTable<HEADER, ROW, FOOTER> implements ExtendedDataTable {
+public abstract class RichFacesExtendedDataTable<HEADER, ROW, FOOTER> extends AbstractTable<HEADER, ROW, FOOTER> implements
+    ExtendedDataTable {
 
-    @FindBy(css = ".rf-edt-b .rf-edt-cnt tr")
+    @FindByJQuery(".rf-edt-b .rf-edt-cnt tr")
     private List<WebElement> tableRowsElements;
 
     @FindByJQuery(".rf-edt-b .rf-edt-cnt tr:eq(0) td")
     private List<WebElement> firstRowCellsElements;
+
+    @FindByJQuery(".rf-edt-b")
+    private WebElement tableBodyElement;
 
     @FindBy(className = "rf-edt-ndt")
     private WebElement noDataElement;
@@ -58,22 +63,32 @@ public abstract class RichFacesExtendedDataTable<HEADER, ROW, FOOTER> extends Ab
     @FindBy(className = "rf-edt-ftr-c")
     private List<WebElement> columnFootersElements;
 
-    private final AbstractTable.AdvancedTableInteractions advancedInteractions = new AdvancedExtendedDataTableInteractions();
+    private final AdvancedExtendedDataTableInteractions advancedInteractions = new AdvancedExtendedDataTableInteractions();
 
     @Override
     public void selectRow(int rowIndex, Keys... keys) {
         clickOnRow(rowIndex, keys);
-        Graphene.waitAjax().until()
-                .element(tableRowsElements.get(rowIndex))
-                .attribute("class").contains("rf-edt-r-sel");
+        Graphene.waitAjax().until().element(advanced().getTableRowsElements().get(rowIndex)).attribute("class")
+            .contains(advanced().getStyleClassForSelectedRow());
     }
 
     @Override
     public void deselectRow(int rowIndex, Keys... keys) {
         clickOnRow(rowIndex, keys);
-        Graphene.waitAjax().until()
-                .element(tableRowsElements.get(rowIndex))
-                .attribute("class").not().contains("rf-edt-r-sel");
+        Graphene.waitAjax().until().element(advanced().getTableRowsElements().get(rowIndex)).attribute("class").not()
+            .contains(advanced().getStyleClassForSelectedRow());
+    }
+
+    @Override
+    public void selectAllRowsWithKeyShortcut() {
+        advanced().getTableBodyElement().sendKeys(Keys.chord(Keys.CONTROL, "a"));
+        if (advanced().getTableRowsElements().size() >= 1) {
+            Graphene.waitAjax().until().element(advanced().getTableRowsElements().get(0)).attribute("class")
+                .contains(advanced().getStyleClassForSelectedRow());
+            Graphene.waitAjax().until()
+                .element(advanced().getTableRowsElements().get(advanced().getTableRowsElements().size() - 1))
+                .attribute("class").contains(advanced().getStyleClassForSelectedRow());
+        }
     }
 
     private void clickOnRow(int rowIndex, Keys... keys) {
@@ -92,9 +107,9 @@ public abstract class RichFacesExtendedDataTable<HEADER, ROW, FOOTER> extends Ab
         if (rowIndex < 0) {
             throw new IllegalArgumentException("rowIndex must not be negative");
         }
-        if(advanced().getNumberOfVisibleRows() < rowIndex) {
-            throw new IllegalArgumentException("There is not so many rows! Requesting: "
-                    + rowIndex + "but there is only: " + advanced().getNumberOfVisibleRows());
+        if (advanced().getNumberOfVisibleRows() < rowIndex) {
+            throw new IllegalArgumentException("There is not so many rows! Requesting: " + rowIndex + "but there is only: "
+                + advanced().getNumberOfVisibleRows());
         }
         if (keys.length > 2) {
             throw new IllegalArgumentException("Only one of: SHIFT, CTRL or their combination can be passed!");
@@ -102,11 +117,17 @@ public abstract class RichFacesExtendedDataTable<HEADER, ROW, FOOTER> extends Ab
     }
 
     @Override
-    public AdvancedTableInteractions advanced() {
+    public AdvancedExtendedDataTableInteractions advanced() {
         return advancedInteractions;
     }
 
     public class AdvancedExtendedDataTableInteractions extends AbstractTable<HEADER, ROW, FOOTER>.AdvancedTableInteractions {
+
+        private static final String SELECTED_CLASS = "rf-edt-r-sel";
+
+        protected String getStyleClassForSelectedRow() {
+            return SELECTED_CLASS;
+        }
 
         @Override
         public WebElement getNoDataElement() {
@@ -158,5 +179,8 @@ public abstract class RichFacesExtendedDataTable<HEADER, ROW, FOOTER> extends Ab
             return columnFootersElements;
         }
 
+        public WebElement getTableBodyElement() {
+            return tableBodyElement;
+        }
     }
 }

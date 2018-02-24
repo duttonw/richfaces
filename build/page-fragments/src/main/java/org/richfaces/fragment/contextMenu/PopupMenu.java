@@ -25,39 +25,13 @@ import org.openqa.selenium.WebElement;
 import org.richfaces.fragment.common.picker.ChoicePicker;
 
 /**
- *
  * @author <a href="mailto:jstefek@redhat.com">Jiri Stefek</a>
  */
-public interface PopupMenu {
+public interface PopupMenu extends PopupMenuGroup {
 
     /**
-     * Selects the menu item according to the rules defined in the <code>picker</code> param.
-     *
-     * @param picker for defining the rules by which the item will be selected
-     * @throws IllegalArgumentException if there is no such element which satisfies the rules given by <code>picker</code>
-     */
-    void selectItem(ChoicePicker picker);
-
-    /**
-     * Selects the menu item according to the exact match of its text representation with passed <code>header</code> param.
-     *
-     * @param header text representation of the menu item to be selected
-     * @throws IllegalArgumentException if there is no such element with text representation matching the given <code>text</code>
-     */
-    void selectItem(String header);
-
-    /**
-     * Selects the menu item according to its index in the list of all menu items.
-     *
-     * Items are indexed from 0. A top menu item (the one which is the closest to the root of the popup menu component) has index 0.
-     *
-     * @param index zero based index of the item to be selected
-     * @throws IllegalArgumentException if there is no such element with index <code>index</code>
-     */
-    void selectItem(int index);
-
-    /**
-     * Selects the menu item according to the rules defined in the <code>picker</code> param.
+     * Selects the menu item from this menu or sub menu according to the rules defined in the <code>picker</code> param.
+     * Opens menu, if it is not visible.
      *
      * @param picker for defining the rules by which the item will be selected
      * @param target for defining the popup menu which will be invoked and from which the item will be selected
@@ -66,16 +40,18 @@ public interface PopupMenu {
     void selectItem(ChoicePicker picker, WebElement target);
 
     /**
-     * Selects the menu item according to the exact match of its text representation with passed <code>header</code> param.
+     * Selects the menu item from this menu according to the exact match of its text representation with passed <code>header</code> param.
+     * Opens menu, if it is not visible.
      *
      * @param header text representation of the menu item to be selected
      * @param target for defining the popup menu which will be invoked and from which the item will be selected
-     * @throws IllegalArgumentException if there is no such element with text representation matching the given <code>text</code>
+     * @throws IllegalArgumentException if there is no such element with text representation matching the given <code>header</code>
      */
     void selectItem(String header, WebElement target);
 
     /**
-     * Selects the menu item according to its index in the list of all menu items.
+     * Selects the menu item from this menu according to its index in the list of all menu items.
+     * Opens menu, if it is not visible.
      *
      * Items are indexed from 0. A top menu item (the one which is the closest to the root of the popup menu component) has index 0.
      *
@@ -84,4 +60,37 @@ public interface PopupMenu {
      * @throws IllegalArgumentException if there is no such element with index <code>index</code>
      */
     void selectItem(int index, WebElement target);
+
+    /**
+     * Expands group from this menu, which satisfies the rules given in <code>picker</code> param.
+     * Opens menu, if it is not visible.
+     *
+     * @param picker object to define which group should be expanded
+     * @param target for defining the popup menu which will be invoked and from which the item will be selected
+     * @throws IllegalArgumentException if there is no such element which satisfies the rules given by <code>picker</code>
+     * @return the group which was expanded
+     */
+    PopupMenuGroup expandGroup(ChoicePicker picker, WebElement target);
+
+    /**
+     * Expands group from this menu, which text representation matches the given <code>header</code> param.
+     * Opens menu, if it is not visible.
+     *
+     * @param header the header of the group which should be expanded
+     * @param target for defining the popup menu which will be invoked and from which the item will be selected
+     * @throws IllegalArgumentException if there is no such element with text representation matching the given <code>header</code>
+     * @return the group which was expanded
+     */
+    PopupMenuGroup expandGroup(String header, WebElement target);
+
+    /**
+     * Expands group from this menu, which index equals the given <code>index</code> param.
+     * Opens menu, if it is not visible.
+     *
+     * @param index zero based index of the group to expand
+     * @param target for defining the popup menu which will be invoked and from which the item will be selected
+     * @throws IllegalArgumentException if there is no such element with index <code>index</code>
+     * @return the group which was expanded
+     */
+    PopupMenuGroup expandGroup(int index, WebElement target);
 }

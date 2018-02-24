@@ -30,39 +30,39 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.AbortProcessingException;
 import javax.faces.event.FacesEvent;
 
-import org.richfaces.model.PlotClickEvent;
-import org.richfaces.model.PlotClickListener;
-import org.richfaces.renderkit.ChartRendererBase;
 import org.richfaces.cdk.annotations.Attribute;
+import org.richfaces.cdk.annotations.Description;
 import org.richfaces.cdk.annotations.Event;
 import org.richfaces.cdk.annotations.EventName;
+import org.richfaces.cdk.annotations.Facet;
 import org.richfaces.cdk.annotations.JsfComponent;
 import org.richfaces.cdk.annotations.JsfRenderer;
 import org.richfaces.cdk.annotations.Signature;
 import org.richfaces.cdk.annotations.Tag;
 import org.richfaces.cdk.annotations.TagType;
+import org.richfaces.component.attribute.CoreProps;
+import org.richfaces.model.PlotClickEvent;
+import org.richfaces.model.PlotClickListener;
+import org.richfaces.renderkit.ChartRendererBase;
+import org.richfaces.view.facelets.html.ChartTagHandler;
 
 
 /**
+ * A component used to generate visual charts.
+ *
  * @author Lukas Macko
  */
-@JsfComponent(type= AbstractChart.COMPONENT_TYPE,family = AbstractChart.COMPONENT_FAMILY,tag = @Tag(name="chart",handler="org.richfaces.ChartTagHandler",generate=true,type = TagType.Facelets), renderer = @JsfRenderer(type = ChartRendererBase.RENDERER_TYPE), fires = { @Event(value = PlotClickEvent.class, listener = PlotClickListener.class) })
-public abstract class AbstractChart extends UIComponentBase {
+@JsfComponent(
+        type= AbstractChart.COMPONENT_TYPE,
+        family = AbstractChart.COMPONENT_FAMILY,
+        tag = @Tag(name="chart",handlerClass=ChartTagHandler.class,type = TagType.Facelets),
+        facets = @Facet(name = "hooks", description = @Description("A set of JavaScript functions to modify the plotting process.")),
+        renderer = @JsfRenderer(type = ChartRendererBase.RENDERER_TYPE),
+        fires = { @Event(value = PlotClickEvent.class, listener = PlotClickListener.class) })
+public abstract class AbstractChart extends UIComponentBase implements CoreProps {
 
     public static final String COMPONENT_TYPE = "org.richfaces.Chart";
     public static final String COMPONENT_FAMILY = "org.richfaces.Chart";
-
-    /**
-     * Chart title shown above the chart.
-     */
-    @Attribute
-    public abstract String getTitle();
-
-    /**
-     * The attribute assign CSS class to component div.
-     */
-    @Attribute
-    public abstract String getStyleClass();
 
     /**
      * Attribute define whether zoom is enabled. To reset zoom you can use JS
@@ -71,6 +71,12 @@ public abstract class AbstractChart extends UIComponentBase {
      */
     @Attribute
     public abstract boolean isZoom();
+
+    /**
+     * A set of JavaScript functions to modify the plotting process.
+     */
+    @Attribute
+    public abstract String getHooks();
 
     /**
      * Javascript handler function for plotclick event called for each series.
@@ -100,6 +106,8 @@ public abstract class AbstractChart extends UIComponentBase {
     @Attribute(signature = @Signature(parameters = PlotClickEvent.class))
     public abstract MethodExpression getPlotClickListener();
 
+    public abstract void setPlotClickListener(MethodExpression plotClickListener);
+
     @Override
     public void broadcast(FacesEvent event) throws AbortProcessingException {
 
@@ -117,7 +125,7 @@ public abstract class AbstractChart extends UIComponentBase {
             List<MethodExpression> particularSeriesListeners = (List<MethodExpression>) getAttributes().get("particularSeriesListeners");
 
             if(particularSeriesListeners!=null){
-                if(seriesId < particularSeriesListeners.size()){
+                if(seriesId >= 0 && seriesId < particularSeriesListeners.size()){
                     MethodExpression expr = particularSeriesListeners.get(seriesId);
                     if(expr!=null){
                         expr.invoke(context.getELContext(), new Object[]{event});

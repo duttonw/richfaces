@@ -27,7 +27,7 @@
                     onkeypress="#{component.attributes['onkeypress']}" id="#{clientId}Input" value="#{getInputValue(facesContext, component)}"
                     disabled="#{disabled}" name="#{clientId}Input" type="text"
                     class="rf-au-fnt rf-au-inp #{component.attributes['inputClass']}" autocomplete="off"
-                    cdk:passThrough="tabindex"/>
+                    cdk:passThrough="tabindex title"/>
                 <c:if test="#{component.attributes['showButton']}">
                     <span id="#{clientId}Button" class="rf-au-btn">
                         <span class="rf-au-btn-arrow#{component.attributes['disabled'] ? '-dis' : ''}"></span>
@@ -62,7 +62,7 @@
                     <cdk:object name="mode" type="Object" value="#{component.attributes['mode']}" />
                     <cdk:scriptObject name="options">
                         <cdk:scriptOption name="buttonId" value="#{clientId}Button" />
-                        <cdk:scriptOption attributes="selectedItemClass autofill disabled selectFirst tokens" />
+                        <cdk:scriptOption attributes="selectedItemClass autofill disabled selectFirst tokens queueId" />
                         <cdk:scriptOption attributes="onbegin oncomplete onerror onbeforedomupdate onchange onselectitem onfocus onblur"
                             wrapper="eventHandler" />
                         <cdk:scriptOption name="minChars" value="#{getMinCharsOrDefault(component)}" />
@@ -73,6 +73,7 @@
                             defaultValue="true" />
                         <cdk:scriptOption name="lazyClientMode" value="#{lazyClient == mode ? true : false}"
                             defaultValue="false" />
+                        <cdk:scriptOption name="status" value="#{component.attributes['status']}" />
                     </cdk:scriptObject>
                     new RichFaces.ui.Autocomplete("#{clientId}",
                     "#{clientId}Input", #{toScriptArgs(options)}

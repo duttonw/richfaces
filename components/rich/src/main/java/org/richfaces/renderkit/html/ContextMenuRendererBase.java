@@ -27,11 +27,14 @@ import org.richfaces.renderkit.util.RendererUtils;
         @ResourceDependency(library = "org.richfaces", name = "richfaces.js"),
         @ResourceDependency(library = "org.richfaces", name = "richfaces-queue.reslib"),
         @ResourceDependency(library = "org.richfaces", name = "richfaces-base-component.js"),
-        @ResourceDependency(library = "org.richfaces", name = "jquery.position.js"), @ResourceDependency(library = "org.richfaces", name = "richfaces-event.js"),
+        @ResourceDependency(library = "org.richfaces", name = "jquery.position.js"),
+        @ResourceDependency(library = "org.richfaces", name = "richfaces-event.js"),
         @ResourceDependency(library = "org.richfaces", name = "popup.js"),
         @ResourceDependency(library = "org.richfaces", name = "menuKeyNavigation.js"),
         @ResourceDependency(library = "org.richfaces", name = "menu-base.js"),
         @ResourceDependency(library = "org.richfaces", name = "menu.js"),
+        @ResourceDependency(library = "org.richfaces", name = "menugroup.js"),
+        @ResourceDependency(library = "org.richfaces", name = "menuitem.js"),
         @ResourceDependency(library = "org.richfaces", name = "contextmenu.js"),
         @ResourceDependency(library = "org.richfaces", name = "contextmenu.ecss", target = "head") })
 public abstract class ContextMenuRendererBase extends RendererBase {
@@ -46,7 +49,8 @@ public abstract class ContextMenuRendererBase extends RendererBase {
 
         for (UIComponent child : contextMenu.getChildren()) {
             if (child.isRendered()
-                    && (child instanceof AbstractMenuGroup || child instanceof AbstractMenuItem || child instanceof AbstractMenuSeparator)) {
+                    && (child instanceof AbstractMenuGroup || child instanceof AbstractMenuItem
+                        || child instanceof AbstractMenuSeparator || UIComponent.isCompositeComponent(child))) {
 
                 child.encodeAll(facesContext);
             }

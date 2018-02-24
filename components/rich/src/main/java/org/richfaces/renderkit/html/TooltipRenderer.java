@@ -69,7 +69,6 @@ public class TooltipRenderer extends DivPanelRenderer implements MetaComponentRe
     public static final String SHOW = "show";
     public static final String BEFORE_HIDE = "beforehide";
     public static final String BEFORE_SHOW = "beforeshow";
-    private static final int DEFAULT_ZINDEX_VALUE = 1000;
     private static final RendererUtils RENDERER_UTILS = RendererUtils.getInstance();
 
     @Override
@@ -102,9 +101,6 @@ public class TooltipRenderer extends DivPanelRenderer implements MetaComponentRe
         writer.writeAttribute(CLASS_ATTRIBUTE, getStyleClass(component), null);
 
         int zindex = tooltip.getZindex();
-        if (zindex == Integer.MIN_VALUE) {
-            zindex = DEFAULT_ZINDEX_VALUE;
-        }
 
         String style = concatStyles("z-index:" + zindex, getStyle(component));
         if (style != null && style.trim().length() > 0) {
@@ -128,8 +124,9 @@ public class TooltipRenderer extends DivPanelRenderer implements MetaComponentRe
         writer.startElement(getMarkupElement(tooltip), tooltip);
         writer.writeAttribute(ID_ATTRIBUTE, tooltip.getClientId(context) + ":content", null);
         writer.writeAttribute(CLASS_ATTRIBUTE, "rf-tt-cnt", null);
-        if (tooltip.getChildCount() == 0) {
-            writer.write(tooltip.getValue().toString());
+        Object value = tooltip.getValue();
+        if (tooltip.getChildCount() == 0 && value != null) {
+            writer.write(value.toString());
         }
     }
 

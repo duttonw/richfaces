@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   JBoss, Home of Professional Open Source
   Copyright 2013, Red Hat, Inc. and individual contributors
@@ -18,14 +19,15 @@
   License along with this software; if not, write to the Free
   Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   02110-1301 USA, or see the FSF site: http://www.fsf.org.
-  -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.richfaces</groupId>
     <artifactId>richfaces-build</artifactId>
     <packaging>pom</packaging>
-    <version>4.5.0-SNAPSHOT</version>
+    <version>4.5.21-SNAPSHOT</version>
     <name>RichFaces Build Version Management</name>
 
     <description>
@@ -57,75 +59,76 @@
 
     <properties>
         <!-- Base Dependencies Versions -->
-        <version.richfaces>4.5.0-SNAPSHOT</version.richfaces>
-        <version.cdk>4.5.0.Alpha2</version.cdk>
+        <version.richfaces>4.5.21-SNAPSHOT</version.richfaces>
+        <version.cdk>4.5.1-SNAPSHOT</version.cdk>
         <version.jboss-javaee>3.0.2.Final</version.jboss-javaee>
 
         <!-- Project Versions -->
-        <version.google-guava>16.0.1</version.google-guava>
-        <version.cssparser>0.9.14</version.cssparser>
+        <version.google-guava>19.0</version.google-guava>
+        <version.cssparser>0.9.25</version.cssparser>
 
         <!-- JSF Implementations Versions-->
         <version.javax.faces-api>2.2</version.javax.faces-api>
-        <version.org.glassfish.javax.faces>2.2.6</version.org.glassfish.javax.faces>
-        <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>2.2.6</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>
-        <version.org.jboss.javax.faces.jsf-impl>2.2.6-jbossorg-4</version.org.jboss.javax.faces.jsf-impl>
-        <version.myfaces>2.1.10</version.myfaces>
+        <version.org.glassfish.javax.faces>2.2.11</version.org.glassfish.javax.faces>
+        <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>2.2.11</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>
+        <version.org.jboss.javax.faces.jsf-impl>2.2.11-jbossorg-1</version.org.jboss.javax.faces.jsf-impl>
+        <version.myfaces>2.2.7</version.myfaces>
 
         <!-- Push Dependencies -->
-        <version.atmosphere>1.0.18</version.atmosphere>
+        <version.atmosphere>2.4.3</version.atmosphere>
 
-        <!-- Example Dependecy Libraries Versions -->
+        <!-- Example Dependency Libraries Versions -->
         <version.slf4j>1.6.1</version.slf4j>
         <version.hsqldb>2.0.0</version.hsqldb>
         <version.hornetq>2.2.7.Final</version.hornetq>
         <version.netty>3.2.5.Final</version.netty>
-        <version.weld>1.1.18.Final</version.weld>
-        <version.rewrite>1.0.4.Final</version.rewrite>
+        <version.weld>2.2.12.Final</version.weld>
+        <version.rewrite>2.0.12.Final</version.rewrite>
         <version.jsoup>1.5.2</version.jsoup>
-        <version.solder>3.2.1.Final</version.solder>
         <version.hibernate-entitymanager>4.0.0.Final</version.hibernate-entitymanager>
         <version.hibernate-annotations>3.5.6-Final</version.hibernate-annotations>
-        
+        <version.cdi-api>1.1</version.cdi-api>
+        <version.jandex>1.2.2.Final</version.jandex>
+        <version.jstl-api>1.2-rev-1</version.jstl-api>
+
         <!-- Resource Optimizer -->
         <version.reflections>0.9.8</version.reflections>
         <version.yuicompressor>2.3.6</version.yuicompressor>
         <version.jcommander>1.20</version.jcommander>
         <version.jboss-el>1.0_02.CR5</version.jboss-el>
-        
+
         <!-- Test Dependencies Versions -->
-        <version.junit>4.11</version.junit>
+        <version.junit>4.12</version.junit>
         <version.hamcrest>1.3</version.hamcrest>
-        <version.jsf-test>1.1.7</version.jsf-test>
+        <version.jsf-test>1.1.9</version.jsf-test>
         <version.easymock>2.5.2</version.easymock>
         <version.mockito>1.8.5</version.mockito>
-        <version.xmlunit>1.2</version.xmlunit>
+        <version.xmlunit>1.6</version.xmlunit>
 
-        <version.htmlunit>2.12</version.htmlunit>
+        <version.htmlunit>2.15</version.htmlunit>
+        <version.htmlunit-core-js>2.15</version.htmlunit-core-js>
         <version.xml-apis>1.4.01</version.xml-apis>
-        <version.hibernate-validator>4.2.0.Final</version.hibernate-validator>
-        
+        <version.hibernate-validator>4.3.2.Final</version.hibernate-validator>
+
         <!-- Enforcing Dependency Management -->
         <version.commons-codec>1.6</version.commons-codec>
-        
+
         <!-- Integration Tests Versions -->
-        <version.arquillian.core>1.1.4.Final</version.arquillian.core>
-        <version.arquillian.drone>1.3.0.Final</version.arquillian.drone>
-        <version.arquillian.warp>1.0.0.Alpha7</version.arquillian.warp>
-        <version.arquillian.graphene>2.0.3.Final</version.arquillian.graphene>
-        <version.arquillian.phantom.driver>1.1.2.Final</version.arquillian.phantom.driver>
-        <version.selenium>2.41.0</version.selenium>
-        <version.shrinkwrap>1.2.2</version.shrinkwrap>
-        <version.shrinkwrap.resolver>2.2.0-alpha-2</version.shrinkwrap.resolver>
-        <version.shrinkwrap.descriptors>2.0.0-alpha-6</version.shrinkwrap.descriptors>
-        <version.arquillian.glassfish40>1.0.0.CR4</version.arquillian.glassfish40>
+        <version.arquillian.core>1.1.11.Final</version.arquillian.core>
+        <version.arquillian.drone>2.0.0.Final</version.arquillian.drone>
+        <version.arquillian.graphene>2.1.0.CR1</version.arquillian.graphene>
+        <version.selenium>2.53.0</version.selenium>
+        <version.shrinkwrap>1.2.3</version.shrinkwrap>
+        <version.shrinkwrap.resolver>2.2.2</version.shrinkwrap.resolver>
+        <version.shrinkwrap.descriptors>2.0.0-alpha-9</version.shrinkwrap.descriptors>
         <version.arquillian.tomcat>1.0.0.CR6</version.arquillian.tomcat>
-        
+        <version.arquillian.suite.extension>1.1.2</version.arquillian.suite.extension>
+        <version.httpclient>4.3.3</version.httpclient>
+
         <!-- Container Versions -->
         <version.jboss-as7>7.1.1.Final</version.jboss-as7>
-        <version.tomee16>1.6.0</version.tomee16>
-        <version.wildfly8>8.0.0.Final</version.wildfly8>
-        
+        <version.wildfly8>8.2.1.Final</version.wildfly8>
+
         <!-- Release repositories -->
         <jboss.releases.repo.url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/</jboss.releases.repo.url>
         <jboss.snapshots.repo.url>https://repository.jboss.org/nexus/content/repositories/snapshots/</jboss.snapshots.repo.url>
@@ -152,6 +155,12 @@
                 <artifactId>jboss-javaee-web-6.0</artifactId>
                 <version>${version.jboss-javaee}</version>
                 <type>pom</type>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>xalan</artifactId>
+                        <groupId>xalan</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -170,12 +179,18 @@
             <dependency>
                 <groupId>org.richfaces</groupId>
                 <artifactId>richfaces</artifactId>
-                <version>4.5.0-SNAPSHOT</version>
+                <version>4.5.21-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.richfaces</groupId>
                 <artifactId>richfaces-push-depchain</artifactId>
-                <version>4.5.0-SNAPSHOT</version>
+                <version>4.5.21-SNAPSHOT</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.richfaces</groupId>
+                <artifactId>richfaces-push-native-depchain</artifactId>
+                <version>4.5.21-SNAPSHOT</version>
                 <type>pom</type>
             </dependency>
             <dependency>
@@ -209,7 +224,7 @@
                 <artifactId>jsoup</artifactId>
                 <version>${version.jsoup}</version>
             </dependency>
-            
+
             <!-- Enforcing Dependency Management -->
             <dependency>
                 <groupId>commons-codec</groupId>
@@ -260,22 +275,10 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>org.jboss.arquillian.extension</groupId>
-                <artifactId>arquillian-warp-bom</artifactId>
-                <version>${version.arquillian.warp}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
                 <groupId>org.jboss.arquillian.graphene</groupId>
                 <artifactId>graphene-webdriver</artifactId>
                 <version>${version.arquillian.graphene}</version>
                 <type>pom</type>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.extension</groupId>
-                <artifactId>arquillian-phantom-driver</artifactId>
-                <version>${version.arquillian.phantom.driver}</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.arquillian.extension</groupId>
@@ -291,7 +294,7 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            
+
             <!-- Container versions -->
             <dependency>
                 <groupId>org.jboss.as</groupId>
@@ -314,28 +317,8 @@
                 <version>${version.wildfly8}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.openejb</groupId>
-                <artifactId>arquillian-tomee-remote</artifactId>
-                <version>${version.tomee16}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.jboss.arquillian.container</groupId>
-                <artifactId>arquillian-glassfish-managed-3.1</artifactId>
-                <version>${version.arquillian.glassfish40}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.container</groupId>
-                <artifactId>arquillian-glassfish-remote-3.1</artifactId>
-                <version>${version.arquillian.glassfish40}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.container</groupId>
-                <artifactId>arquillian-tomcat-remote-6</artifactId>
-                <version>${version.arquillian.tomcat}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.container</groupId>
-                <artifactId>arquillian-tomcat-managed-6</artifactId>
+                <artifactId>arquillian-tomcat-remote-7</artifactId>
                 <version>${version.arquillian.tomcat}</version>
             </dependency>
             <dependency>
@@ -381,6 +364,12 @@
             <dependency>
                 <groupId>org.atmosphere</groupId>
                 <artifactId>atmosphere-runtime</artifactId>
+                <version>${version.atmosphere}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.atmosphere</groupId>
+                <artifactId>atmosphere-runtime-native</artifactId>
                 <version>${version.atmosphere}</version>
             </dependency>
 
@@ -431,16 +420,26 @@
                 <version>${version.rewrite}</version>
             </dependency>
             <dependency>
-                <groupId>org.jboss.solder</groupId>
-                <artifactId>solder-impl</artifactId>
-                <version>${version.solder}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-annotations</artifactId>
                 <version>${version.hibernate-annotations}</version>
             </dependency>
-            
+            <dependency>
+                <groupId>org.jboss</groupId>
+                <artifactId>jandex</artifactId>
+                <version>${version.jandex}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.enterprise</groupId>
+                <artifactId>cdi-api</artifactId>
+                <version>${version.cdi-api}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.servlet.jsp.jstl</groupId>
+                <artifactId>jstl-api</artifactId>
+                <version>${version.jstl-api}</version>
+            </dependency>
+
             <!-- Resource Optimizer -->
             <dependency>
                 <groupId>com.yahoo.platform.yui</groupId>
@@ -462,7 +461,7 @@
                 <artifactId>jboss-el</artifactId>
                 <version>${version.jboss-el}</version>
             </dependency>
-            
+
             <!-- Test Dependencie Versions -->
             <dependency>
                 <groupId>junit</groupId>
@@ -536,12 +535,23 @@
             <dependency>
                 <groupId>net.sourceforge.htmlunit</groupId>
                 <artifactId>htmlunit-core-js</artifactId>
-                <version>${version.htmlunit}</version>
+                <version>${version.htmlunit-core-js}</version>
             </dependency>
             <dependency>
                 <groupId>xml-apis</groupId>
                 <artifactId>xml-apis</artifactId>
                 <version>${version.xml-apis}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${version.httpclient}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eu.ingwar.tools</groupId>
+                <artifactId>arquillian-suite-extension</artifactId>
+                <version>${version.arquillian.suite.extension}</version>
             </dependency>
 
             <!-- tests (TODO - is it necessary?) -->
@@ -558,22 +568,22 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-install-plugin</artifactId>
-                <version>2.3.1</version>
+                <version>2.5.2</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
-                <version>2.5</version>
+                <version>2.8.2</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>2.4.1</version>
+                <version>3.0.0</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>2.5.3</version>
                 <configuration>
                     <localCheckout>true</localCheckout>
                     <pushChanges>false</pushChanges>

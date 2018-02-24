@@ -2,6 +2,14 @@
 
     rf.ui = rf.ui || {};
 
+    /**
+     * @extends RichFaces.BaseComponent
+     * @memberOf! RichFaces.ui
+     * @constructs RichFaces.ui.List
+     * 
+     * @param id
+     * @param options
+     */
     rf.ui.List = function(id, options) {
         $super.constructor.call(this, id);
         this.namespace = this.namespace || "." + rf.Event.createNamespace(this.name, this.id);
@@ -12,8 +20,10 @@
         this.selectItemCss = mergedOptions.selectItemCss;
         this.selectItemCssMarker = mergedOptions.selectItemCss.split(" ", 1)[0];
         this.scrollContainer = $(mergedOptions.scrollContainer);
+        this.parentContainer = mergedOptions.parentContainer ? $(mergedOptions.parentContainer) : this.scrollContainer;
         this.itemCss = mergedOptions.itemCss.split(" ", 1)[0]; // we only need one of the item css classes to identify the item
         this.listCss = mergedOptions.listCss;
+        this.itemDisabledCss = this.itemCss + "-dis";
         this.clickRequiredToSelect = mergedOptions.clickRequiredToSelect;
         this.index = -1;
         this.disabled = mergedOptions.disabled;
@@ -34,11 +44,7 @@
 
         this.__updateItemsList(); // initialize this.items
         if (mergedOptions.clientSelectItems !== null) {
-            var clientSelectItemsMap = [];
-            $.each(mergedOptions.clientSelectItems, function(i) {
-                clientSelectItemsMap[this.id] = this;
-            });
-            this.__storeClientSelectItems(this.items, clientSelectItemsMap);
+            this.__storeClientSelectItems(mergedOptions.clientSelectItems);
         }
     };
 
@@ -83,6 +89,9 @@
             name : "list",
 
             processItem: function(item) {
+                if ($(item).hasClass(this.itemDisabledCss)) {
+                    return;
+                }
                 if (this.selectListener.processItem && typeof this.selectListener.processItem == 'function') {
                     this.selectListener.processItem(item);
                 }
@@ -96,6 +105,9 @@
                 if (this.selectListener.selectItem && typeof this.selectListener.selectItem == 'function') {
                     this.selectListener.selectItem(item);
                 } else {
+                    if (item.hasClass(this.itemDisabledCss)) {
+                        return;
+                    }
                     item.addClass(this.selectItemCss);
                     rf.Event.fire(this, "selectItem", item);
                 }
@@ -179,7 +191,7 @@
             onClick: function(e) {
                 this.setFocus();
                 var item = this.__getItem(e);
-                if (!item) return;
+                if (!item || $(item).hasClass(this.itemDisabledCss)) return;
                 this.processItem(item);
                 var clickModified = e.metaKey || e.ctrlKey;
                 if (!this.disabled) {
@@ -220,8 +232,8 @@
             },
 
             addItems: function(items) {
-                var parentContainer = this.scrollContainer;
-                parentContainer.append(items);
+                var container = this.parentContainer;
+                container.append(items);
                 this.__updateItemsList();
                 rf.Event.fire(this, "additems", items);
             },
@@ -296,8 +308,12 @@
                 return (this.items = this.list.find("." + this.itemCss));
             },
 
-            __storeClientSelectItems: function(items, clientSelectItemsMap) {
-                items.each(function (i)  {
+            __storeClientSelectItems: function(clientSelectItems) {
+                var clientSelectItemsMap = [];
+                $.each(clientSelectItems, function(i) {
+                    clientSelectItemsMap[this.id] = this;
+                });
+                this.items.each(function (i)  {
                     var item = $(this);
                     var id = item.attr("id");
                     var clientSelectItem = clientSelectItemsMap[id];
@@ -387,7 +403,7 @@
                 this.__getItems().each(function( index ) {
                     encoded.push($(this).data('clientSelectItem').value);
                 });
-                return encoded.join(",");
+                return encoded.join("\",'");
             },
 
             __selectCurrent: function() {
@@ -430,21 +446,19 @@
 
             __scrollToSelectedItem : function() {
                 if (this.scrollContainer) {
-                    var offset = 0;
-
-                    this.items.slice(0, this.index).each(function() {
-                        offset += this.offsetHeight;
-                    });
-
-                    var parentContainer = this.scrollContainer;
-                    if (offset < parentContainer.scrollTop()) {
-                        parentContainer.scrollTop(offset);
-                    } else {
-                        offset += this.items.get(this.index).offsetHeight;
-                        if (offset - parentContainer.scrollTop() > parentContainer.get(0).clientHeight) {
-                            parentContainer.scrollTop(offset - parentContainer.innerHeight());
-                        }
+                    var contClientRect = this.scrollContainer[0].getBoundingClientRect(),
+                        itemClientRect = this.items.get(this.index).getBoundingClientRect();
+                    
+                    if (contClientRect.top < itemClientRect.top && 
+                        itemClientRect.bottom < contClientRect.bottom) {
+                        // the item is within the visible area, do not scroll
+                        return;
                     }
+                    
+                    var iTop = itemClientRect.top, cTop = contClientRect.top,
+                        scrollTop = this.scrollContainer.scrollTop() + iTop - cTop;
+                    
+                    this.scrollContainer.scrollTop(scrollTop);
                 }
             },
 

@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.richfaces.component.validation;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -29,7 +28,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
 import org.richfaces.component.GraphBean;
 import org.richfaces.component.Group;
-import org.richfaces.integration.UIDeployment;
+import org.richfaces.integration.RichDeployment;
 
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -37,11 +36,13 @@ public class ITGraphValidation extends GraphValidationTestBase {
 
     @Deployment(testable = false)
     public static WebArchive deployment() {
-        UIDeployment deployment = new UIDeployment(ITGraphValidation.class);
+        RichDeployment deployment = new RichDeployment(ITGraphValidation.class);
 
         deployment.archive().addClasses(GraphBean.class, Group.class);
 
         addIndexPage(deployment);
+
+        deployment.addHibernateValidatorWhenUsingServletContainer();
 
         return deployment.getFinalArchive();
     }

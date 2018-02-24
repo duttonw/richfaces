@@ -15,7 +15,7 @@
         <cdk:object name="zindex" value="#{component.attributes['zindex']}" />
 
         <cdk:call expression="checkOptions(facesContext, component)" />
-        <div id="#{clientId}" style="visibility: hidden;">
+        <div id="#{clientId}" style="visibility: hidden; display: inline-block;">
             <c:if test="#{component.attributes['modal']}">
                 <div id="#{clientId}_shade" onclick="#{component.attributes['onmaskclick']}" ondblclick="#{component.attributes['onmaskdblclick']}"
                     oncontextmenu="#{component.attributes['onmaskcontextmenu']}" onmouseup="#{component.attributes['onmaskmouseup']}"
@@ -54,7 +54,7 @@
                 </c:if>
 
                 <div id="#{clientId}_content_scroller" style="#{getStyleIfTrimmed(component)}" class="rf-pp-cnt-scrlr">
-                    <div id="#{clientId}_content" class="rf-pp-cnt" style="#{component.attributes['style']}">
+                    <div id="#{clientId}_content" class="rf-pp-cnt">
                         <cdk:call expression="renderChildren(facesContext, component)" />
                     </div>
                 </div>

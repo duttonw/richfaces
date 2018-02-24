@@ -25,9 +25,10 @@ import static org.richfaces.resource.optimizer.strings.Constants.SLASH_JOINER;
 import static org.richfaces.resource.optimizer.strings.Constants.SLASH_SPLITTER;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.List;
 
@@ -61,7 +62,7 @@ public class FileVFSFile implements VirtualFile {
 
     @Override
     public InputStream getInputStream() throws IOException {
-        return new FileInputStream(file);
+        return new BufferedInputStream(Files.newInputStream(file.toPath()));
     }
 
     @Override

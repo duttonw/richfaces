@@ -23,10 +23,10 @@
 package org.richfaces.photoalbum.util;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 
 import org.richfaces.model.UploadedFile;
 
@@ -61,7 +61,7 @@ public class FileHandler {
     }
     
     public InputStream getInputStream() throws FileNotFoundException, IOException {
-        return isStandardFile ? new FileInputStream(file) : uFile.getInputStream();
+        return isStandardFile ? Files.newInputStream(file.toPath()) : uFile.getInputStream();
     }
     
     public String getName() {

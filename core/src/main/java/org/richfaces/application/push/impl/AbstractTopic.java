@@ -126,8 +126,8 @@ public abstract class AbstractTopic implements Topic {
      * @see org.richfaces.application.push.Topic#checkSubscription(org.richfaces.application.push.Session)
      */
     @Override
-    public void checkSubscription(Session session) throws SubscriptionFailureException {
-        SessionPreSubscriptionEvent event = new SessionPreSubscriptionEvent(this, getKey(), session);
+    public void checkSubscription(TopicKey topicKey, Session session) throws SubscriptionFailureException {
+        SessionPreSubscriptionEvent event = new SessionPreSubscriptionEvent(this, topicKey, session);
         for (TopicListener listener : listeners) {
             if (event.isAppropriateListener(listener)) {
                 try {
@@ -168,4 +168,11 @@ public abstract class AbstractTopic implements Topic {
      */
     @Override
     public abstract void publish(Object messageData) throws MessageException;
+
+    /*
+     * (non-Javadoc)
+     * @see org.richfaces.application.push.Topic#publish(java.lang.Object, java.lang.String)
+     */
+    @Override
+    public abstract void publish(Object messageData, String subtopicName) throws MessageException;
 }

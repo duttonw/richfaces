@@ -25,8 +25,9 @@ import static org.easymock.EasyMock.expect;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -44,12 +45,12 @@ import org.jboss.test.faces.htmlunit.LocalWebClient;
 import org.richfaces.application.DependencyInjector;
 import org.richfaces.application.DependencyInjectorImpl;
 import org.richfaces.application.Module;
+import org.richfaces.application.ServiceTracker;
 import org.richfaces.application.ServicesFactory;
 import org.richfaces.application.ServicesFactoryImpl;
 import org.richfaces.application.Uptime;
 import org.richfaces.application.configuration.ConfigurationService;
 import org.richfaces.application.configuration.ConfigurationServiceImpl;
-import org.richfaces.application.ServiceTracker;
 
 import com.gargoylesoftware.htmlunit.Cache;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -107,7 +108,7 @@ public class ResourceHandlerImplTest extends AbstractFacesTest {
         webClient = new LocalWebClient(this.facesServer);
 
         // quick fix for https://sourceforge.net/tracker/?func=detail&aid=2821888&group_id=47038&atid=448266
-        webClient.setRedirectEnabled(false);
+        webClient.getOptions().setRedirectEnabled(false);
 
         // disable built-in cache
         webClient.setCache(new DisabledCache());
@@ -324,7 +325,7 @@ public class ResourceHandlerImplTest extends AbstractFacesTest {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         File testResourceFile = new File(classLoader.getResource(RESOURCES_FOLDER_PATH + "/" + filePath).getFile());
         StringBuffer fileData = new StringBuffer(1000);
-        BufferedReader reader = new BufferedReader(new FileReader(testResourceFile));
+        BufferedReader reader = Files.newBufferedReader(testResourceFile.toPath(), StandardCharsets.UTF_8);
         char[] buf = new char[1024];
         int numRead = 0;
         while ((numRead = reader.read(buf)) != -1) {

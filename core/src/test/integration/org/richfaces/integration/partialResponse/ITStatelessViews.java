@@ -18,7 +18,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.richfaces.deployment.CoreDeployment;
-import org.richfaces.integration.partialViewContext.PartialResponseTestingHelper;
 import org.richfaces.shrinkwrap.descriptor.FaceletAsset;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -48,7 +47,6 @@ public class ITStatelessViews {
     public static WebArchive createDeployment() {
         CoreDeployment deployment = new CoreDeployment(ITStatelessViews.class);
 
-        deployment.withWholeCore();
         deployment.withWholeFramework();
 
         addIndexPage(deployment);

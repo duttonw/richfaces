@@ -21,54 +21,39 @@
  */
 package org.richfaces.arquillian.verification;
 
-import java.lang.reflect.Method;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.arquillian.test.spi.TestClass;
 import org.jboss.arquillian.test.spi.event.suite.BeforeClass;
-import org.jboss.arquillian.warp.WarpTest;
 
 /**
  * <p>
- * We use two kinds of tests in RichFaces test suite:
+ * We use only one kind of tests in RichFaces test suite:
  * </p>
  *
  * <ul>
- * <li>Warp tests (@Warp @RunAsClient @Deployment(testable = true))
  * <li>client-side only, such as Graphene tests (@RunAsClient @Deployment(testable = false))
  * </ul>
- *
  *
  * @author Lukas Fryc
  */
 public class VerifyDeploymentTestability {
 
     /**
-     * Verifies that all non-Warp, client-side only tests does not have @Deployment that is marked testable.
-     *
-     * @param event
+     * Verifies that all client-side only tests does not have @Deployment that is testable.
      */
     public void verifyThatRunAsClientClassIsNotTestable(@Observes BeforeClass event) {
-
         TestClass testClass = event.getTestClass();
-
         // run-as-client class
         if (testClass.getAnnotation(RunAsClient.class) != null) {
-
-            // non-warp class
-            if (testClass.getAnnotation(WarpTest.class) == null) {
-                Method method = testClass.getMethod(Deployment.class);
-                Deployment deployment = method.getAnnotation(Deployment.class);
-
-                // deployment is testable
-                if (deployment.testable()) {
-                    throw new IllegalArgumentException("Non-Warp test that is marked as @RunAsClient should not be testable: "
-                            + testClass.getJavaClass().getName());
-                }
+            // get Deployment annotation
+            Deployment deployment = testClass.getMethod(Deployment.class).getAnnotation(Deployment.class);
+            // Deployment is testable
+            if (deployment.testable()) {
+                throw new IllegalArgumentException("Test that is marked as @RunAsClient should not use @Deployment(testable=true): "
+                    + testClass.getJavaClass().getName());
             }
         }
     }
-
 }

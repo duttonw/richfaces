@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- NOTES(TODO: move to some readme in future): id for sample should equals 
-	to xhtml page name with the sample the same for demo id - it should be equals 
-	to name of the folder where samples placed -->
+    to xhtml page name with the sample the same for demo id - it should be equals 
+    to name of the folder where samples placed -->
 <root>
     <group>
         <name>Ajax Action</name>
@@ -74,10 +74,6 @@
                 <id>push</id>
                 <name>a4j:push</name>
                 <samples>
-                    <sample enabled="#{pushConfiguration.jmsEnabled}">
-                        <id>pushJms</id>
-                        <name>JMS Push</name>
-                    </sample>
                     <sample>
                         <id>pushTopicsContext</id>
                         <name>Topics Context Usage</name>
@@ -203,7 +199,7 @@
     <group>
         <name>Validation</name>
         <demos>
-            <demo>
+            <demo excludeReference="true">
                 <id>clientValidation</id>
                 <name>Client Side Validation</name>
                 <samples>
@@ -291,13 +287,10 @@
                     <sample>
                         <id>tableStyling</id>
                         <name>Styling</name>
-                        <description>
-                            <!-- TODO: rowClass should appears at this sample after completion -->
-                            <!-- TODO: rowClasses should be used instead of jQuerry selectors
-                                       after will works -->
-                            <!-- TODO: onrowmouseover, onrowmouseout - should be used instead
-                                       of jQuery selector -->
-                        </description>
+                    </sample>
+                    <sample>
+                        <id>builtin-sorting-and-filtering</id>
+                        <name>Built-in Sorting and Filtering</name>
                     </sample>
                     <sample>
                         <id>tableSorting</id>
@@ -321,7 +314,7 @@
                 <id>extendedDataTable</id>
                 <name>rich:extendedDataTable</name>
                 <samples>
-                    <sample>
+                    <sample new="true">
                         <id>simpleTable</id>
                         <name>Basic Usage</name>
                     </sample>
@@ -332,7 +325,7 @@
                     <sample>
                         <id>edt-builtin-sorting-and-filtering</id>
                         <name>Built-in Sorting and Filtering</name>
-                    </sample>    
+                    </sample>
                     <sample>
                         <id>edt-sorting</id>
                         <name>Table Sorting</name>
@@ -340,7 +333,7 @@
                     <sample>
                         <id>edt-filtering</id>
                         <name>Table Filtering</name>
-                    </sample>                                      
+                    </sample>
                 </samples>
             </demo>
             <demo>
@@ -400,9 +393,13 @@
                         <id>tree</id>
                         <name>Simple tree from XML</name>
                     </sample>
+                    <sample new="true">
+                        <id>defaultNode</id>
+                        <name>Default treeNode</name>
+                    </sample>
                 </samples>
             </demo>
-            <demo>
+            <demo excludeReference="true">
                 <id>treeAdaptors</id>
                 <name>Tree Adaptors</name>
                 <samples>
@@ -419,9 +416,9 @@
         <demos>
             <demo mobileExclude="true">
                 <id>chart</id>
-                <name>r:chart</name>
+                <name>rich:chart</name>
                 <samples>
-                    <sample new="true">
+                    <sample>
                         <id>simple</id>
                         <name>Simple charts</name>
                     </sample>
@@ -472,9 +469,7 @@
                         <description>Simple Tab Panels</description>
                         <name>Simple Tab Panels</name>
                     </sample>
-                    <!-- sample> <id>headerCustomization</id> <description>Headers Customization</description>
-                             <name>Headers Customization</name> </sample -->
-                     <sample>
+                    <sample>
                         <id>dynamic</id>
                         <description>Dynamic Tabs</description>
                         <name>Dynamic Tabs</name>
@@ -762,7 +757,7 @@
     <group>
         <name>Drag and Drop</name>
         <demos>
-            <demo mobileExclude="true">
+            <demo mobileExclude="true" excludeReference="true">
                 <id>dragDrop</id>
                 <name>Drag and Drop</name>
                 <samples>
@@ -781,7 +776,7 @@
     <group>
         <name>Miscellaneous</name>
         <demos>
-            <demo>
+            <demo excludeReference="true">
                 <id>standardSkinning</id>
                 <name>Standard elements skinning</name>
                 <samples>
@@ -793,7 +788,7 @@
             </demo>
             <demo>
                 <id>placeholder</id>
-                <name>Placeholder</name>
+                <name>rich:placeholder</name>
                 <samples>
                     <sample>
                         <id>placeholder</id>
@@ -801,7 +796,7 @@
                     </sample>
                 </samples>
             </demo>
-            <demo>
+            <demo excludeReference="true">
                 <id>functions</id>
                 <name>RichFaces functions</name>
                 <samples>
@@ -813,11 +808,11 @@
             </demo>
             <demo mobileExclude="true">
                 <id>focus</id>
-                <name>Focus</name>
+                <name>rich:focus</name>
                 <samples>
                     <sample>
                         <id>focus</id>
-                        <name>Focus</name>
+                        <name>rich:focus</name>
                     </sample>
                     <sample>
                         <id>focusPreserve</id>

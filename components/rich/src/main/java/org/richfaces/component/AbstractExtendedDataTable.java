@@ -38,18 +38,19 @@ import org.richfaces.cdk.annotations.JsfComponent;
 import org.richfaces.cdk.annotations.JsfRenderer;
 import org.richfaces.cdk.annotations.Tag;
 import org.richfaces.cdk.annotations.TagType;
-import org.richfaces.context.ExtendedVisitContext;
-import org.richfaces.context.ExtendedVisitContextMode;
-import org.richfaces.log.Logger;
-import org.richfaces.log.RichfacesLogger;
-import org.richfaces.model.SelectionMode;
-import org.richfaces.taglib.ExtendedDataTableHandler;
+import org.richfaces.component.attribute.AjaxActivatorProps;
 import org.richfaces.component.attribute.EventsRowProps;
 import org.richfaces.component.attribute.IterationProps;
 import org.richfaces.component.attribute.RowsProps;
 import org.richfaces.component.attribute.SequenceProps;
 import org.richfaces.component.attribute.StyleClassProps;
 import org.richfaces.component.attribute.StyleProps;
+import org.richfaces.context.ExtendedVisitContext;
+import org.richfaces.context.ExtendedVisitContextMode;
+import org.richfaces.log.Logger;
+import org.richfaces.log.RichfacesLogger;
+import org.richfaces.model.SelectionMode;
+import org.richfaces.taglib.ExtendedDataTableHandler;
 
 /**
  * <p> The &lt;rich:extendedDataTable&gt; component builds on the functionality of the &lt;rich:dataTable&gt; component,
@@ -62,7 +63,7 @@ import org.richfaces.component.attribute.StyleProps;
 @JsfComponent(type = AbstractExtendedDataTable.COMPONENT_TYPE, family = AbstractExtendedDataTable.COMPONENT_FAMILY,
         renderer = @JsfRenderer(type = "org.richfaces.ExtendedDataTableRenderer"),
         tag = @Tag(name = "extendedDataTable", handlerClass = ExtendedDataTableHandler.class, type = TagType.Facelets))
-public abstract class AbstractExtendedDataTable extends UIDataTableBase implements MetaComponentResolver, MetaComponentEncoder, EventsRowProps, RowsProps, StyleProps, StyleClassProps, SequenceProps, IterationProps {
+public abstract class AbstractExtendedDataTable extends UIDataTableBase implements MetaComponentResolver, MetaComponentEncoder, EventsRowProps, RowsProps, StyleProps, StyleClassProps, SequenceProps, IterationProps, AjaxActivatorProps {
     public static final String COMPONENT_TYPE = "org.richfaces.ExtendedDataTable";
     public static final String COMPONENT_FAMILY = UIDataTableBase.COMPONENT_FAMILY;
     public static final String SCROLL = "scroll";
@@ -80,12 +81,9 @@ public abstract class AbstractExtendedDataTable extends UIDataTableBase implemen
     @Attribute
     public abstract int getFrozenColumns();
 
-    @Attribute
-    public abstract String getStyleClass();
-
     /**
      * Defines selection mode for the table: none, single (only one row can be selected), multiple (Ctrl/Shift keys are used for
-     * multi-selection), multipleKeyboardFree (clicks are used for multi-selection)
+     * multi-selection), multipleKeyboardFree (clicks are used for multi-selection). Default value - "multiple"
      */
     @Attribute
     public abstract SelectionMode getSelectionMode();
@@ -120,6 +118,14 @@ public abstract class AbstractExtendedDataTable extends UIDataTableBase implemen
      */
     @Attribute(events = @EventName("beforeselectionchange"))
     public abstract String getOnbeforeselectionchange();
+
+    /**
+     * If "true" a menu for controlling column visibility will be added to the table.
+     * Requires the table to have a header. The column names can be customized with name attribute on rich:column.
+     * Default value - "false".
+     */
+    @Attribute(defaultValue = "false")
+    public abstract boolean isShowColumnControl();
 
     public String resolveClientId(FacesContext facesContext, UIComponent contextComponent, String metaComponentId) {
         if (SCROLL.equals(metaComponentId)) {
@@ -224,6 +230,7 @@ public abstract class AbstractExtendedDataTable extends UIDataTableBase implemen
         updateState();
     }
 
+    @SuppressWarnings("deprecation")
     public void setValueBinding(String name, javax.faces.el.ValueBinding binding) {
         super.setValueBinding(name, binding);
 

@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.richfaces.component.validation;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -35,7 +34,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.richfaces.component.Bean;
 import org.richfaces.component.CustomValidator;
-import org.richfaces.integration.UIDeployment;
+import org.richfaces.integration.RichDeployment;
 import org.richfaces.shrinkwrap.descriptor.FaceletAsset;
 
 import category.Smoke;
@@ -46,11 +45,13 @@ public class ITAjaxValidation extends ValidationTestBase {
 
     @Deployment(testable = false)
     public static WebArchive deployment() {
-        UIDeployment deployment = new UIDeployment(ITAjaxValidation.class);
+        RichDeployment deployment = new RichDeployment(ITAjaxValidation.class);
 
         deployment.archive().addClasses(Bean.class, CustomValidator.class);
 
         addIndexPage(deployment);
+
+        deployment.addHibernateValidatorWhenUsingServletContainer();
 
         return deployment.getFinalArchive();
     }
@@ -73,19 +74,22 @@ public class ITAjaxValidation extends ValidationTestBase {
 
     @Override
     protected void submitValue() {
-        guardAjax(body).click();
+        guardAjax(blurButton).click();
     }
 
-    private static void addIndexPage(org.richfaces.deployment.Deployment deployment) {
+    private static void addIndexPage(org.richfaces.deployment.BaseDeployment deployment) {
         FaceletAsset p = new FaceletAsset();
 
         p.body("<h:form id='form'>");
-        p.body("<h:inputText id='text' value='#{test.value}'>");
+        p.body("  <h:inputText id='text' value='#{test.value}'>");
         p.body("    <f:validator validatorId='custom' />");
         p.body("    <rich:validator event='blur' />");
-        p.body("</h:inputText>");
-        p.body("<h:outputText id='out' value='#{test.value}'></h:outputText>");
+        p.body("  </h:inputText>");
+        p.body("  <h:outputText id='out' value='#{test.value}'></h:outputText>");
         p.body("</h:form>");
+        p.body("<br />");
+        p.body("<input id='blurButton' value='blur' type='button' />");
+        p.body("<br />");
         p.body("<rich:message id='uiMessage' for='text' />");
 
         deployment.archive().addAsWebResource(p, "index.xhtml");

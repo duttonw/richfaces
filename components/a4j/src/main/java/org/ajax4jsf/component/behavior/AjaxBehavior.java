@@ -41,6 +41,7 @@ import javax.faces.event.BehaviorEvent;
 
 import org.ajax4jsf.component.AjaxClientBehavior;
 import org.richfaces.cdk.annotations.Attribute;
+import org.richfaces.cdk.annotations.Description;
 import org.richfaces.cdk.annotations.JsfBehavior;
 import org.richfaces.cdk.annotations.Signature;
 import org.richfaces.cdk.annotations.Tag;
@@ -79,7 +80,8 @@ public class AjaxBehavior extends ClientBehavior implements AjaxClientBehavior, 
         listener,
         immediate,
         bypassUpdates,
-        onbeforesubmit
+        onbeforesubmit,
+        resetValues
     }
 
     private Set<String> execute;
@@ -125,6 +127,9 @@ public class AjaxBehavior extends ClientBehavior implements AjaxClientBehavior, 
             setBypassUpdates((Boolean) value);
         } else if (compare(PropertyKeys.onbeforesubmit, name)) {
             setOnbeforesubmit((String) value);
+        } else if (compare(PropertyKeys.resetValues, name)) {
+            value = expFactory.coerceToType(value, Boolean.class);
+            setResetValues((Boolean) value);
         }
     }
 
@@ -160,9 +165,9 @@ public class AjaxBehavior extends ClientBehavior implements AjaxClientBehavior, 
     /**
      * Name of JavaScript event property (click, change, etc.) of parent component that triggers the behavior.
      * If the event attribute is not defined, the behavior is triggered on the event that normally provides
-     * interaction behavior for the parent component
+     * interaction behavior for the parent component. The value cannot be an EL expression.
      */
-    @Attribute
+    @Attribute(description = @Description("Name of JavaScript event property (click, change, etc.) of parent component that triggers the behavior. If the event attribute is not defined, the behavior is triggered on the event that normally provides interaction behavior for the parent component. The value cannot be an EL expression."))
     public String getEvent() {
         return (String) getStateHelper().eval(PropertyKeys.event);
     }
@@ -174,7 +179,7 @@ public class AjaxBehavior extends ClientBehavior implements AjaxClientBehavior, 
     /**
      * Method expression referencing a method that will be called when an AjaxBehaviorEvent has been broadcast for the listener.
      */
-    @Attribute
+    @Attribute(description = @Description("Method expression referencing a method that will be called when an AjaxBehaviorEvent has been broadcast for the listener."))
     public MethodExpression getListener() {
         return (MethodExpression) getStateHelper().eval(PropertyKeys.listener);
     }
@@ -187,15 +192,16 @@ public class AjaxBehavior extends ClientBehavior implements AjaxClientBehavior, 
      * Ids of components that will participate in the "execute" portion of the Request Processing Lifecycle.
      * Can be a single id, a space or comma separated list of Id's, or an EL Expression evaluating to an array or Collection.
      * Any of the keywords "@this", "@form", "@all", "@none", "@region" may be specified in the identifier list.
-     * Some components make use of additional keywords
+     * Some components make use of additional keywords.<br/>
+     * Default value is "@region" which resolves to parent component if no region is present.
      */
     @Attribute
-    public Collection<String> getExecute() {
+    public Object getExecute() {
         return getCollectionValue(PropertyKeys.execute, execute);
     }
 
-    public void setExecute(Collection<String> execute) {
-        this.execute = copyToSet(execute);
+    public void setExecute(Object execute) {
+        this.execute = copyToSet(Sets.asSet(execute));
         clearInitialState();
     }
 
@@ -278,17 +284,17 @@ public class AjaxBehavior extends ClientBehavior implements AjaxClientBehavior, 
      * Some components make use of additional keywords
      */
     @Attribute
-    public Collection<String> getRender() {
+    public Object getRender() {
         return getCollectionValue(PropertyKeys.render, render);
     }
 
-    public void setRender(Collection<String> render) {
-        this.render = copyToSet(render);
+    public void setRender(Object render) {
+        this.render = copyToSet(Sets.asSet(render));
         clearInitialState();
     }
 
     /**
-     * ID of the request status component
+     * Name of the request status component that will indicate the status of the Ajax request
      */
     @Attribute
     public String getStatus() {
@@ -348,6 +354,18 @@ public class AjaxBehavior extends ClientBehavior implements AjaxClientBehavior, 
 
     public void setBypassUpdates(boolean bypassUpdates) {
         getStateHelper().put(PropertyKeys.bypassUpdates, bypassUpdates);
+    }
+
+    /**
+     * If true, indicate that this particular Ajax transaction is a value reset transaction. This will cause resetValue() to be called on any EditableValueHolder instances encountered as a result of this ajax transaction. If not specified, or the value is false, no such indication is made.
+     */
+    @Attribute(description = @Description("If true, indicate that this particular Ajax transaction is a value reset transaction. This will cause resetValue() to be called on any EditableValueHolder instances encountered as a result of this ajax transaction. If not specified, or the value is false, no such indication is made."))
+    public boolean isResetValues() {
+        return (Boolean) getStateHelper().eval(PropertyKeys.resetValues, false);
+    }
+
+    public void setResetValues(boolean resetValues) {
+        getStateHelper().put(PropertyKeys.resetValues, resetValues);
     }
 
     @Override

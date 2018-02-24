@@ -1,11 +1,11 @@
 package org.richfaces.component.tabPanel;
 
 import java.net.URL;
-import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
+import org.jboss.arquillian.graphene.findby.FindByJQuery;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -17,7 +17,8 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.richfaces.component.tabPanel.model.TabBean;
 import org.richfaces.component.tabPanel.model.TabPanelBean;
-import org.richfaces.integration.UIDeployment;
+import org.richfaces.fragment.tabPanel.RichFacesTabPanel;
+import org.richfaces.integration.RichDeployment;
 import org.richfaces.shrinkwrap.descriptor.FaceletAsset;
 
 import category.Smoke;
@@ -26,17 +27,14 @@ import category.Smoke;
 @RunWith(Arquillian.class)
 public class ITRepeatTab {
 
+    @FindByJQuery("[id$='tabPanel']")
+    private RichFacesTabPanel tabPanel;
+
     @Drone
     private WebDriver browser;
 
     @ArquillianResource
     private URL contextPath;
-
-    @FindBy(id = "myForm:tabPanel")
-    private WebElement tabPanel;
-
-    @FindBy(className = "rf-tab-hdr")
-    private List<WebElement> tabs;
 
     @FindBy(id = "myForm:a4jCreateTabButton")
     private WebElement a4jCreateTabButton;
@@ -45,7 +43,7 @@ public class ITRepeatTab {
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
-        UIDeployment deployment = new UIDeployment(ITRepeatTab.class);
+        RichDeployment deployment = new RichDeployment(ITRepeatTab.class);
         deployment.archive().addClass(TabBean.class);
         deployment.archive().addClass(TabPanelBean.class);
 
@@ -58,16 +56,16 @@ public class ITRepeatTab {
     @Category(Smoke.class)
     public void check_tab_switch() {
         browser.get(contextPath.toExternalForm() + "index.jsf");
-        tabTestHelper.check_tab_switch(tabPanel, tabs, a4jCreateTabButton);
+        tabTestHelper.check_tab_switch(tabPanel, a4jCreateTabButton);
     }
 
     @Test
     public void check_row_removal() throws InterruptedException {
         browser.get(contextPath.toExternalForm());
-        tabTestHelper.check_row_removal(tabPanel, tabs, a4jCreateTabButton);
+        tabTestHelper.check_row_removal(tabPanel, a4jCreateTabButton);
     }
 
-    private static void addIndexPage(UIDeployment deployment) {
+    private static void addIndexPage(RichDeployment deployment) {
         FaceletAsset p = new FaceletAsset();
         p.body("<h:form id='myForm'>");
         p.body("<rich:tabPanel id='tabPanel'>");

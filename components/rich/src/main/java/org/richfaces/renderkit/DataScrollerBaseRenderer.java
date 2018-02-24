@@ -25,6 +25,7 @@ import static org.richfaces.component.DataScrollerControlsMode.auto;
 import static org.richfaces.component.DataScrollerControlsMode.show;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -105,19 +106,13 @@ public class DataScrollerBaseRenderer extends RendererBase {
         ControlsState controlsState = new ControlsState();
 
         if (pageIndex <= minPageIdx) {
+            useBackFast = false;
             useFirst = false;
         }
 
         if (pageIndex >= maxPageIdx) {
-            useLast = false;
-        }
-
-        if (pageIndex - fastStep < minPageIdx) {
-            useBackFast = false;
-        }
-
-        if (pageIndex + fastStep > maxPageIdx) {
             useForwFast = false;
+            useLast = false;
         }
 
         DataScrollerControlsMode boundaryControls = getModeOrDefault(component, "boundaryControls");
@@ -166,7 +161,7 @@ public class DataScrollerBaseRenderer extends RendererBase {
             controlsState.setFastRewindRendered(false);
         }
 
-        UIComponent controlsSeparatorFacet = component.getFacet("controlsSeparator");
+        UIComponent controlsSeparatorFacet = component.getFacet(AbstractDataScroller.CONTROLS_SEPARATOR_FACET_NAME);
         if (controlsSeparatorFacet != null && controlsSeparatorFacet.isRendered()) {
             controlsState.setControlsSeparatorRendered(true);
         }
@@ -174,7 +169,19 @@ public class DataScrollerBaseRenderer extends RendererBase {
         return controlsState;
     }
 
+    public Map<String, String> renderPagerFacet(ResponseWriter out, FacesContext context, UIComponent facet) throws IOException {
+        out.startElement(HtmlConstants.SPAN_ELEM, facet);
+        out.writeAttribute(HtmlConstants.CLASS_ATTRIBUTE, "rf-ds-pages ", null);
+        encodeFacet(context, facet);
+        out.endElement(HtmlConstants.SPAN_ELEM);
+        return Collections.emptyMap();
+    }
+
     public Map<String, String> renderPager(ResponseWriter out, FacesContext context, UIComponent component) throws IOException {
+        UIComponent pagesFacet = component.getFacet(AbstractDataScroller.PAGES_FACET_NAME);
+        if (pagesFacet != null && pagesFacet.isRendered()) {
+            return renderPagerFacet(out, context, pagesFacet);
+        }
 
         int currentPage = (Integer) component.getAttributes().get("page");
         int maxPages = (Integer) component.getAttributes().get("maxPagesOrDefault");

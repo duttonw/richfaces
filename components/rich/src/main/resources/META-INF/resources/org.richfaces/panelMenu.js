@@ -35,12 +35,14 @@
             name:"PanelMenu",
 
             /**
-             * @class PanelMenu
-             * @name PanelMenu
-             *
-             * @constructor
-             * @param {String} componentId - component id
-             * @param {Hash} options - params
+             * Backing object for rich:panelMenu
+             * 
+             * @extends RichFaces.BaseComponent
+             * @memberOf! RichFaces.ui
+             * @constructs RichFaces.ui.PanelMenu
+             * 
+             * @param {string} componentId - component id
+             * @param {Object} options - params
              * */
             init : function (componentId, options) {
                 $super.constructor.call(this, componentId);
@@ -68,31 +70,33 @@
             },
 
             getItem: function (name) {
-                return this.items[name];
+                var item = this.items[name];
+
+                if (!item) { // name not found, try id
+                    var menuItem = rf.component(name);
+                    if (menuItem) {
+                        item = this.items[menuItem.itemName];
+                    }
+                }
+                return item;
             },
 
             /***************************** Public Methods  ****************************************************************/
             /**
-             * @methodOf
-             * @name PanelMenu#selectItem
-             *
-             * TODO ...
-             *
-             * @param {String} name
-             * @return {void} TODO ...
+             * Select a menu item
+             * 
+             * @method
+             * @name RichFaces.ui.PanelMenu#selectItem
+             * @param {string} name
              */
             selectItem: function (name) {
-                // TODO implement
+                var item = this.getItem(name);
+
+                if (item) {
+                    item.select();
+                }
             },
 
-            /**
-             * @methodOf
-             * @name PanelMenu#selectedItem
-             *
-             * TODO ...
-             *
-             * @return {String} TODO ...
-             */
             selectedItem: function (id) {
                 if (typeof id != "undefined") {
                     var valueInput = this.__getValueInput();
@@ -102,9 +106,11 @@
                     valueInput.value = id;
 
                     for (var itemName in this.items) {
-                        var item = this.items[itemName];
-                        if (item.__isSelected()) {
-                            item.__unselect();
+                        if (this.items.hasOwnProperty(itemName)) {
+                            var item = this.items[itemName];
+                            if (item.__isSelected()) {
+                                item.__unselect();
+                            }
                         }
                     }
 
@@ -119,53 +125,65 @@
             },
 
             /**
-             * @methodOf
-             * @name PanelMenu#expandAll
-             *
-             * TODO ...
-             *
-             * @return {void} TODO ...
+             * Expand all groups and subgroups
+             * 
+             * @method
+             * @name RichFaces.ui.PanelMenu#expandAll
              */
             expandAll: function () {
-                // TODO implement
+                for (var item in this.items) {
+                    if (this.items.hasOwnProperty(item)) {
+                        if (this.items[item].expand) {
+                            this.items[item].expand();
+                        }
+                    }
+                }
             },
 
             /**
-             * @methodOf
-             * @name PanelMenu#collapseAll
-             *
-             * TODO ...
-             *
-             * @return {void} TODO ...
+             * Collapse all groups and subgroups
+             * 
+             * @method
+             * @name RichFaces.ui.PanelMenu#collapseAll
              */
             collapseAll: function () {
-                // TODO implement
+                for (var item in this.items) {
+                    if (this.items.hasOwnProperty(item)) {
+                        if (this.items[item].collapse) {
+                            this.items[item].collapse();
+                        }
+                    }
+                }
             },
 
             /**
-             * @methodOf
-             * @name PanelMenu#expandGroup
-             *
-             * TODO ...
-             *
-             * @param {String} groupName
-             * @return {void} TODO ...
+             * Expand a menu group
+             * 
+             * @method
+             * @name RichFaces.ui.PanelMenu#expandGroup
+             * @param groupName {string} name or full id of the group
              */
             expandGroup: function (groupName) {
-                // TODO implement
+                var group = this.getItem(groupName);
+
+                if (group && group.expand) {
+                    group.expand();
+                }
             },
 
             /**
-             * @methodOf
-             * @name PanelMenu#collapseGroup
-             *
-             * TODO ...
-             *
-             * @param {String} groupName
-             * @return {void} TODO ...
+             * Collapse a menu group
+             * 
+             * @method
+             * @name RichFaces.ui.PanelMenu#collapseGroup
+             * @param groupName {string} name or full id of the group
              */
             collapseGroup: function (groupName) {
-                // TODO implement
+                var group = this.getItem(groupName);
+
+                if (group && group.collapse) {
+                    group.collapse();
+                }
             },
 
 

@@ -162,9 +162,31 @@
             if (this.mode == 'console') {
                 var logMsg = 'RichFaces: ' + message;
                 if (console[level]) {
-                    console[level](logMsg);
+                    if (message instanceof $) {
+                        // spans containing the XML response, print only the response
+                        var msg = "RichFaces: ";
+                        for (var i = 0; i < message.length; i++ ) {
+                            msg += message[i].textContent;
+                        }
+                        console[level](msg)
+                    } else if (typeof message == "object") {
+                        // print object as object, not string
+                        console[level](message);
+                    } else {
+                        console[level](logMsg);
+                    }
                 } else if (console.log) {
-                    console.log(logMsg);
+                    if (message instanceof $) {
+                        var msg = "RichFaces: ";
+                        for (var i = 0; i < message.length; i++ ) {
+                            msg += message[i].textContent;
+                        }
+                        console.log(msg);
+                    } else if (typeof message == "object") {
+                        console.log(message);
+                    } else {
+                        console.log(logMsg);
+                    }
                 }
                 return;
             }

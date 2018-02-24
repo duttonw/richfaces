@@ -1,8 +1,8 @@
 package org.richfaces.demo.common.navigation;
 
 import java.util.Collection;
-import java.util.List;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
@@ -12,6 +12,7 @@ import com.google.common.collect.Collections2;
 public class DemoDescriptor extends BaseDescriptor {
     private static final long serialVersionUID = 6822187362271025752L;
     private Collection<SampleDescriptor> samples;
+    private Boolean excludeReference = false;
 
     private boolean containsNewSamples() {
         for (SampleDescriptor sample : samples) {
@@ -70,4 +71,14 @@ public class DemoDescriptor extends BaseDescriptor {
     public void setSamples(Collection<SampleDescriptor> samples) {
         this.samples = samples;
     }
+
+    @XmlAttribute(name = "excludeReference")
+    public boolean isExcludeReference() {
+        return excludeReference;
+    }
+
+    public void setExcludeReference(boolean excludeReference) {
+        this.excludeReference = excludeReference;
+    }
+
 }

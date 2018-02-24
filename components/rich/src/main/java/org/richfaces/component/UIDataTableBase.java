@@ -50,6 +50,10 @@ import org.ajax4jsf.model.Range;
 import org.richfaces.cdk.annotations.Attribute;
 import org.richfaces.cdk.annotations.EventName;
 import org.richfaces.cdk.annotations.Facet;
+import org.richfaces.component.attribute.ColumnProps;
+import org.richfaces.component.attribute.EventsRowProps;
+import org.richfaces.component.attribute.RowColumnStyleProps;
+import org.richfaces.component.attribute.StyleProps;
 import org.richfaces.context.ExtendedVisitContext;
 import org.richfaces.context.ExtendedVisitContextMode;
 import org.richfaces.event.FilteringEvent;
@@ -67,7 +71,7 @@ import org.richfaces.model.SortField;
 import org.richfaces.model.SortMode;
 import org.richfaces.renderkit.MetaComponentRenderer;
 
-public abstract class UIDataTableBase extends UISequence implements Row, MetaComponentResolver, MetaComponentEncoder {
+public abstract class UIDataTableBase extends UISequence implements Row, MetaComponentResolver, MetaComponentEncoder, ColumnProps, EventsRowProps, RowColumnStyleProps, StyleProps {
     public static final String COMPONENT_FAMILY = "org.richfaces.Data";
     public static final String HEADER_FACET_NAME = "header";
     public static final String FOOTER_FACET_NAME = "footer";
@@ -133,79 +137,16 @@ public abstract class UIDataTableBase extends UISequence implements Row, MetaCom
     public abstract String getRowClass();
 
     /**
-     * Assigns one or more space-separated CSS class names to the table header
-     */
-    @Attribute
-    public abstract String getHeaderClass();
-
-    /**
-     * Assigns one or more space-separated CSS class names to the table footer
-     */
-    @Attribute
-    public abstract String getFooterClass();
-
-    /**
-     * Assigns one or more space-separated CSS class names to the columns of the table. If the CSS class names are
-     * comma-separated, each class will be assigned to a particular column in the order they follow in the attribute. If you
-     * have less class names than columns, the class will be applied to every n-fold column where n is the order in which the
-     * class is listed in the attribute. If there are more class names than columns, the overflow ones are ignored.
-     */
-    @Attribute
-    public abstract String getColumnClasses();
-
-    /**
-     * Assigns one or more space-separated CSS class names to the rows of the table. If the CSS class names are comma-separated,
-     * each class will be assigned to a particular row in the order they follow in the attribute. If you have less class names
-     * than rows, the class will be applied to every n-fold row where n is the order in which the class is listed in the
-     * attribute. If there are more class names than rows, the overflow ones are ignored.
-     */
-    @Attribute
-    public abstract String getRowClasses();
-
-    @Attribute
-    public abstract String getStyle();
-
-    /**
      * Comma-separated list of column names determining priority of row sorting.
      */
     @Attribute
     public abstract Collection<Object> getSortPriority();
 
     /**
-     * Specifies when table will be sorted according to one column (single) or multiple columns (multi).
+     * Specifies when table will be sorted according to one column (single) or multiple columns (multi). Default value - "multi"
      */
     @Attribute
     public abstract SortMode getSortMode();
-
-    @Attribute(events = @EventName("rowclick"))
-    public abstract String getOnrowclick();
-
-    @Attribute(events = @EventName("rowdblclick"))
-    public abstract String getOnrowdblclick();
-
-    @Attribute(events = @EventName("rowmousedown"))
-    public abstract String getOnrowmousedown();
-
-    @Attribute(events = @EventName("rowmouseup"))
-    public abstract String getOnrowmouseup();
-
-    @Attribute(events = @EventName("rowmouseover"))
-    public abstract String getOnrowmouseover();
-
-    @Attribute(events = @EventName("rowmousemove"))
-    public abstract String getOnrowmousemove();
-
-    @Attribute(events = @EventName("rowmouseout"))
-    public abstract String getOnrowmouseout();
-
-    @Attribute(events = @EventName("rowkeypress"))
-    public abstract String getOnrowkeypress();
-
-    @Attribute(events = @EventName("rowkeydown"))
-    public abstract String getOnrowkeydown();
-
-    @Attribute(events = @EventName("rowkeyup"))
-    public abstract String getOnrowkeyup();
 
     public Iterator<UIComponent> columns() {
         return new DataTableColumnsIterator(this);
@@ -454,5 +395,9 @@ public abstract class UIDataTableBase extends UISequence implements Row, MetaCom
 
     public static Set<String> getSupportedMetaComponents() {
         return SUPPORTED_META_COMPONENTS;
+    }
+
+    public String getSortingAndFilteringRenderTargetId(FacesContext facesContext) {
+        return getClientId(facesContext);
     }
 }

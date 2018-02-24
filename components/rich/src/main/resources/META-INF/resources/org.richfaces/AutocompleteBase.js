@@ -3,6 +3,16 @@
     rf.ui = rf.ui || {};
 
     // Constructor definition
+    /**
+     * @extends RichFaces.BaseComponent
+     * @memberOf! RichFaces.ui
+     * @constructs RichFaces.ui.AutocompleteBase
+     * 
+     * @param componentId
+     * @param selectId
+     * @param fieldId
+     * @param options
+     */
     rf.ui.AutocompleteBase = function(componentId, selectId, fieldId, options) {
         // call constructor of parent class
         $super.constructor.call(this, componentId);
@@ -12,7 +22,7 @@
         this.namespace = this.namespace || "." + rf.Event.createNamespace(this.name, this.selectId);
         this.currentValue = $(rf.getDomElement(fieldId)).val();
         this.tempValue = this.getValue();
-        this.isChanged = this.tempValue.length != 0;
+        this.isChanged = false;
         bindEventHandlers.call(this);
     };
 
@@ -32,7 +42,7 @@
 
         if (this.options.buttonId) {
             inputEventHandlers["mousedown" + this.namespace] = onButtonShow;
-            inputEventHandlers["mouseup" + this.namespace] = onSelectMouseUp;
+            inputEventHandlers["mouseup" + this.namespace] = onMouseUp;
             rf.Event.bindById(this.options.buttonId, inputEventHandlers, this);
         }
 
@@ -50,37 +60,40 @@
 
         inputEventHandlers = {};
         inputEventHandlers["mousedown" + this.namespace] = onSelectMouseDown;
-        inputEventHandlers["mouseup" + this.namespace] = onSelectMouseUp;
         rf.Event.bindById(this.selectId, inputEventHandlers, this);
     };
 
     var onSelectMouseDown = function () {
         this.isMouseDown = true;
     };
-    var onSelectMouseUp = function () {
-        rf.getDomElement(this.fieldId).focus();
+
+    var onMouseUp = function () {
+        this.isMouseDown = false;
     };
 
     var onButtonShow = function (event) {
-        this.isMouseDown = true;
+        if (this.focused) {
+            this.isMouseDown = true;
+        }
         if (this.timeoutId) {
             window.clearTimeout(this.timeoutId);
             this.timeoutId = null;
         }
 
-        rf.getDomElement(this.fieldId).focus();
         if (this.isVisible) {
             this.__hide(event);
         } else {
             onShow.call(this, event);
         }
+        var fieldId = this.fieldId;
+        window.setTimeout(function() {rf.getDomElement(fieldId).focus()}, 0);
     };
 
     var onFocus = function (event) {
         if (!this.focused) {
             this.__focusValue = this.getValue();
             this.focused = true;
-            this.invokeEvent("focus", rf.getDomElement(this.fieldId), event);
+            this.invokeEvent("focus", rf.getDomElement(this.id), event);
         }
     };
 
@@ -99,9 +112,9 @@
             }
             if (this.focused) {
                 this.focused = false;
-                this.invokeEvent("blur", rf.getDomElement(this.fieldId), event);
+                this.invokeEvent("blur", rf.getDomElement(this.id), event);
                 if (this.__focusValue != this.getValue()) {
-                    this.invokeEvent("change", rf.getDomElement(this.fieldId), event);
+                    this.invokeEvent("change", rf.getDomElement(this.id), event);
                 }
             }
         }
@@ -228,7 +241,7 @@
             this.__onHide(event);
         }
     };
-    
+
     var conceal = function () {
         if (this.isVisible) {
             if (this.scrollElements) {
@@ -261,25 +274,60 @@
              * public API functions
              */
             name:"AutocompleteBase",
+            /**
+             * Show the popup list of completion values
+             * 
+             * @method
+             * @name RichFaces.ui.AutocompleteBase#showPopup
+             */
             showPopup: function (event) {
                 if (!this.focused) {
                     rf.getDomElement(this.fieldId).focus();
                 }
                 onShow.call(this, event);
             },
+            /**
+             * Hide the popup list
+             * 
+             * @method
+             * @name RichFaces.ui.AutocompleteBase#hidePopup
+             */
             hidePopup: function (event) {
                 this.__hide(event)
             },
             getNamespace: function () {
                 return this.namespace;
             },
+            /**
+             * Get the current value
+             * 
+             * @method
+             * @name RichFaces.ui.AutocompleteBase#getValue
+             * @return {string} current value
+             */
             getValue: function () {
                 return this.fieldId ? rf.getDomElement(this.fieldId).value : "";
             },
+            /**
+             * Set the value
+             * 
+             * @method
+             * @name RichFaces.ui.AutocompleteBase#setValue
+             * @param {string} new value
+             */
             setValue: function (value) {
                 if (value == this.currentValue) return;
                 updateInputValue.call(this, value);
                 this.isChanged = true;
+            },
+            /**
+             * Focus the input element
+             * 
+             * @method
+             * @name RichFaces.ui.AutocompleteBase#focus
+             */
+            focus: function () {
+                rf.getDomElement(this.fieldId).focus();
             },
             /*
              * Protected methods

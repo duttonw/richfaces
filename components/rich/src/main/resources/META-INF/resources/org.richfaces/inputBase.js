@@ -2,6 +2,16 @@
 
     rf.ui = rf.ui || {};
 
+    /**
+     * Parent object for input-based components
+     * 
+     * @extends RichFaces.BaseComponent
+     * @memberOf! RichFaces.ui
+     * @constructs RichFaces.ui.InputBase
+     * 
+     * @param id
+     * @param options
+     */
     rf.ui.InputBase = function(id, options) {
         $super.constructor.call(this, id);
         this.namespace = this.getNamespace() || "." + rf.Event.createNamespace(this.getName(), this.getId());
@@ -62,7 +72,7 @@
             __setValue: function(value) {
                 this.input.val(value);
                 if (this.defaultLabelClass) {
-                    if (value == this.defaultLabel) {
+                    if (this.defaultLabel && value == this.defaultLabel) {
                         this.input.addClass(this.defaultLabelClass);
                     } else {
                         this.input.removeClass(this.defaultLabelClass);
@@ -70,6 +80,13 @@
                 }
             },
 
+            /**
+             * Get the current value
+             * 
+             * @method
+             * @name RichFaces.ui.InputBase#getValue
+             * @return {string} current value
+             */
             getValue: function() {
                 return this.__getValue();
             },
@@ -78,13 +95,31 @@
                 this.__setValue(value);
             },
 
+            /**
+             * Get the input element
+             * 
+             * @method
+             * @name RichFaces.ui.InputBase#getInput
+             * @return {jQuery} input element
+             */
             getInput: function() {
                 return this.input;
             },
 
             getId: function() {
-                return    this.id;
+                return this.id;
             },
+
+            /**
+             * Focus the input element
+             * 
+             * @method
+             * @name RichFaces.ui.InputBase#focus
+             */
+            focus: function() {
+                this.__setInputFocus();
+            },
+
             destroy: function() {
                 rf.Event.unbindById(this.input, this.namespace);
                 this.input = null;

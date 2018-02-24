@@ -5,14 +5,15 @@ Framework tests allow you to run a set of Arquillian-based tests using the Graph
 
 The supported container matrix is:
 
-* WildFly 8.0
 * WildFly 8.1
-* JBoss EAP 6.1
-* JBoss AS 7.1
-* TomEE 1.5
-* GlassFish 3.1
-* Tomcat 6
+* WildFly 8.2
+* WildFly 9.0
+* WildFly 10.0
+* JBoss EAP 6.2
+* JBoss EAP 6.3
+* JBoss EAP 6.4
 * Tomcat 7
+* Tomcat 8
 
 Note: for specific supported versions consult the pom.xml
 
@@ -28,19 +29,19 @@ TL;DR
 
 Running a full build including smoke tests:
 
-    mvn install -Dintegration=wildfly80 -Dsmoke
+    mvn install -Dintegration=wildfly82 -Dsmoke
 
 Running particular framework test (on Chrome) from console:
 
-    // console 1: start JBoss AS 7 
-    ./wildfly-8.0.0.Final/bin/standalone.sh
+    // console 1: start WildFly 8.2 
+    ./wildfly-8.2.0.Final/bin/standalone.sh
 
     // console 2: start Selenium Server
     java -jar selenium-server-standalone-${VERSION}.jar -Dwebdriver.chrome.driver=/opt/google/chrome/chromedriver
     
     // console 3: run a test
     cd richfaces/core/
-    mvn verify -Dintegration=wildfly80-remote -Dbrowser=chrome -Dreusable -DskipTests=true -Dtest=IT_RF12765
+    mvn verify -Dintegration=wildfly82-remote -Dbrowser=chrome -Dreusable -DskipTests=true -Dtest=IT_RF12765
 
 You can also add following parameters to skip CDK build and/or Resource Optimization and/or disable unit tests:
 
@@ -89,18 +90,17 @@ There are two ways to run tests:
 * *remote*
   * best for development and fast turnaround
   * container and browser adapters reuse running instances
-  * no support for Tomcat7 (currently missing remote adapter)
 
 Changing RichFaces version
 --------------------------
 
 You can change the version of RichFaces the test will run against by passing the following property to the Maven execution:
 
-    -Darquillian.richfaces.version=5.0.0.Alpha1
+    -Darquillian.richfaces.version=4.5.0.Alpha2
 
 or modifying the pom.xml:
 
-    <arquillian.richfaces.version>5.0.0.Alpha1</arquillian.richfaces.version>
+    <arquillian.richfaces.version>4.5.0.Alpha2</arquillian.richfaces.version>
 
 
 This will allow you to run newer tests against previous versions and verify that the issue is regression.
@@ -109,7 +109,7 @@ This will allow you to run newer tests against previous versions and verify that
 JSF version Notes
 -----------------
 
-Some containers (JBoss AS, GlassFish, TomEE) bundle the JSF version in their distribution, however for Tomcat 6 and Tomcat 7, the JSF implementation needs to be bundled (by default, the version specified in RichFaces BOM will be used).
+Some containers (JBoss AS, GlassFish, TomEE) bundle the JSF version in their distribution, however for Tomcat 6, 7, and 8, the JSF implementation needs to be bundled (by default, the version specified in RichFaces BOM will be used).
 
 You can influence the version used during the test on Tomcats using the following Maven property:
 
@@ -122,7 +122,7 @@ or modifying the pom.xml:
 Using MyFaces
 -------------
 
-In order to test RichFaces using MyFaces as JSF implementation, you need to either use the TomEE container or Tomcat 6 or 7 with enforced MyFaces dependency (in the first case using version specified in RichFaces BOM)
+In order to test RichFaces using MyFaces as JSF implementation, you need to either use the TomEE container or Tomcat 6/7/8 with enforced MyFaces dependency (in the first case using version specified in RichFaces BOM)
 
     -Darquillian.richfaces.jsfImplementation=org.apache.myfaces.core:myfaces-impl
 
@@ -236,41 +236,54 @@ Test inclusion / exclusion intends to provide as extensive test coverage for all
 
 Note that those categories use keywords `*Only`, `No*` and `FailingOn*` in order to be sufficiently descriptive.
 
+Screenshots during testing
+==========================
+
+There is a possibility to take screenshots during executing tests. Its done via Graphene Screenshooter extension. Basic configuration is set in `arquillian.xml` under `screenshooter` qualifier (by default it takes screenshots when the test fails). For more configuration options see [Graphene screenshooter docs](https://github.com/arquillian/arquillian-graphene/tree/master/extension/screenshooter).
+
+To take screenshots one has to run the build with `take-screenshots` profile.
+
+    mvn verify -Dintegration=wildfly82 -Ptake-screenshots
+
     
 Managed Containers 
 ==================
-
-### WildFly 8.0 - Managed
-
-    mvn verify -Dintegration=wildfly80
 
 ### WildFly 8.1 - Managed
 
     mvn verify -Dintegration=wildfly81
 
-### JBoss EAP 6.1 - Managed
+### WildFly 8.2 - Managed
 
-    mvn verify -Dintegration=jbosseap61
+    mvn verify -Dintegration=wildfly82
 
-### JBoss AS 7.1 - Managed
+### WildFly 9.0 - Managed
 
-    mvn verify -Dintegration=jbossas71
+    mvn verify -Dintegration=wildfly90
 
-### TomEE 1.6 - Managed
+### WildFly 10.0 - Managed
 
-    mvn verify -Dintegration=tomee16
+    mvn verify -Dintegration=wildfly100
 
-### GlassFish 4.0 - Managed
+### JBoss EAP 6.2 - Managed
 
-    mvn verify -Dintegration=glassfish40
+    mvn verify -Dintegration=jbosseap62
 
-### Tomcat 6 - Managed
+### JBoss EAP 6.3 - Managed
 
-    mvn verify -Dintegration=tomcat6
+    mvn verify -Dintegration=jbosseap63
+
+### JBoss EAP 6.4 - Managed
+
+    mvn verify -Dintegration=jbosseap64
 
 ### Tomcat 7 - Managed
 
     mvn verify -Dintegration=tomcat7
+
+### Tomcat 8 - Managed
+
+    mvn verify -Dintegration=tomcat8
 
 
 Providing container distribution
@@ -280,11 +293,11 @@ By default, all managed container are configured to obtain a distribution from s
 
 You can specify an URL that a container distribution should be downloaded from using the same property:
 
-    -Darquillian.container.distribution=file:///tmp/jboss-as-dist-7.1.1.Final.zip
+    -Darquillian.container.distribution=file:///tmp/wildfly-dist-8.2.0.Final.zip
 
 or
 
-    -Darquillian.container.distribution=http://some.repository/jboss-as-dist-7.1.1.Final.zip
+    -Darquillian.container.distribution=http://some.repository/wildfly-dist-8.2.0.Final.zip
 
 
 Remote Containers
@@ -307,14 +320,6 @@ First, start the Selenium Server:
 then run the test from the IDE (eg. in Eclipse: `Run As > JUnit Test`).
 
 
-### WildFly 8.0 - Remote
-
-Start: `[wildfly-8.0]$ ./bin/standalone.sh`
-
-Profile: `wildfly-remote-8-0`
-
-    mvn verify -Dintegration=wildfly80-remote
-
 ### WildFly 8.1 - Remote
 
 Start: `[wildfly-8.1]$ ./bin/standalone.sh`
@@ -323,39 +328,55 @@ Profile: `wildfly-remote-8-1`
 
     mvn verify -Dintegration=wildfly81-remote
 
-### JBoss EAP 6.1 - Remote
+### WildFly 8.2 - Remote
 
-Start: `[jboss-eap-6.1]$ ./bin/standalone.sh`
+Start: `[wildfly-8.2]$ ./bin/standalone.sh`
 
-Profile: `jbosseap-remote-6-1`
+Profile: `wildfly-remote-8-2`
 
-    mvn verify -Dintegration=jbosseap61-remote
+    mvn verify -Dintegration=wildfly82-remote
 
-### JBoss AS 7.1 - Remote
+### WildFly 9.0 - Remote
 
-Start: `[jboss-as-7.1.1.Final]$ ./bin/standalone.sh`
+Start: `[wildfly-9.0]$ ./bin/standalone.sh`
 
-Profile: `jbossas-remote-7-1`
+Profile: `wildfly-remote-9-0`
 
-    mvn verify -Dintegration=jbossas71-remote
+    mvn verify -Dintegration=wildfly90-remote
 
-### GlassFish 4.0 - Remote
+### WildFly 10.0 - Remote
 
-Start: `[glassfish4]$ ./glassfish/bin/startserv`
+Start: `[wildfly-10.0]$ ./bin/standalone.sh`
 
-Profile: `glassfish-remote-4-0`
+Profile: `wildfly-remote-10-0`
 
-    mvn verify -Dintegration=glassfish40-remote
+    mvn verify -Dintegration=wildfly100-remote
 
-### TomEE 1.6 - Remote
+### JBoss EAP 6.2 - Remote
 
-Start: `[apache-tomee-webprofile-1.6.0]$ ./bin/tomee.sh start`
+Start: `[jboss-eap-6.2]$ ./bin/standalone.sh`
 
-Profile: `tomee-remote-1-6`
+Profile: `jbosseap-remote-6-2`
 
-    mvn verify -Dintegration=tomee16-remote
+    mvn verify -Dintegration=jbosseap62-remote
 
-### Tomcat 6 - Remote
+### JBoss EAP 6.3 - Remote
+
+Start: `[jboss-eap-6.3]$ ./bin/standalone.sh`
+
+Profile: `jbosseap-remote-6-3`
+
+    mvn verify -Dintegration=jbosseap63-remote
+
+### JBoss EAP 6.4 - Remote
+
+Start: `[jboss-eap-6.4]$ ./bin/standalone.sh`
+
+Profile: `jbosseap-remote-6-4`
+
+    mvn verify -Dintegration=jbosseap64-remote
+
+### Tomcat 7/8 - Remote
 
 You need to modify the `conf/tomcat-users.xml` file:
 
@@ -371,18 +392,18 @@ You need to modify the `conf/tomcat-users.xml` file:
 
 Pass the following options to the console prior starting the server (or add it to `./bin/catalina.sh`):
 
-    export JAVA_OPTS="-Dcom.sun.management.jmxremote.port=8089 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+    export JAVA_OPTS="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=8089 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Djava.rmi.server.hostname=127.0.0.1"
 
 Start the container:
 
     ./bin/catalina.sh run
 
 
-Start: `[apache-tomcat-6.0.33]$ ./bin/catalina.run.sh`
+Start: `[apache-tomcat-8.0.9]$ ./bin/catalina.run.sh`
 
-Profile: `tomcat-remote-6`
+Profile: `tomcat-remote-8`
 
-    mvn verify -Dintegration=tomcat6-remote
+    mvn verify -Dintegration=tomcat8-remote
 
 
 Reusing Test Infrastructure Setup

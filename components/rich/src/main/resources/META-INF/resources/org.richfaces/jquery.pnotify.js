@@ -11,7 +11,7 @@
  * Modified by: RichFaces team
  */
 
-(function($) {
+(function($, rf) {
     var history_handle_top, timer;
     var body;
     var jwindow;
@@ -303,11 +303,13 @@
                         e.stopPropagation();
                         nonblock_pass(e, "ondblclick");
                     }
-                }
+                },
+                "dir": opts.dir,
+                "lang": opts.lang
             });
             pnotify.opts = opts;
             // Create a drop shadow.
-            if (opts.pnotify_shadow && !$.browser.msie)
+            if (opts.pnotify_shadow && !rf.browser.msie)
                 pnotify.shadow_container = $("<div />", {"class": "rf-ntf-shdw"}).prependTo(pnotify);
             // Create a container for the notice contents.
             pnotify.container = $("<div />", {"class": "rf-ntf-cnt"})
@@ -326,7 +328,7 @@
                 pnotify.opts = opts;
                 // Update the shadow.
                 if (opts.pnotify_shadow != old_opts.pnotify_shadow) {
-                    if (opts.pnotify_shadow && !$.browser.msie)
+                    if (opts.pnotify_shadow && !rf.browser.msie)
                         pnotify.shadow_container = $("<div />", {"class": "rf-ntf-shdw"}).prependTo(pnotify);
                     else
                         pnotify.children(".rf-ntf-shdw").remove();
@@ -745,4 +747,4 @@
         // The stack on which the notices will be placed. Also controls the direction the notices stack.
         pnotify_stack: {"dir1": "down", "dir2": "left", "push": "bottom"}
     };
-})(jQuery);
+})(jQuery, RichFaces);

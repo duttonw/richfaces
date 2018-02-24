@@ -40,14 +40,14 @@ import org.richfaces.DataScrollerUtils;
 import org.richfaces.application.FacesMessages;
 import org.richfaces.application.MessageFactory;
 import org.richfaces.application.ServiceTracker;
-import org.richfaces.component.attribute.AjaxProps;
-import org.richfaces.component.attribute.CoreProps;
 import org.richfaces.cdk.annotations.Attribute;
 import org.richfaces.cdk.annotations.Facet;
 import org.richfaces.cdk.annotations.JsfComponent;
 import org.richfaces.cdk.annotations.JsfRenderer;
 import org.richfaces.cdk.annotations.Tag;
 import org.richfaces.cdk.annotations.TagType;
+import org.richfaces.component.attribute.AjaxProps;
+import org.richfaces.component.attribute.CoreProps;
 import org.richfaces.component.util.MessageUtil;
 import org.richfaces.event.DataScrollEvent;
 import org.richfaces.event.DataScrollListener;
@@ -68,10 +68,16 @@ public abstract class AbstractDataScroller extends UIComponentBase implements Da
     public static final String LAST_FACET_NAME = "last";
     public static final String NEXT_FACET_NAME = "next";
     public static final String PREVIOUS_FACET_NAME = "previous";
-    public static final String FAST_FORWARD_FACET_NAME = "fastforward";
-    public static final String FAST_REWIND_FACET_NAME = "fastrewind";
+    public static final String FAST_FORWARD_FACET_NAME = "fastForward";
+    public static final String FAST_REWIND_FACET_NAME = "fastRewind";
     public static final String FIRST_DISABLED_FACET_NAME = "first_disabled";
     public static final String LAST_DISABLED_FACET_NAME = "last_disabled";
+    public static final String NEXT_DISABLED_FACET_NAME = "next_disabled";
+    public static final String PREVIOUS_DISABLED_FACET_NAME = "previous_disabled";
+    public static final String FAST_FORWARD_DISABLED_FACET_NAME = "fastForward_disabled";
+    public static final String FAST_REWIND_DISABLED_FACET_NAME = "fastRewind_disabled";
+    public static final String CONTROLS_SEPARATOR_FACET_NAME = "controlsSeparator";
+    public static final String PAGES_FACET_NAME = "pages";
     public static final String PAGEMODE_FULL = "full";
     public static final String PAGEMODE_SHORT = "short";
     private Integer page;
@@ -89,9 +95,6 @@ public abstract class AbstractDataScroller extends UIComponentBase implements Da
      */
     @Attribute
     public abstract String getLastPageMode();
-
-    @Attribute
-    public abstract Object getRender();
 
     /**
      * Maximum quantity of pages. Default value is "10".
@@ -235,8 +238,10 @@ public abstract class AbstractDataScroller extends UIComponentBase implements Da
             newPage = getPage() + 1;
         } else if (FAST_FORWARD_FACET_NAME.equals(facetName)) {
             newPage = getPage() + getFastStepOrDefault();
+            newPage = newPage < pageCount ? newPage : pageCount;
         } else if (FAST_REWIND_FACET_NAME.equals(facetName)) {
             newPage = getPage() - getFastStepOrDefault();
+            newPage = newPage > 0 ? newPage : 1;
         } else {
             try {
                 newPage = Integer.parseInt(facetName.toString());

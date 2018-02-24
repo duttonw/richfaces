@@ -25,18 +25,19 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
+import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.zip.CRC32;
+import java.nio.file.Files;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
+
+
 
 /**
  * Utility class for operations with file-system
@@ -47,9 +48,6 @@ public class FileManipulation {
 
     private static final String JPEG = "jpeg";
     private static final String JPG = "jpg";
-    private static final int BUFFER_SIZE = 4 * 1024;
-    private static final boolean CLOCK = true;
-    private static final boolean VERIFY = true;
 
     /**
      * Utility method for copying file
@@ -61,35 +59,7 @@ public class FileManipulation {
         if (!srcFile.getPath().toLowerCase().endsWith(JPG) && !srcFile.getPath().toLowerCase().endsWith(JPEG)) {
             return;
         }
-        final InputStream in = new FileInputStream(srcFile);
-        final OutputStream out = new FileOutputStream(destFile);
-        try {
-            long millis = System.currentTimeMillis();
-            CRC32 checksum;
-            if (VERIFY) {
-                checksum = new CRC32();
-                checksum.reset();
-            }
-            final byte[] buffer = new byte[BUFFER_SIZE];
-            int bytesRead = in.read(buffer);
-            while (bytesRead >= 0) {
-                if (VERIFY) {
-                    checksum.update(buffer, 0, bytesRead);
-                }
-                out.write(buffer, 0, bytesRead);
-                bytesRead = in.read(buffer);
-            }
-            if (CLOCK) {
-                millis = System.currentTimeMillis() - millis;
-                // comment for now, kinda clogs the output console
-                // System.out.println("Copy file '" + srcFile.getPath() + "' on " + millis / 1000L + " second(s)");
-            }
-        } catch (IOException e) {
-            throw e;
-        } finally {
-            out.close();
-            in.close();
-        }
+        Files.copy(srcFile.toPath(), destFile.toPath());
     }
 
     /**
@@ -203,7 +173,7 @@ public class FileManipulation {
      * 
      */
     public static void imageToBitmap(BufferedImage image, String data, String format) throws IOException {
-        final OutputStream inb = new FileOutputStream(data);
+        final OutputStream inb = new BufferedOutputStream(Files.newOutputStream(new File(data).toPath()));
         final ImageWriter wrt = ImageIO.getImageWritersByFormatName(format).next();
         final ImageInputStream imageInput = ImageIO.createImageOutputStream(inb);
         wrt.setOutput(imageInput);

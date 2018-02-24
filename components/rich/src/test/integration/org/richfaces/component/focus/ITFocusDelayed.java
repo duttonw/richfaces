@@ -12,7 +12,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.arquillian.warp.WarpTest;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,11 +19,12 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
-import org.richfaces.integration.UIDeployment;
+import org.richfaces.integration.RichDeployment;
 import org.richfaces.shrinkwrap.descriptor.FaceletAsset;
+import org.richfaces.utils.focus.ElementIsFocused;
+import org.richfaces.utils.focus.FocusRetriever;
 
 @RunAsClient
-@WarpTest
 @RunWith(Arquillian.class)
 public class ITFocusDelayed {
 
@@ -43,9 +43,9 @@ public class ITFocusDelayed {
     @FindBy(id = "form:input1")
     private WebElement input1;
 
-    @Deployment
+    @Deployment(testable = false)
     public static WebArchive createDeployment() {
-        UIDeployment deployment = new UIDeployment(ITFocusDelayed.class);
+        RichDeployment deployment = new RichDeployment(ITFocusDelayed.class);
 
         addIndexPage(deployment);
 
@@ -86,7 +86,7 @@ public class ITFocusDelayed {
         return FocusRetriever.retrieveActiveElement();
     }
 
-    private static void addIndexPage(UIDeployment deployment) {
+    private static void addIndexPage(RichDeployment deployment) {
         FaceletAsset p = new FaceletAsset();
 
         p.body("<h:form id='form'>");

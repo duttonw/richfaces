@@ -26,9 +26,15 @@ if (!window.RichFaces) {
     };
 
     var createEventHandlerFunction = function(opts) {
+        var newFunction = new Function("event", opts.query);
+        
         return function() {
             var selector = evaluateJQuery(null, opts.selector);
-            selector[opts.attachType || "bind"](opts.event, null, new Function("event", opts.query));
+            if (opts.attachType != "live") {
+                selector[opts.attachType || "bind"](opts.event, null, newFunction);
+            } else { // $.live is deprecated in jQuery 1.9+
+                $(document).on(opts.event, selector.selector, null, newFunction);
+            }
         };
     };
 

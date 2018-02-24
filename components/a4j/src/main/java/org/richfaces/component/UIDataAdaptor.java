@@ -49,6 +49,7 @@ import javax.faces.component.UIViewRoot;
 import javax.faces.component.UniqueIdVendor;
 import javax.faces.component.visit.VisitCallback;
 import javax.faces.component.visit.VisitContext;
+import javax.faces.component.visit.VisitHint;
 import javax.faces.component.visit.VisitResult;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
@@ -71,6 +72,7 @@ import org.ajax4jsf.model.DataVisitResult;
 import org.ajax4jsf.model.DataVisitor;
 import org.ajax4jsf.model.ExtendedDataModel;
 import org.ajax4jsf.model.Range;
+import org.richfaces.JsfVersion;
 import org.richfaces.cdk.annotations.Attribute;
 import org.richfaces.context.ExtendedVisitContext;
 import org.richfaces.log.Logger;
@@ -196,6 +198,11 @@ public abstract class UIDataAdaptor extends UIComponentBase implements NamingCon
 
                     while (dataChildrenItr.hasNext()) {
                         UIComponent dataChild = dataChildrenItr.next();
+
+                        if (!dataChild.getParent().isRendered() && visitContext.getHints().contains(VisitHint.SKIP_UNRENDERED)) {
+                            // skip unrendered columns
+                            continue;
+                        }
 
                         if (dataChild.visitTree(visitContext, callback)) {
                             visitResult = true;
@@ -1037,7 +1044,7 @@ public abstract class UIDataAdaptor extends UIComponentBase implements NamingCon
         }
     }
 
-    private boolean matchesBaseId(String clientId, String baseId, char separatorChar) {
+    protected boolean matchesBaseId(String clientId, String baseId, char separatorChar) {
         if (clientId.equals(baseId)) {
             return true;
         }
@@ -1387,9 +1394,12 @@ public abstract class UIDataAdaptor extends UIComponentBase implements NamingCon
      * @param context
      */
     private boolean requiresRowIteration(VisitContext context) {
-        // The VisitHint.SKIP_ITERATION enum is only available as of JSF 2.1.  Switch to using the enum when we no longer want to support JSF 2.0.
-        // return !context.getHints().contains(VisitHint.SKIP_ITERATION);
-        return ! Boolean.TRUE.equals(context.getFacesContext().getAttributes().get("javax.faces.visit.SKIP_ITERATION"));
+        // The VisitHint.SKIP_ITERATION enum is only available as of JSF 2.1.
+        if (JsfVersion.getCurrent() == JsfVersion.JSF_2_0) {
+            return ! Boolean.TRUE.equals(context.getFacesContext().getAttributes().get("javax.faces.visit.SKIP_ITERATION"));
+        }
+
+        return !context.getHints().contains(VisitHint.SKIP_ITERATION);
     }
 
     /**
@@ -1422,6 +1432,12 @@ public abstract class UIDataAdaptor extends UIComponentBase implements NamingCon
 
                 while (childIterator.hasNext()) {
                     UIComponent component = childIterator.next();
+
+                    UIComponent parent = component.getParent();
+
+                    if (!parent.isRendered()) { // skip if parent column is not rendered
+                        continue;
+                    }
 
                     processComponent(context, component, argument);
                 }

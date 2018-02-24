@@ -37,10 +37,12 @@ import java.util.List;
 import java.util.Map;
 
 import javax.faces.FacesException;
-import javax.faces.application.FacesMessage;
 import javax.faces.application.ResourceDependencies;
 import javax.faces.application.ResourceDependency;
+import javax.faces.component.ContextCallback;
 import javax.faces.component.UIComponent;
+import javax.faces.component.behavior.ClientBehavior;
+import javax.faces.component.behavior.ClientBehaviorHolder;
 import javax.faces.context.FacesContext;
 import javax.faces.context.PartialResponseWriter;
 import javax.faces.context.PartialViewContext;
@@ -57,6 +59,7 @@ import org.richfaces.component.AbstractColumn;
 import org.richfaces.component.AbstractExtendedDataTable;
 import org.richfaces.component.ExtendedDataTableState;
 import org.richfaces.component.SortOrder;
+import org.richfaces.component.UIDataAdaptor;
 import org.richfaces.component.UIDataTableBase;
 import org.richfaces.component.util.HtmlUtil;
 import org.richfaces.context.OnOffResponseWriter;
@@ -75,10 +78,15 @@ import org.richfaces.renderkit.RenderKitUtils.ScriptHashVariableWrapper;
         @ResourceDependency(library = "org.richfaces", name = "richfaces-base-component.js"),
         @ResourceDependency(library = "org.richfaces", name = "jquery.position.js"),
         @ResourceDependency(library = "org.richfaces", name = "richfaces-event.js"),
+        @ResourceDependency(library = "org.richfaces", name = "jquery.mousewheel.js"),
+        @ResourceDependency(library = "org.richfaces", name = "popup.js"),
         @ResourceDependency(library = "org.richfaces", name = "extendedDataTable.js"),
         @ResourceDependency(library = "org.richfaces", name = "extendedDataTable.ecss") })
 public class ExtendedDataTableRenderer extends SelectionRenderer implements MetaComponentRenderer {
     private static final JSReference CLIENT_PARAMS = new JSReference("clientParams");
+    private static final String DATA_ATTRIBUTE = "data-rf-column-name";
+    private static final String BEHAVIOR_EVENT_NAME = "javax.faces.behavior.event";
+    private static final String ROW = "row";
 
     protected static enum PartName {
 
@@ -119,6 +127,7 @@ public class ExtendedDataTableRenderer extends SelectionRenderer implements Meta
         private Part current;
         private Iterator<Part> partIterator;
         private EncoderVariance encoderVariance = EncoderVariance.full;
+        private int frozenColumnsSize;
 
         public RendererState(FacesContext context, UIDataTableBase table) {
             super(context);
@@ -126,12 +135,12 @@ public class ExtendedDataTableRenderer extends SelectionRenderer implements Meta
 
             List<UIComponent> columns = getOrderedColumns(context);
 
-            int frozenColumnsAttribute = (Integer) table.getAttributes().get("frozenColumns");
-            if (frozenColumnsAttribute < 0 || frozenColumnsAttribute >= columns.size()) {
-                frozenColumnsAttribute = 0;
+            frozenColumnsSize = (Integer) table.getAttributes().get("frozenColumns");
+            if (frozenColumnsSize < 0 || frozenColumnsSize >= columns.size()) {
+                frozenColumnsSize = 0;
             }
 
-            int count = Math.min(frozenColumnsAttribute, columns.size());
+            int count = Math.min(frozenColumnsSize, columns.size());
             List<UIComponent> frozenColumns = columns.subList(0, count);
             columns = columns.subList(count, columns.size());
             parts = new ArrayList<Part>(PartName.values().length);
@@ -239,6 +248,23 @@ public class ExtendedDataTableRenderer extends SelectionRenderer implements Meta
             new ComponentAttribute("onbeforeselectionchange").setEventNames(new String[] { "beforeselectionchange" }),
             new ComponentAttribute("onready").setEventNames(new String[] { "ready" })));
 
+    /**
+     * Clear the extendedDataModel before the component encode begins.  This is to force the extendedDataModel to be
+     * re-initialized taking into account any model changes that were applied since the model was created in the
+     * RESTORE_VIEW phase.
+     *
+     * @param context
+     * @param component
+     * @throws IOException
+     */
+    @Override
+    protected void preEncodeBegin(FacesContext context, UIComponent component) throws IOException {
+        super.preEncodeBegin(context, component);
+        if (component instanceof UIDataTableBase) {
+            ((UIDataTableBase) component).clearExtendedDataModel();
+        }
+    }
+
     private void encodeEmptyFooterCell(FacesContext context, ResponseWriter writer, UIComponent column, boolean isLastColumn) throws IOException {
         if (column.isRendered()) {
             writer.startElement(HtmlConstants.TD_ELEM, column);
@@ -257,7 +283,7 @@ public class ExtendedDataTableRenderer extends SelectionRenderer implements Meta
         if (column.isRendered()) {
 
             String classAttribute = facetName + "Class";
-            boolean useBuiltInSort = "header".equals(facetName) && column instanceof AbstractColumn && ((AbstractColumn) column).useBuiltInSort();
+            boolean useBuiltInSort = this.isBuiltInSortRequiredFocColumn(facetName, column);
             writer.startElement(HtmlConstants.TD_ELEM, column);
             if (!isLastColumn) {
                 writer.writeAttribute(HtmlConstants.CLASS_ATTRIBUTE, "rf-edt-td-" + column.getId(), null);
@@ -286,20 +312,8 @@ public class ExtendedDataTableRenderer extends SelectionRenderer implements Meta
                 facet.encodeAll(context);
             }
 
-            if ("header".equals(facetName) && column instanceof AbstractColumn && ((AbstractColumn) column).useBuiltInSort()) {
-                writer.startElement(HtmlConstants.SPAN_ELEM, column);
-                String classAttr = "rf-edt-srt rf-edt-srt-btn ";
-                SortOrder sortOrder = (SortOrder) column.getAttributes().get("sortOrder");
-                if (sortOrder == null || sortOrder == SortOrder.unsorted) {
-                    classAttr = classAttr + "rf-edt-srt-uns";
-                } else if (sortOrder == SortOrder.ascending) {
-                    classAttr = classAttr + "rf-edt-srt-asc";
-                } else if (sortOrder == SortOrder.descending) {
-                    classAttr = classAttr + "rf-edt-srt-des";
-                }
-                writer.writeAttribute(HtmlConstants.CLASS_ATTRIBUTE, classAttr, null);
-                writer.writeAttribute("data-columnid", column.getId(), null);
-                writer.endElement(HtmlConstants.SPAN_ELEM);
+            if (useBuiltInSort) {
+                this.renderSortButton(context, column, "rf-edt");
             }
 
             writer.endElement(HtmlConstants.DIV_ELEM);
@@ -365,7 +379,7 @@ public class ExtendedDataTableRenderer extends SelectionRenderer implements Meta
                     int lastColumnNumber = part.getColumns().size() - 1;
                     while (columns.hasNext()) {
                         UIComponent column = columns.next();
-                        if (!filterRowRequired && "header".equals(facetName) && column instanceof AbstractColumn && ((AbstractColumn) column).useBuiltInFilter()) {
+                        if (!filterRowRequired && this.isFilterRowRequiredForColumn(facetName, column)) {
                             filterRowRequired = true;
                         }
                         if (columnFacetPresent) {
@@ -377,38 +391,8 @@ public class ExtendedDataTableRenderer extends SelectionRenderer implements Meta
                     }
                     writer.endElement(HtmlConstants.TR_ELEMENT);
                     if (filterRowRequired) {  // filter row
-                        writer.startElement(HtmlConstants.TR_ELEMENT, table);
-                        columns = part.getColumns().iterator();
-                        while (columns.hasNext()) {
-                            UIComponent column = columns.next();
-                            if (column.isRendered()) {
-                                writer.startElement(HtmlConstants.TD_ELEM, column);
-                                writer.startElement(HtmlConstants.DIV_ELEM, column);
-                                writer.writeAttribute(HtmlConstants.CLASS_ATTRIBUTE, "rf-edt-flt-c rf-edt-c-" + column.getId(), null);
-                                writer.startElement(HtmlConstants.DIV_ELEM, column);
-                                writer.writeAttribute(HtmlConstants.CLASS_ATTRIBUTE, "rf-edt-flt-cnt", null);
-                                if (column.getAttributes().get("filterField") != null &&  ! "custom".equals(column.getAttributes().get("filterType"))) {
-                                    writer.startElement(HtmlConstants.INPUT_ELEM, column);
-                                    writer.writeAttribute(HtmlConstants.ID_ATTRIBUTE, clientId + ":" + column.getId() + ":flt", null);
-                                    writer.writeAttribute(HtmlConstants.NAME_ATTRIBUTE, clientId + ":" + column.getId() + ":flt", null);
-                                    String inputClass = "rf-edt-flt-i";
-                                    List<FacesMessage> messages = context.getMessageList(column.getClientId());
-                                    if (! messages.isEmpty()) {
-                                        inputClass += " rf-edt-flt-i-err";
-                                        writer.writeAttribute("value", column.getAttributes().get("submittedFilterValue"), null);
-                                    } else {
-                                        writer.writeAttribute("value", column.getAttributes().get("filterValue"), null);
-                                    }
-                                    writer.writeAttribute(HtmlConstants.CLASS_ATTRIBUTE, inputClass, null);
-                                    writer.writeAttribute("data-columnid", column.getId(), null);
-                                    writer.endElement(HtmlConstants.INPUT_ELEM);
-                                }
-                                writer.endElement(HtmlConstants.DIV_ELEM);
-                                writer.endElement(HtmlConstants.DIV_ELEM);
-                                writer.endElement(HtmlConstants.TD_ELEM);
-                            }
-                        }
-                        writer.endElement(HtmlConstants.TR_ELEMENT);
+                        columns = part.getColumns().iterator();  // reset the columns iterator
+                        this.renderFilterRow(context, table, columns, "rf-edt");
                     }
                     writer.endElement(HtmlConstants.TBODY_ELEMENT);
                     writer.endElement(HtmlConstants.TABLE_ELEMENT);
@@ -538,6 +522,7 @@ public class ExtendedDataTableRenderer extends SelectionRenderer implements Meta
                 writer.writeAttribute(HtmlConstants.CLASS_ATTRIBUTE, "rf-edt-tbl", null);
                 writer.startElement(HtmlConstants.TBODY_ELEMENT, table);
                 writer.writeAttribute(HtmlConstants.ID_ATTRIBUTE, clientId + ":tb" + partName.getId(), null);
+                state.resetCurrentRow();
                 encodeRows(context, state);
                 writer.endElement(HtmlConstants.TBODY_ELEMENT);
                 writer.endElement(HtmlConstants.TABLE_ELEMENT);
@@ -783,6 +768,18 @@ public class ExtendedDataTableRenderer extends SelectionRenderer implements Meta
         writer.writeAttribute(HtmlConstants.NAME_ATTRIBUTE, clientId + ":wi", null);
         writer.writeAttribute(HtmlConstants.TYPE_ATTR, HtmlConstants.INPUT_TYPE_HIDDEN, null);
         writer.endElement(HtmlConstants.INPUT_ELEM);
+        writer.startElement(HtmlConstants.INPUT_ELEM, component);
+        writer.writeAttribute(HtmlConstants.ID_ATTRIBUTE, clientId + ":cols", null);
+        writer.writeAttribute(HtmlConstants.NAME_ATTRIBUTE, clientId + ":cols", null);
+        writer.writeAttribute(HtmlConstants.VALUE_ATTRIBUTE, context.getExternalContext().getRequestParameterMap().get(clientId + ":cols"), null);
+        writer.writeAttribute(HtmlConstants.TYPE_ATTR, HtmlConstants.INPUT_TYPE_HIDDEN, null);
+        writer.endElement(HtmlConstants.INPUT_ELEM);
+        writer.startElement(HtmlConstants.INPUT_ELEM, component);
+        writer.writeAttribute(HtmlConstants.ID_ATTRIBUTE, clientId + ":scroll", null);
+        writer.writeAttribute(HtmlConstants.NAME_ATTRIBUTE, clientId + ":scroll", null);
+        writer.writeAttribute(HtmlConstants.VALUE_ATTRIBUTE, context.getExternalContext().getRequestParameterMap().get(clientId + ":scroll"), null);
+        writer.writeAttribute(HtmlConstants.TYPE_ATTR, HtmlConstants.INPUT_TYPE_HIDDEN, null);
+        writer.endElement(HtmlConstants.INPUT_ELEM);
         encodeSelectionInput(writer, context, component);
         AjaxFunction ajaxFunction = buildAjaxFunction(context, component);
         ajaxFunction.getOptions().setClientParameters(CLIENT_PARAMS);
@@ -790,6 +787,7 @@ public class ExtendedDataTableRenderer extends SelectionRenderer implements Meta
         Map<String, Object> attributes = component.getAttributes();
         Map<String, Object> options = new HashMap<String, Object>();
         addToScriptHash(options, "selectionMode", attributes.get("selectionMode"), SelectionMode.multiple);
+        addToScriptHash(options, "showColumnControl", attributes.get("showColumnControl"), false);
         addToScriptHash(options, "onbeforeselectionchange",
             RenderKitUtils.getAttributeAndBehaviorsValue(context, component, EVENT_ATTRIBUTES.get("onbeforeselectionchange")),
             null, ScriptHashVariableWrapper.eventHandler);
@@ -913,12 +911,17 @@ public class ExtendedDataTableRenderer extends SelectionRenderer implements Meta
         writer.writeAttribute(HtmlConstants.ID_ATTRIBUTE, table.getContainerClientId(facesContext) + ":"
             + part.getName().getId(), null);
         columns = part.getColumns().iterator();
-        int columnNumber = 0;
-        int lastColumnNumber = part.getColumns().size() - 1;
+        int frozenColumns = (state.getPart().name == PartName.normal ? state.frozenColumnsSize : 0);
+        int columnNumber = 0 + frozenColumns;
+        int lastColumnNumber = part.getColumns().size() + frozenColumns - 1;
         while (columns.hasNext()) {
             UIComponent column = (UIComponent) columns.next();
             if (column.isRendered()) {
                 writer.startElement(HtmlConstants.TD_ELEM, table);
+                writer.writeAttribute(HtmlConstants.ID_ATTRIBUTE, column.getContainerClientId(facesContext), null);
+                if (column instanceof AbstractColumn) {
+                    writer.writeAttribute(DATA_ATTRIBUTE, ((AbstractColumn) column).getName(), null);
+                }
                 String columnClass = "";
                 if (columnNumber != lastColumnNumber) {
                     columnClass = "rf-edt-td-" + column.getId();
@@ -952,7 +955,7 @@ public class ExtendedDataTableRenderer extends SelectionRenderer implements Meta
     }
 
     @Override
-    protected void doDecode(FacesContext context, UIComponent component) {
+    protected void doDecode(FacesContext context, final UIComponent component) {
         super.doDecode(context, component);
         Map<String, String> map = context.getExternalContext().getRequestParameterMap();
         String clientId = component.getClientId(context);
@@ -968,6 +971,41 @@ public class ExtendedDataTableRenderer extends SelectionRenderer implements Meta
         if (component.getAttributes().get("tableState") != null) {
             ExtendedDataTableState tableState = new ExtendedDataTableState((UIDataTableBase) component);
             updateAttribute(context, component, "tableState", tableState.toString());
+        }
+
+        if (component instanceof ClientBehaviorHolder) {
+            final Map<String, List<ClientBehavior>> behaviors = ((ClientBehaviorHolder) component).getClientBehaviors();
+
+            if (behaviors == null || behaviors.isEmpty()) {
+                return;
+            }
+
+            Map<String, String> parametersMap = context.getExternalContext().getRequestParameterMap();
+            final String behaviorEvent = parametersMap.get(BEHAVIOR_EVENT_NAME);
+
+            if (behaviorEvent == null || !behaviorEvent.startsWith(ROW)) {
+                return;
+            }
+
+            String behaviorSourceId = RenderKitUtils.getBehaviorSourceId(context);
+            if (behaviorSourceId.endsWith(":n")) {
+                behaviorSourceId = behaviorSourceId.substring(0, behaviorSourceId.length() - 2);
+            } else {
+                return;
+            }
+
+            ((UIDataAdaptor) component).invokeOnRow(context, behaviorSourceId, new ContextCallback() {
+                public void invokeContextCallback(FacesContext context, UIComponent target) {
+                    if (target.equals(component)) {
+                        List<ClientBehavior> behaviorsForEvent = behaviors.get(behaviorEvent);
+                        if (behaviorsForEvent != null && !behaviorsForEvent.isEmpty()) {
+                            for (ClientBehavior behavior : behaviorsForEvent) {
+                                behavior.decode(context, component);
+                            }
+                        }
+                    }
+                }
+            });
         }
     }
 

@@ -26,6 +26,7 @@ import java.util.List;
 import org.jboss.arquillian.graphene.findby.FindByJQuery;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+import org.richfaces.fragment.common.Event;
 import org.richfaces.fragment.contextMenu.AbstractPopupMenu;
 import org.richfaces.fragment.contextMenu.PopupMenu;
 
@@ -53,29 +54,48 @@ public class RichFacesDropDownMenu extends AbstractPopupMenu implements PopupMen
         return advancedInteractions;
     }
 
-    @Override
-    protected WebElement getMenuPopupInternal() {
-        return dropDownMenuPopup;
-    }
-
-    @Override
-    protected List<WebElement> getMenuItemElementsInternal() {
-        return menuItemsElements;
-    }
-
-    @Override
-    protected WebElement getScriptElement() {
-        return script;
-    }
-
     public class AdvancedDropDownMenuInteractions extends AbstractPopupMenu.AdvancedPopupMenuInteractions {
 
+        @Override
+        public WebElement getMenuPopup() {
+            return dropDownMenuPopup;
+        }
+
+        @Override
+        public List<WebElement> getMenuItemElements() {
+            return menuItemsElements;
+        }
+
+        @Override
+        protected WebElement getScriptElement() {
+            return script;
+        }
+
+        private final Event DEFAULT_INVOKE_EVENT = Event.MOUSEOVER;
+        private Event invokeEvent = DEFAULT_INVOKE_EVENT;
+
         public String getLangAttribute() {
-            return topLvlElement.getAttribute("lang");
+            return getTopLevelElement().getAttribute("lang");
         }
 
         public WebElement getTopLevelElement() {
             return topLvlElement;
         }
+
+        @Override
+        protected Event getDefaultShowEvent() {
+            return DEFAULT_INVOKE_EVENT;
+        }
+
+        @Override
+        public void setShowEvent(Event showEvent) {
+            this.invokeEvent = showEvent;
+        }
+
+        @Override
+        protected Event getShowEvent() {
+            return invokeEvent;
+        }
+
     }
 }

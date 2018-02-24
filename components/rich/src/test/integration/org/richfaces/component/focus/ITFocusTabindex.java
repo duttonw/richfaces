@@ -8,18 +8,17 @@ import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.arquillian.warp.WarpTest;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
-import org.richfaces.integration.UIDeployment;
+import org.richfaces.integration.RichDeployment;
 import org.richfaces.shrinkwrap.descriptor.FaceletAsset;
+import org.richfaces.utils.focus.ElementIsFocused;
 
 @RunAsClient
-@WarpTest
 @RunWith(Arquillian.class)
 public class ITFocusTabindex {
 
@@ -32,9 +31,9 @@ public class ITFocusTabindex {
     @FindBy(id = "form:input1")
     private WebElement input1;
 
-    @Deployment
+    @Deployment(testable = false)
     public static WebArchive createDeployment() {
-        UIDeployment deployment = new UIDeployment(ITFocusTabindex.class);
+        RichDeployment deployment = new RichDeployment(ITFocusTabindex.class);
 
         addIndexPage(deployment);
         addNoTabindexPage(deployment);
@@ -54,11 +53,7 @@ public class ITFocusTabindex {
         Graphene.waitGui().until(new ElementIsFocused(input1));
     }
 
-    private WebElement getFocusedElement() {
-        return FocusRetriever.retrieveActiveElement();
-    }
-
-    private static void addIndexPage(UIDeployment deployment) {
+    private static void addIndexPage(RichDeployment deployment) {
         FaceletAsset p = new FaceletAsset();
 
         p.body("<h:form id='form'>");
@@ -72,7 +67,7 @@ public class ITFocusTabindex {
         deployment.archive().addAsWebResource(p, "index.xhtml");
     }
 
-    private static void addNoTabindexPage(UIDeployment deployment) {
+    private static void addNoTabindexPage(RichDeployment deployment) {
         FaceletAsset p = new FaceletAsset();
 
         p.body("<h:form id='form'>");

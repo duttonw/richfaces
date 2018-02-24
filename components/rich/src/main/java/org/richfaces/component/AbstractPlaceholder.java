@@ -25,16 +25,21 @@ import javax.el.ValueExpression;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIOutput;
 import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
 import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.event.ListenerFor;
 import javax.faces.event.PostAddToViewEvent;
+
+import com.google.common.base.Strings;
 
 import org.richfaces.cdk.annotations.Attribute;
 import org.richfaces.cdk.annotations.JsfComponent;
 import org.richfaces.cdk.annotations.JsfRenderer;
 import org.richfaces.cdk.annotations.Tag;
 import org.richfaces.cdk.annotations.TagType;
+import org.richfaces.component.attribute.CoreProps;
+import org.richfaces.component.attribute.StyleClassProps;
 import org.richfaces.component.event.PreRenderParentListener;
 import org.richfaces.renderkit.PlaceholderRendererBase;
 
@@ -45,7 +50,7 @@ import org.richfaces.renderkit.PlaceholderRendererBase;
  */
 @JsfComponent(tag = @Tag(name = "placeholder", type = TagType.Facelets), renderer = @JsfRenderer(family = AbstractPlaceholder.COMPONENT_FAMILY, type = PlaceholderRendererBase.RENDERER_TYPE), attributes = { "javax.faces.component.ValueHolder.xml" })
 @ListenerFor(systemEventClass = PostAddToViewEvent.class)
-public abstract class AbstractPlaceholder extends UIOutput {
+public abstract class AbstractPlaceholder extends UIOutput implements StyleClassProps {
     // ------------------------------ FIELDS ------------------------------
 
     public static final String COMPONENT_FAMILY = "org.richfaces.Placeholder";
@@ -55,18 +60,14 @@ public abstract class AbstractPlaceholder extends UIOutput {
     @Attribute(required = true)
     public abstract Object getValue();
 
+    @Attribute(hidden = true)
+    public abstract Converter getConverter();
+
     /**
      * The jQuery selector used to filter which child DOM elements will be a placeholder attached to.
      */
     @Attribute
     public abstract String getSelector();
-
-    /**
-     * Space-separated list of CSS style class(es) which will be applied to the target input component when placeholder is
-     * active.
-     */
-    @Attribute
-    public abstract String getStyleClass();
 
     /**
      * Registers component for processing before its parent component when it has empty selector - this logic is used as
@@ -108,6 +109,10 @@ public abstract class AbstractPlaceholder extends UIOutput {
             UIComponent parent = component.getParent();
             PlaceholderRendererBase renderer = (PlaceholderRendererBase) placeholder.getRenderer(facesContext);
 
+            String placeHolderStyleClass = (String) component.getAttributes().get("styleClass");
+            if (! Strings.isNullOrEmpty(placeHolderStyleClass)) {
+                    parent.getAttributes().put("placeHolderStyleClass", placeHolderStyleClass);
+            }
             if (parent instanceof InplaceComponent) {
                 if (placeholder.isRendered() && placeholder.getValue() != null) {
                     // backup defaultLabel attribute

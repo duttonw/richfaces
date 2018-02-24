@@ -21,6 +21,7 @@
  */
 package org.richfaces.component;
 
+import javax.el.ELContext;
 import javax.el.ValueExpression;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
@@ -42,19 +43,24 @@ import org.richfaces.event.ItemChangeEvent;
 import org.richfaces.event.PanelToggleEvent;
 
 /**
- * <p>The &lt;rich:panelMenuGroup&gt; component defines a group of &lt;rich:panelMenuItem&gt; components inside a
- * &lt;rich:panelMenu&gt;.</p>
+ * <p>
+ * The &lt;rich:panelMenuGroup&gt; component defines a group of &lt;rich:panelMenuItem&gt; components inside a
+ * &lt;rich:panelMenu&gt;.
+ * </p>
  *
  * @author akolonitsky
  */
 @JsfComponent(tag = @Tag(type = TagType.Facelets))
-public abstract class AbstractPanelMenuGroup extends AbstractPanelMenuItem implements AjaxProps, BypassProps, EventsMouseProps, StyleProps, StyleClassProps {
+public abstract class AbstractPanelMenuGroup extends AbstractPanelMenuItem implements AjaxProps, BypassProps, EventsMouseProps,
+    StyleProps, StyleClassProps {
     public static final String COMPONENT_TYPE = "org.richfaces.PanelMenuGroup";
     public static final String COMPONENT_FAMILY = "org.richfaces.PanelMenuGroup";
     private Boolean submittedExpanded;
+    private boolean valueChanged;
 
     private enum PropertyKeys {
-        selectable, immediate
+        selectable,
+        immediate
     }
 
     protected AbstractPanelMenuGroup() {
@@ -74,6 +80,14 @@ public abstract class AbstractPanelMenuGroup extends AbstractPanelMenuItem imple
         executeValidate(context);
     }
 
+    private boolean isValueChanged() {
+        return valueChanged;
+    }
+
+    private void setValueChanged(boolean valueChanged) {
+        this.valueChanged = valueChanged;
+    }
+
     public void validate(FacesContext context) {
         if (context == null) {
             throw new NullPointerException();
@@ -82,14 +96,16 @@ public abstract class AbstractPanelMenuGroup extends AbstractPanelMenuItem imple
         // Submitted value == null means "the component was not submitted at all".
         Boolean expanded = getSubmittedExpanded();
         if (expanded == null) {
+            setValueChanged(false);
             return;
         }
 
         Boolean previous = (Boolean) getValue();
         setExpanded(expanded);
         setSubmittedExpanded(null);
+        setValueChanged(!expanded.equals(previous));
 
-        if (previous != null && !previous.equals(expanded)) {
+        if (previous != null && isValueChanged()) {
             if (expanded && getMode() == PanelMenuMode.server && getPanelMenu().isExpandSingle()) {
                 collapseOtherTopGroups();
             }
@@ -194,7 +210,7 @@ public abstract class AbstractPanelMenuGroup extends AbstractPanelMenuItem imple
     // ------------------------------------------------ Component Attributes
 
     /**
-     * Defines whenever the group is selectable.
+     * Defines whenever the group is selectable. Default: false.
      */
     @Attribute(defaultValue = "Boolean.FALSE")
     public abstract Boolean getSelectable();
@@ -220,7 +236,14 @@ public abstract class AbstractPanelMenuGroup extends AbstractPanelMenuItem imple
     // ------------------------------------------------ Html Attributes
 
     enum Properties {
-        leftDisabledIcon, leftExpandedIcon, rightCollapsedIcon, rightDisabledIcon, rightExpandedIcon, disabledClass, styleClass, leftCollapsedIcon
+        leftDisabledIcon,
+        leftExpandedIcon,
+        rightCollapsedIcon,
+        rightDisabledIcon,
+        rightExpandedIcon,
+        disabledClass,
+        styleClass,
+        leftCollapsedIcon
     }
 
     /**
@@ -229,7 +252,7 @@ public abstract class AbstractPanelMenuGroup extends AbstractPanelMenuItem imple
     @Attribute(generate = false)
     public String getLeftCollapsedIcon() {
         return (String) getStateHelper().eval(Properties.leftCollapsedIcon,
-                isTopItem() ? getPanelMenu().getTopGroupCollapsedLeftIcon() : getPanelMenu().getGroupCollapsedLeftIcon());
+            isTopItem() ? getPanelMenu().getTopGroupCollapsedLeftIcon() : getPanelMenu().getGroupCollapsedLeftIcon());
     }
 
     public void setLeftCollapsedIcon(String leftCollapsedIcon) {
@@ -242,7 +265,7 @@ public abstract class AbstractPanelMenuGroup extends AbstractPanelMenuItem imple
     @Attribute(generate = false)
     public String getLeftDisabledIcon() {
         return (String) getStateHelper().eval(Properties.leftDisabledIcon,
-                isTopItem() ? getPanelMenu().getTopGroupDisabledLeftIcon() : getPanelMenu().getGroupDisabledLeftIcon());
+            isTopItem() ? getPanelMenu().getTopGroupDisabledLeftIcon() : getPanelMenu().getGroupDisabledLeftIcon());
     }
 
     public void setLeftDisabledIcon(String leftDisabledIcon) {
@@ -255,7 +278,7 @@ public abstract class AbstractPanelMenuGroup extends AbstractPanelMenuItem imple
     @Attribute(generate = false)
     public String getLeftExpandedIcon() {
         return (String) getStateHelper().eval(Properties.leftExpandedIcon,
-                isTopItem() ? getPanelMenu().getTopGroupExpandedLeftIcon() : getPanelMenu().getGroupExpandedLeftIcon());
+            isTopItem() ? getPanelMenu().getTopGroupExpandedLeftIcon() : getPanelMenu().getGroupExpandedLeftIcon());
     }
 
     public void setLeftExpandedIcon(String leftExpandedIcon) {
@@ -268,7 +291,7 @@ public abstract class AbstractPanelMenuGroup extends AbstractPanelMenuItem imple
     @Attribute(generate = false)
     public String getRightCollapsedIcon() {
         return (String) getStateHelper().eval(Properties.rightCollapsedIcon,
-                isTopItem() ? getPanelMenu().getTopGroupCollapsedRightIcon() : getPanelMenu().getGroupCollapsedRightIcon());
+            isTopItem() ? getPanelMenu().getTopGroupCollapsedRightIcon() : getPanelMenu().getGroupCollapsedRightIcon());
     }
 
     public void setRightCollapsedIcon(String rightCollapsedIcon) {
@@ -281,7 +304,7 @@ public abstract class AbstractPanelMenuGroup extends AbstractPanelMenuItem imple
     @Attribute(generate = false)
     public String getRightDisabledIcon() {
         return (String) getStateHelper().eval(Properties.rightDisabledIcon,
-                isTopItem() ? getPanelMenu().getTopGroupDisabledRightIcon() : getPanelMenu().getGroupDisabledRightIcon());
+            isTopItem() ? getPanelMenu().getTopGroupDisabledRightIcon() : getPanelMenu().getGroupDisabledRightIcon());
     }
 
     public void setRightDisabledIcon(String rightDisabledIcon) {
@@ -294,7 +317,7 @@ public abstract class AbstractPanelMenuGroup extends AbstractPanelMenuItem imple
     @Attribute(generate = false)
     public String getRightExpandedIcon() {
         return (String) getStateHelper().eval(Properties.rightExpandedIcon,
-                isTopItem() ? getPanelMenu().getTopGroupExpandedRightIcon() : getPanelMenu().getGroupExpandedRightIcon());
+            isTopItem() ? getPanelMenu().getTopGroupExpandedRightIcon() : getPanelMenu().getGroupExpandedRightIcon());
     }
 
     public void setRightExpandedIcon(String rightExpandedIcon) {
@@ -343,18 +366,12 @@ public abstract class AbstractPanelMenuGroup extends AbstractPanelMenuItem imple
     @Attribute(generate = false)
     public String getDisabledClass() {
         return (String) getStateHelper().eval(Properties.disabledClass,
-                isTopItem() ? getPanelMenu().getTopGroupDisabledClass() : getPanelMenu().getGroupDisabledClass());
+            isTopItem() ? getPanelMenu().getTopGroupDisabledClass() : getPanelMenu().getGroupDisabledClass());
     }
 
     public void setDisabledClass(String disabledClass) {
         getStateHelper().put(Properties.disabledClass, disabledClass);
     }
-
-    /**
-     * Space-separated list of CSS style class(es) to be applied to the panel menu group when it is hovered.
-     */
-    @Attribute
-    public abstract String getHoverClass();
 
     /**
      * Space-separated list of CSS style class(es) to be applied to the left icon of the panel menu group.
@@ -377,45 +394,12 @@ public abstract class AbstractPanelMenuGroup extends AbstractPanelMenuItem imple
     @Attribute(generate = false)
     public String getStyleClass() {
         return (String) getStateHelper().eval(Properties.styleClass,
-                isTopItem() ? getPanelMenu().getTopGroupClass() : getPanelMenu().getGroupClass());
+            isTopItem() ? getPanelMenu().getTopGroupClass() : getPanelMenu().getGroupClass());
     }
 
     public void setStyleClass(String styleClass) {
         getStateHelper().put(Properties.styleClass, styleClass);
     }
-
-    @Attribute(events = @EventName("beforedomupdate"))
-    public abstract String getOnbeforedomupdate();
-
-    @Attribute(events = @EventName("complete"))
-    public abstract String getOncomplete();
-
-    @Attribute(events = @EventName("click"))
-    public abstract String getOnclick();
-
-    @Attribute(events = @EventName("dblclick"))
-    public abstract String getOndblclick();
-
-    @Attribute(events = @EventName("mousedown"))
-    public abstract String getOnmousedown();
-
-    @Attribute(events = @EventName("mousemove"))
-    public abstract String getOnmousemove();
-
-    @Attribute(events = @EventName("mouseout"))
-    public abstract String getOnmouseout();
-
-    @Attribute(events = @EventName("mouseover"))
-    public abstract String getOnmouseover();
-
-    @Attribute(events = @EventName("mouseup"))
-    public abstract String getOnmouseup();
-
-    /**
-     * The client-side script method to be called after the menu group is unselected
-     */
-    @Attribute(events = @EventName("unselect"))
-    public abstract String getOnunselect();
 
     /**
      * The client-side script method to be called after the menu group is selected
@@ -469,5 +453,17 @@ public abstract class AbstractPanelMenuGroup extends AbstractPanelMenuItem imple
     public boolean getState() {
         Boolean flag = this.isExpanded();
         return (flag == null ? this.hasActiveItem(this, this.getPanelMenu().getActiveItem()) : flag);
+    }
+
+    @Override
+    public void processUpdates(FacesContext context) {
+        if (isValueChanged()) {
+            ValueExpression ve = getValueExpression("value");
+            ELContext elc = FacesContext.getCurrentInstance().getELContext();
+            if (ve != null && !ve.isReadOnly(elc)) {
+                ve.setValue(elc, isExpanded());
+            }
+        }
+        super.processUpdates(context);
     }
 }

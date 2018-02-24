@@ -27,15 +27,16 @@ import java.util.List;
 import org.jboss.arquillian.graphene.findby.FindByJQuery;
 import org.jboss.arquillian.graphene.fragment.Root;
 import org.openqa.selenium.WebElement;
-import org.richfaces.fragment.common.AdvancedInteractions;
+import org.richfaces.fragment.common.AdvancedVisibleComponentIteractions;
 import org.richfaces.fragment.common.Event;
 import org.richfaces.fragment.common.Utils;
+import org.richfaces.fragment.common.VisibleComponentInteractions;
 import org.richfaces.fragment.common.picker.ChoicePicker;
 import org.richfaces.fragment.common.picker.ChoicePickerHelper;
 
 import com.google.common.collect.Lists;
 
-public class RichFacesTree implements Tree, AdvancedInteractions<RichFacesTree.AdvancedTreeInteractionsImpl> {
+public class RichFacesTree implements Tree, AdvancedVisibleComponentIteractions<RichFacesTree.AdvancedTreeInteractionsImpl> {
 
     @Root
     private WebElement root;
@@ -59,7 +60,7 @@ public class RichFacesTree implements Tree, AdvancedInteractions<RichFacesTree.A
 
     @Override
     public TreeNode collapseNode(ChoicePicker picker) {
-        return getChildNodes().get(getIndexOfPickedElement(picker)).advanced().collapse();
+        return advanced().getChildNodes().get(getIndexOfPickedElement(picker)).advanced().collapse();
     }
 
     @Override
@@ -69,22 +70,14 @@ public class RichFacesTree implements Tree, AdvancedInteractions<RichFacesTree.A
 
     @Override
     public TreeNode expandNode(ChoicePicker picker) {
-        return getChildNodes().get(getIndexOfPickedElement(picker)).advanced().expand();
-    }
-
-    protected List<? extends TreeNode> getChildNodes() {
-        return Collections.unmodifiableList(childNodes);
-    }
-
-    protected List<WebElement> getChildNodesElements() {
-        return Collections.unmodifiableList(childNodesElements);
+        return advanced().getChildNodes().get(getIndexOfPickedElement(picker)).advanced().expand();
     }
 
     protected int getIndexOfPickedElement(ChoicePicker picker) {
-        if (getChildNodesElements().isEmpty()) {
+        if (advanced().getChildNodesElements().isEmpty()) {
             throw new RuntimeException("Cannot find child node, because there are no child nodes.");
         }
-        return Utils.getIndexOfElement(picker.pick(getChildNodesElements()));
+        return Utils.getIndexOfElement(picker.pick(advanced().getChildNodesElements()));
     }
 
     @Override
@@ -94,10 +87,10 @@ public class RichFacesTree implements Tree, AdvancedInteractions<RichFacesTree.A
 
     @Override
     public TreeNode selectNode(ChoicePicker picker) {
-        return getChildNodes().get(getIndexOfPickedElement(picker)).advanced().select();
+        return advanced().getChildNodes().get(getIndexOfPickedElement(picker)).advanced().select();
     }
 
-    public class AdvancedTreeInteractionsImpl implements Tree.AdvancedTreeInteractions {
+    public class AdvancedTreeInteractionsImpl implements Tree.AdvancedTreeInteractions, VisibleComponentInteractions {
 
         private final Event DEFAULT_TOGGLE_NODE_EVENT = Event.CLICK;
         private final boolean DEFAULT_TOGGLE_BY_HANDLE = Boolean.TRUE;
@@ -107,6 +100,14 @@ public class RichFacesTree implements Tree, AdvancedInteractions<RichFacesTree.A
         @Override
         public TreeNode getFirstNode() {
             return getNodes().get(0);
+        }
+
+        protected List<? extends TreeNode> getChildNodes() {
+            return Collections.unmodifiableList(childNodes);
+        }
+
+        protected List<WebElement> getChildNodesElements() {
+            return Collections.unmodifiableList(childNodesElements);
         }
 
         @Override
@@ -177,22 +178,27 @@ public class RichFacesTree implements Tree, AdvancedInteractions<RichFacesTree.A
         }
 
         @Override
-        public void setupToggleByHandle() {
+        public boolean isVisible() {
+            return Utils.isVisible(getRootElement());
+        }
+
+        @Override
+        public void setToggleByHandle() {
             this.toggleByHandle = DEFAULT_TOGGLE_BY_HANDLE;
         }
 
         @Override
-        public void setupToggleByHandle(boolean toggleByHandle) {
+        public void setToggleByHandle(boolean toggleByHandle) {
             this.toggleByHandle = toggleByHandle;
         }
 
         @Override
-        public void setupToggleNodeEvent() {
+        public void setToggleNodeEvent() {
             this.toggleNodeEvent = DEFAULT_TOGGLE_NODE_EVENT;
         }
 
         @Override
-        public void setupToggleNodeEvent(Event toggleNodeEvent) {
+        public void setToggleNodeEvent(Event toggleNodeEvent) {
             this.toggleNodeEvent = toggleNodeEvent;
         }
     }

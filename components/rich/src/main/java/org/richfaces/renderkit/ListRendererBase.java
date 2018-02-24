@@ -31,7 +31,6 @@ import javax.faces.application.ResourceDependency;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
-import javax.faces.render.Renderer;
 
 import org.ajax4jsf.model.DataVisitResult;
 import org.ajax4jsf.model.DataVisitor;
@@ -47,7 +46,7 @@ import org.richfaces.renderkit.util.RendererUtils;
  *
  */
 @ResourceDependency(library = "org.richfaces", name = "list.ecss")
-public abstract class ListRendererBase extends Renderer {
+public abstract class ListRendererBase extends RendererBase {
     private static final Map<String, ComponentAttribute> ROW_HANDLER_ATTRIBUTES = Collections
         .unmodifiableMap(ComponentAttribute.createMap(
             new ComponentAttribute(HtmlConstants.ONCLICK_ATTRIBUTE).setEventNames("rowclick").setComponentAttributeName(
@@ -238,6 +237,10 @@ public abstract class ListRendererBase extends Renderer {
         return null;
     }
 
+    protected Integer getFirst(UIComponent component) {
+        return ((AbstractList) component).getFirst() + 1;
+    }
+
     protected void encodeListItems(FacesContext context, UIComponent component, ListType listType) throws IOException {
         AbstractList list = (AbstractList) component;
         try {
@@ -259,12 +262,12 @@ public abstract class ListRendererBase extends Renderer {
     }
 
     @Override
-    public void encodeBegin(FacesContext context, UIComponent component) throws IOException {
+    public void doEncodeBegin(ResponseWriter writer, FacesContext context, UIComponent component) throws IOException {
         // do nothing
     }
 
     @Override
-    public void encodeChildren(FacesContext context, UIComponent component) throws IOException {
+    public void doEncodeChildren(ResponseWriter writer, FacesContext context, UIComponent component) throws IOException {
         // do nothing
     }
 }

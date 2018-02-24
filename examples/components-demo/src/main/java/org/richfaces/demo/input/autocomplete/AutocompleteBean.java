@@ -1,7 +1,6 @@
 package org.richfaces.demo.input.autocomplete;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -12,54 +11,36 @@ import javax.faces.context.FacesContext;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
+import org.richfaces.demo.model.person.Person;
 
 @ManagedBean
 @RequestScoped
 public class AutocompleteBean implements Serializable {
 
-    private List<Person> people = Arrays.asList(new Person("John", 26), new Person("David", 32), new Person("Humpfrey", 68),
-            new Person("Lisa", 27));
+    private Person person;
 
-    public List<Person> getSuggestions() {
-        return people;
+    public Person getPerson() {
+        return person;
+    }
+
+    public void setPerson(Person person) {
+        this.person = person;
+    }
+
+    public List<Person> getPeople() {
+        return Person.people;
     }
 
     public Collection<Person> suggest(FacesContext facesContext, UIComponent component, final String prefix) {
-        return Collections2.filter(people, new Predicate<Person>() {
+        return Collections2.filter(Person.people, new Predicate<Person>() {
             @Override
             public boolean apply(Person input) {
                 if (prefix == null) {
                     return true;
                 }
-                return input.name.toLowerCase().startsWith(prefix);
+                return input.getName().toLowerCase().startsWith(prefix.toLowerCase());
             }
         });
     }
 
-    public static class Person {
-
-        private static volatile int SEQUENCE = 0;
-
-        private final int id = SEQUENCE++;
-        private String name;
-        private int age;
-
-        public Person(String name, int age) {
-            this.name = name;
-            this.age = age;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public int getAge() {
-            return age;
-        }
-
-        @Override
-        public String toString() {
-            return "Person [name=" + name + ", age=" + age + "]";
-        }
-    }
 }

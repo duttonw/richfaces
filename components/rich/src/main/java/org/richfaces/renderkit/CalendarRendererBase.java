@@ -65,10 +65,12 @@ import org.richfaces.utils.CalendarHelper;
         @ResourceDependency(library = "org.richfaces", name = "jquery.js"),
         @ResourceDependency(library = "org.richfaces", name = "richfaces.js"),
         @ResourceDependency(library = "org.richfaces", name = "richfaces-queue.reslib"),
-        @ResourceDependency(library = "org.richfaces", name = "richfaces-base-component.js"), @ResourceDependency(library = "org.richfaces", name = "jquery.position.js"),
-        @ResourceDependency(library = "org.richfaces", name = "richfaces-event.js"), @ResourceDependency(library = "org.richfaces", name = "json-dom.js"),
-        @ResourceDependency(library = "org.richfaces", name = "jquery.effects.core.js"),
-        @ResourceDependency(library = "org.richfaces", name = "jquery.effects.highlight.js"),
+        @ResourceDependency(library = "org.richfaces", name = "richfaces-base-component.js"),
+        @ResourceDependency(library = "org.richfaces", name = "jquery.position.js"),
+        @ResourceDependency(library = "org.richfaces", name = "richfaces-event.js"),
+        @ResourceDependency(library = "org.richfaces", name = "json-dom.js"),
+        @ResourceDependency(library = "com.jqueryui", name = "effect.js"),
+        @ResourceDependency(library = "com.jqueryui", name = "effect-highlight.js"),
         @ResourceDependency(library = "org.richfaces", name = "JQuerySpinBtn.js"),
         @ResourceDependency(library = "org.richfaces", name = "calendar-utils.js"),
         @ResourceDependency(library = "org.richfaces", name = "calendar.js"),
@@ -80,7 +82,6 @@ public class CalendarRendererBase extends InputRendererBase implements MetaCompo
     public static final String MONTH_LABELS_SHORT = "monthLabelsShort";
     public static final String MONTH_LABELS = "monthLabels";
     public static final String WEEK_DAY_LABELS_SHORT = "weekDayLabelsShort";
-    public static final String WEEK_DAY_LABELS = "weekDayLabels";
     public static final String FIRST_DAY_WEEK = "firstWeekDay";
     public static final String MIN_DAYS_IN_FIRST_WEEK = "minDaysInFirstWeek";
     public static final String CALENDAR_ICON_RESOURCE_NAME = "calendarIcon.png";
@@ -415,13 +416,6 @@ public class CalendarRendererBase extends InputRendererBase implements MetaCompo
 
         int monthMax = calendar.getActualMaximum(Calendar.MONTH);
         int monthMin = calendar.getActualMinimum(Calendar.MONTH);
-
-        String[] weekDayLabels = RenderKitUtils.asArray(calendarComponent.getWeekDayLabels());
-        if (isEmptyArray(weekDayLabels)) {
-            weekDayLabels = dateFormat.getWeekdays();
-            weekDayLabels = shiftDates(minimum, maximum, weekDayLabels);
-        }
-        RenderKitUtils.addToScriptHash(map, WEEK_DAY_LABELS, weekDayLabels);
 
         String[] weekDayLabelsShort = RenderKitUtils.asArray(calendarComponent.getWeekDayLabelsShort());
         if (isEmptyArray(weekDayLabelsShort)) {

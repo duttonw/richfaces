@@ -67,34 +67,38 @@ public class RichFacesCollapsibleSubTableToggler {
     }
 
     public boolean isExpanded() {
-        return elementWithStyleClass.getAttribute("class").equals("rf-csttg-exp");
+        return getElementWithStyleClass().getAttribute("class").equals("rf-csttg-exp");
     }
 
     public boolean isVisible() {
-        return Utils.isVisible(elementWithStyleClass);
+        return Utils.isVisible(getElementWithStyleClass());
     }
 
-    public void setupToggleBy() {
+    public void setToggleBy() {
         isToggleByImage = DEFAULT_TOGGLE_BY;
     }
 
-    public void setupToggleByImage() {
+    public void setToggleByImage() {
         isToggleByImage = true;
     }
 
-    public void setupToggleByLabel() {
+    public void setToggleByLabel() {
         isToggleByImage = false;
     }
 
-    public void setupToggleEvent() {
+    public void setToggleEvent() {
         toggleEvent = DEFAULT_EVENT;
     }
 
-    public void setupToggleEvent(Event e) {
+    public void setToggleEvent(Event e) {
         toggleEvent = e;
     }
 
     public void toggle() {
-        new Actions(browser).triggerEventByJS(toggleEvent, isToggleByImage ? image : label).perform();
+        new Actions(browser).triggerEventByJS(toggleEvent, isToggleByImage ? getVisibleImage() : getVisibleLabel()).perform();
+    }
+
+    protected WebElement getElementWithStyleClass() {
+        return elementWithStyleClass;
     }
 }

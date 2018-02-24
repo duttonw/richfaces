@@ -48,7 +48,6 @@ import com.google.common.collect.Sets;
  * @author Nick Belaevski
  */
 public class PushFilter implements Filter {
-    private static final long serialVersionUID = 7616370505508715222L;
     private static final Logger LOGGER = RichfacesLogger.WEBAPP.getLogger();
 
     private PushServlet pushServlet;

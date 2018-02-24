@@ -122,7 +122,7 @@ import com.google.common.collect.Maps;
  *
  * <p>While extended {@link VisitContext} implementations ({@link ExtendedRenderVisitContext} and {@link ExtendedExecuteVisitContext}) allows to visit subtrees that are not normally visited (meta-components and implicitly renderer areas, aka {@link AjaxOutput}s),</p>
  *
- * <p>extended implementations of {@link VisitCallback} ({@link MetaComponentProcessingVisitCallback and {@link MetaComponentEncodingVisitCallback}) do the extended processing and rendering logic for meta-components.</p>
+ * <p>extended implementations of {@link VisitCallback} ({@link MetaComponentProcessingVisitCallback} and {@link MetaComponentEncodingVisitCallback}) do the extended processing and rendering logic for meta-components.</p>
  *
  * <p>{@link UIViewRoot} is a place where the tree processing starts to dive into subtrees, it is called by JSF implementation of {@link PartialViewContext#processPartial(PhaseId)}.</p>
  *
@@ -149,6 +149,7 @@ public class ExtendedPartialViewContext extends PartialViewContextWrapper {
     private PartialViewContext wrappedViewContext;
     private PartialResponseWriter partialResponseWriter;
     private boolean released = false;
+    private boolean isActivatorVisitedAtRender = false;
 
     // request data
     private ContextMode contextMode = null;
@@ -204,6 +205,14 @@ public class ExtendedPartialViewContext extends PartialViewContextWrapper {
     @Override
     public PartialViewContext getWrapped() {
         return wrappedViewContext;
+    }
+
+    /**
+     * This method is present in the JSF 2.2 PartialViewContextWrapper, but not in the JSF 2.1.  Implementing it here so we are still compatible with JSF 2.1.
+     */
+    @Override
+    public void setPartialRequest(boolean isPartialRequest) {
+        getWrapped().setPartialRequest(isPartialRequest);
     }
 
     /**
@@ -291,8 +300,11 @@ public class ExtendedPartialViewContext extends PartialViewContextWrapper {
     public Collection<String> getRenderIds() {
         assertNotReleased();
         if (detectContextMode() == ContextMode.EXTENDED) {
+            PhaseId currenPhaseId = facesContext.getCurrentPhaseId();
             if (renderIds == null) {
                 renderIds = new LinkedHashSet<String>();
+            }
+            if (currenPhaseId == PhaseId.RENDER_RESPONSE) {
                 visitActivatorAtRender();
             }
             return renderIds;
@@ -338,6 +350,12 @@ public class ExtendedPartialViewContext extends PartialViewContextWrapper {
      * Detects whether current context's state indicates render=@all
      */
     private boolean detectRenderAll() {
+        // RF-13740, MyFaces doesn't call for renderIds in advance
+        if (renderIds == null) {
+            renderIds = new LinkedHashSet<String>();
+            visitActivatorAtRender();
+        }
+
         return Boolean.TRUE.equals(renderAll) || renderIds.contains(ALL);
     }
 
@@ -522,7 +540,7 @@ public class ExtendedPartialViewContext extends PartialViewContextWrapper {
 
             ActivatorComponentExecuteCallback callback = new ActivatorComponentExecuteCallback(getFacesContext(), behaviorEvent);
 
-            if (visitActivatorComponent(activatorComponentId, callback, EnumSet.noneOf(VisitHint.class))) {
+            if (visitActivatorComponent(activatorComponentId, callback, EnumSet.of(VisitHint.SKIP_UNRENDERED))) {
                 executeIds.addAll(callback.getExecuteIds());
 
                 setupRenderCallbackData(callback);
@@ -549,10 +567,10 @@ public class ExtendedPartialViewContext extends PartialViewContextWrapper {
      * Visits activator component to collect attributes needed for render phase
      */
     private void visitActivatorAtRender() {
-        if (detectContextMode() == ContextMode.EXTENDED) {
+        if (detectContextMode() == ContextMode.EXTENDED && !isActivatorVisitedAtRender) {
             ActivatorComponentRenderCallback callback = new ActivatorComponentRenderCallback(getFacesContext(), behaviorEvent);
 
-            if (visitActivatorComponent(activatorComponentId, callback, EnumSet.noneOf(VisitHint.class))) {
+            if (visitActivatorComponent(activatorComponentId, callback, EnumSet.of(VisitHint.SKIP_UNRENDERED))) {
                 setupRenderCallbackData(callback);
             } else {
                 // TODO - the same as for "execute"
@@ -570,6 +588,7 @@ public class ExtendedPartialViewContext extends PartialViewContextWrapper {
                 appendOncomplete(oncomplete);
                 setResponseData(responseData);
             }
+            isActivatorVisitedAtRender = true;
         }
     }
 

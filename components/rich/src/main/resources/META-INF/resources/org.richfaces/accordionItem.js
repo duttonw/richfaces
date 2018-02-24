@@ -29,12 +29,14 @@
             name:"AccordionItem",
 
             /**
-             * @class AccordionItem
-             * @name AccordionItem
-             *
-             * @constructor
-             * @param {String} componentId - component id
-             * @param {Hash} options - params
+             * Backing object for rich:accordionItem
+             * 
+             * @extends RichFaces.ui.TogglePanelItem
+             * @memberOf! RichFaces.ui
+             * @constructs RichFaces.ui.AccordionItem
+             * 
+             * @param {string} componentId - component id
+             * @param {Object} options - params
              * */
             init : function (componentId, options) {
                 $super.constructor.call(this, componentId, options);
@@ -45,7 +47,9 @@
 
                 if (this.isSelected()) {
                     var item = this;
-                    $(document).one("javascriptServiceComplete", function () {
+                    $(document).ready(function () {
+                        item.__fitToHeight(item.getTogglePanel());
+                    }).one("javascriptServiceComplete", function () {
                         item.__fitToHeight(item.getTogglePanel());
                     });
                 }
@@ -58,14 +62,16 @@
             },
 
             /**
-             * @return {jQuery Object}
+             * @private
+             * @return {jQuery}
              * */
             __header : function () {
                 return $(rf.getDomElement(this.id + ":header"));
             },
 
             /**
-             * @return {jQuery Object}
+             * @private
+             * @return {jQuery}
              * */
             __content : function () {
                 if (!this.__content_) {
@@ -96,7 +102,7 @@
                 var h = parentPanel.getInnerHeight();
 
                 var items = parentPanel.getItems();
-                for (var i in items) {
+                for (var i = 0; i < items.length; i++) {
                     h -= items[i].__header().outerHeight();
                 }
 

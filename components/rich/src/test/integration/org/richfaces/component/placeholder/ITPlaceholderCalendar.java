@@ -1,4 +1,4 @@
-/**
+/*
  * JBoss, Home of Professional Open Source
  * Copyright 2012, Red Hat, Inc. and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
@@ -26,7 +26,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.openqa.selenium.support.FindBy;
-import org.richfaces.integration.UIDeployment;
+import org.richfaces.integration.RichDeployment;
 import org.richfaces.shrinkwrap.descriptor.FaceletAsset;
 
 import category.Failing;
@@ -41,7 +41,7 @@ public class ITPlaceholderCalendar extends AbstractPlaceholderTest {
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
-        UIDeployment deployment = new UIDeployment(ITPlaceholderCalendar.class);
+        RichDeployment deployment = new RichDeployment(ITPlaceholderCalendar.class);
 
         deployment.archive().addClasses(PlaceHolderValueConverter.class, PlaceHolderValue.class);
 
@@ -81,11 +81,6 @@ public class ITPlaceholderCalendar extends AbstractPlaceholderTest {
     }
 
     @Override
-    Input input() {
-        return firstInput;
-    }
-
-    @Override
     protected String getTestedValue() {
         return "Dec 12, 2012";
     }
@@ -95,8 +90,13 @@ public class ITPlaceholderCalendar extends AbstractPlaceholderTest {
         return "Wed Dec 12 00:00:00 UTC 2012";
     }
 
+    @Override
+    Input input() {
+        return firstInput;
+    }
+
     /**
-     *  calendar date conversion problem
+     * calendar date conversion problem
      */
     @Category(Failing.class)
     @Test

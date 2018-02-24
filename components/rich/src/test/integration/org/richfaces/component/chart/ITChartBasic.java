@@ -43,10 +43,9 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.FindBy;
-import org.richfaces.integration.UIDeployment;
+import org.richfaces.integration.RichDeployment;
 import org.richfaces.shrinkwrap.descriptor.FaceletAsset;
 
-import category.FailingOnFirefox;
 import category.Smoke;
 
 @RunWith(Arquillian.class)
@@ -75,13 +74,13 @@ public class ITChartBasic {
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
-        UIDeployment deployment = new UIDeployment(ITChartBasic.class);
-        deployment.archive().addClasses(ChartBean.class).addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+        RichDeployment deployment = new RichDeployment(ITChartBasic.class);
+        deployment.archive().addClasses(ChartBean.class);
         addIndexPage(deployment);
         return deployment.getFinalArchive();
     }
 
-    private static void addIndexPage(UIDeployment deployment) {
+    private static void addIndexPage(RichDeployment deployment) {
         FaceletAsset p = new FaceletAsset();
         p.head("<style type='text/css'>");
         p.head(".richfaces-chart {");
@@ -106,15 +105,15 @@ public class ITChartBasic {
         p.body("<h:form id='frm'>");
         p.body("<rich:chart id='chart' zoom ='true' title='ChartTitle' onplotclick='logClick(event)' onplothover='hover(event)' onmouseout='clear()' plotClickListener='#{chartBean.handler}' >");
         p.body("    <a4j:repeat value='#{chartBean.countries}' var='country'>");
-        p.body("                <rich:series label='#{country.name}' type='line'>");
+        p.body("                <rich:chartSeries label='#{country.name}' type='line'>");
         p.body("                    <a4j:repeat value='#{country.data}' var='record'>");
-        p.body("                        <rich:point x='#{record.year}' y='#{record.tons}' />");
+        p.body("                        <rich:chartPoint x='#{record.year}' y='#{record.tons}' />");
         p.body("                    </a4j:repeat>");
-        p.body("                </rich:series>");
+        p.body("                </rich:chartSeries>");
         p.body("            </a4j:repeat>");
         p.body("    <a4j:ajax event='plotclick' render='msg' execute='msg' />");
-        p.body("    <rich:xaxis label='year' />");
-        p.body("    <rich:yaxis label='metric tons of CO2 per capita' />");
+        p.body("    <rich:chartXAxis label='year' />");
+        p.body("    <rich:chartYAxis label='metric tons of CO2 per capita' />");
         p.body("</rich:chart>");
         p.body("<h:outputText id='msg' value='#{chartBean.msg}' />");
         p.body("</h:form>");
@@ -137,7 +136,6 @@ public class ITChartBasic {
     }
 
     @Test
-    @Category({ Smoke.class, FailingOnFirefox.class })
     public void testChartEvents() {
         // does not work on FF - Webdriver cannot click into position on canvas hence cannot fire event
         final String serverSide = "Server's speaking:Point with index 0 within series 0 was clicked. Point coordinates: [1990,19.1].";
@@ -163,7 +161,6 @@ public class ITChartBasic {
     }
 
     @Test
-    @Category({ Smoke.class, FailingOnFirefox.class })
     public void testZoom() {
         // does not work on FF - Webdriver cannot click into position on canvas
         browser.get(deploymentUrl.toExternalForm());

@@ -203,10 +203,6 @@ public class RendererUtils {
             Collection<Parameter> parametersList = HandlersChain.createParametersList(createParametersMap(context, component));
 
             for (String behaviorEventName : eventNames) {
-                if (behaviorEventName.equals(defaultEventName)) {
-                    continue;
-                }
-
                 String htmlEventName = "on" + behaviorEventName;
 
                 if ((attributesExclusions == null) || (Arrays.binarySearch(attributesExclusions, htmlEventName) < 0)) {
@@ -581,7 +577,6 @@ public class RendererUtils {
     /**
      * @param context
      * @param component
-     * @return
      * @throws IOException
      */
     public void encodeBeginFormIfNessesary(FacesContext context, UIComponent component) throws IOException {
@@ -672,7 +667,7 @@ public class RendererUtils {
     }
 
     /**
-     * Simplified version of {@link encodeId}
+     * Simplified version of {@link encodeId(FacesContext, UIComponent)}
      *
      * @param context
      * @param component

@@ -59,7 +59,7 @@ public final class VersionBean {
         private static final String UNKNOWN = "";
         private String implementationVendor = UNKNOWN;
         // TODO nick - default value for manifest file absense - review
-        private String implementationVersion = "5.0.0-SNAPSHOT";
+        private String implementationVersion = "4.5.21-SNAPSHOT";
         private String implementationTitle = UNKNOWN;
         private String scmTimestamp = UNKNOWN;
         private String fullVersionString = UNKNOWN;
@@ -126,14 +126,14 @@ public final class VersionBean {
                             return new Manifest(manifestStream);
                         } catch (MalformedURLException e1) {
                             // that's ok - just log in debug
-                            if (LOGGER.isDebugEnabled()) {
-                                LOGGER.debug(e1.getMessage(), e1);
-                            }
+                            //if (LOGGER.isDebugEnabled()) {
+                            //    LOGGER.debug(e1.getMessage(), e1);
+                            //}
                         } catch (IOException e) {
                             // that's ok - just log in debug
-                            if (LOGGER.isDebugEnabled()) {
-                                LOGGER.debug(e.getMessage(), e);
-                            }
+                            //if (LOGGER.isDebugEnabled()) {
+                            //    LOGGER.debug(e.getMessage(), e);
+                            //}
                         } finally {
                             if (manifestStream != null) {
                                 try {

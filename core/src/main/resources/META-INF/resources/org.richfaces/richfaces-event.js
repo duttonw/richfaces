@@ -35,7 +35,7 @@ RichFaces.jQuery = RichFaces.jQuery || window.jQuery;
     /**
      * RichFaces Event API container
      * @class
-     * @memberOf RichFaces
+     * @memberOf! RichFaces
      * @static
      * @name Event
      * */
@@ -67,7 +67,9 @@ RichFaces.jQuery = RichFaces.jQuery || window.jQuery;
     var getMultipleHandlerWrapper = function (object, component) {
         var result = {};
         for (var type in object) {
-            result[type] = getHandlerWrapper(component, object[type]);
+            if (object.hasOwnProperty(type)) {
+                result[type] = getHandlerWrapper(component, object[type]);
+            }
         }
         return result;
     }
@@ -76,14 +78,14 @@ RichFaces.jQuery = RichFaces.jQuery || window.jQuery;
             /**
              * @constant
              * @name RichFaces.Event.RICH_NAMESPACE
-             * @type string
+             * @type {string}
              * */
             RICH_NAMESPACE : "RICH",
 
             /**
              * @constant
              * @name RichFaces.Event.EVENT_NAMESPACE_SEPARATOR
-             * @type string
+             * @type {string}
              * */
             EVENT_NAMESPACE_SEPARATOR : ".",
 

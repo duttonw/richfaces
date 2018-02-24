@@ -6,6 +6,17 @@
      */
 
     rf.ui = rf.ui || {};
+    /**
+     * Backing object for rich:autocomplete
+     * 
+     * @extends RichFaces.ui.AutocompleteBase
+     * @memberOf! RichFaces.ui
+     * @constructs RichFaces.ui.Autocomplete
+     * 
+     * @param componentId {string} component id
+     * @param fieldId {string} id of the input box
+     * @param options {Object} autocomplete options
+     */
     // Constructor definition
     rf.ui.Autocomplete = function(componentId, fieldId, options) {
         this.namespace = "." + rf.Event.createNamespace(this.name, componentId);
@@ -109,10 +120,10 @@
     var updateItemsList = function (value, fetchValues) {
         var itemsContainer = $(rf.getDomElement(this.id + ID.ITEMS));
         this.items = itemsContainer.find("." + this.options.itemClass);
-        var data = itemsContainer.data();
-        itemsContainer.removeData();
+        var componentData = itemsContainer.data("componentData");
+        itemsContainer.removeData("componentData");
         if (this.items.length > 0) {
-            this.cache = new rf.utils.Cache((this.options.ajaxMode ? value : ""), this.items, fetchValues || data.componentData || getData, !this.options.ajaxMode);
+            this.cache = new rf.utils.Cache((this.options.ajaxMode ? value : ""), this.items, fetchValues || componentData || getData, !this.options.ajaxMode);
         }
     };
 
@@ -133,7 +144,7 @@
     };
 
     var autoFill = function (inputValue, value) {
-        if (this.options.autofill && value.toLowerCase().indexOf(inputValue) == 0) {
+        if (this.options.autofill && value.toLowerCase().indexOf(inputValue.toLowerCase()) == 0) {
             var field = rf.getDomElement(this.fieldId);
             var start = rf.Selection.getStart(field);
             this.__setInputValue(inputValue + value.substring(inputValue.length));
@@ -149,7 +160,9 @@
         var _this = this;
         var _event = event;
         var ajaxSuccess = function (event) {
-            updateItemsList.call(_this, _this.value, event.componentData && event.componentData[_this.id]);
+            if (_this.options.minChars <= _this.value.length) {
+                updateItemsList.call(_this, _this.value, event.componentData && event.componentData[_this.id]);
+            }
             if (_this.options.lazyClientMode && _this.value.length != 0) {
                 updateItemsFromCache.call(_this, _this.value);
             }
@@ -173,7 +186,15 @@
         //caution: JSF submits inputs with empty names causing "WARNING: Parameters: Invalid chunk ignored." in Tomcat log
         var params = {};
         params[this.id + ".ajax"] = "1";
-        rf.ajax(this.id, event, {parameters: params, error: ajaxError, complete:ajaxSuccess});
+        var opts = {
+            parameters: params,
+            error: ajaxError,
+            complete:ajaxSuccess,
+            queueId: _this.options.queueId,
+            begin: _this.options.onbegin,
+            status: _this.options.status
+        };
+        rf.ajax(this.id, event, opts);
     };
 
     var clearSelection = function () {
@@ -451,7 +472,7 @@
             __onEnter: function (event) {
                 var value = getSelectedItemValue.call(this);
                 this.__onChangeValue(event, value);
-                this.invokeEvent("selectitem", rf.getDomElement(this.fieldId), event, value);
+                this.invokeEvent("selectitem", rf.getDomElement(this.id), event, value);
             },
             __onShow: function (event) {
                 if (this.options.selectFirst) {
@@ -479,7 +500,7 @@
 
     $.extend(rf.ui.Autocomplete, {
             setData: function (id, data) {
-                $(rf.getDomElement(id)).data({componentData:data});
+                $(rf.getDomElement(id)).data("componentData", data);
             },
             
             __getLastTokenIndex:  function (tokens, value) {

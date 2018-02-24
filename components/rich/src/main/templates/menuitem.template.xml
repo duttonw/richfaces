@@ -18,6 +18,7 @@
         <cdk:resource-dependency library="org.richfaces" name="richfaces-base-component.js" />
         <cdk:resource-dependency name="richfaces-event.js" library="org.richfaces" />
         <cdk:resource-dependency name="menuitem.js" library="org.richfaces" />
+        <cdk:resource-dependency name="dropdownmenu.ecss" library="org.richfaces" />
         <cdk:import package="org.richfaces.renderkit.util" names="RendererUtils" />
     </cc:interface>
 
@@ -39,7 +40,7 @@
         <cdk:object name="iconFacet" value="#{getIconFacet(facesContext, component)}" type="javax.faces.component.UIComponent" />
         <cdk:object name="iconAttribute" value="#{getIconAttribute(facesContext, component)}" type="java.lang.String" />
 
-        <div id="#{clientId}" class="rf-#{cssRoot}-itm #{isDisabled ? 'rf-' +cssRoot+ '-itm-dis '+disabledClass : 'rf-' +cssRoot+ '-itm-unsel '+styleClass}"
+        <div id="#{clientId}" class="rf-#{cssRoot}-itm #{(isDisabled ? 'rf-' +cssRoot+ '-itm-dis '+disabledClass+' ' : 'rf-' +cssRoot+ '-itm-unsel ') + styleClass}"
             style="#{style}" cdk:passThroughWithExclusions="onclick">
             <span class="rf-#{cssRoot}-itm-ic #{iconClass}">
                 <c:choose>

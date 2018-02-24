@@ -87,6 +87,7 @@ public class CollapsibleSubTableRenderer extends AbstractTableRenderer {
     ;
 
     protected void doDecode(FacesContext facesContext, UIComponent component) {
+        super.doDecode(facesContext, component);
         AbstractCollapsibleSubTable subTable = (AbstractCollapsibleSubTable) component;
 
         String clientId = subTable.getClientId(facesContext);
@@ -113,6 +114,18 @@ public class CollapsibleSubTableRenderer extends AbstractTableRenderer {
     }
 
     @Override
+    protected void decodeFiltering(FacesContext context, UIDataTableBase dataTableBase, String value) {
+        super.decodeFiltering(context, dataTableBase, value);
+        dataTableBase.clearExtendedDataModel();
+    }
+
+    @Override
+    protected void decodeSorting(FacesContext context, UIDataTableBase dataTableBase, String value) {
+        super.decodeSorting(context, dataTableBase, value);
+        dataTableBase.clearExtendedDataModel();
+    }
+
+    @Override
     public void encodeFirstRowStart(ResponseWriter writer, FacesContext context, String parentId, int currentRow,
         UIComponent component) throws IOException {
         writer.startElement(HtmlConstants.TR_ELEMENT, component);
@@ -120,6 +133,13 @@ public class CollapsibleSubTableRenderer extends AbstractTableRenderer {
         String styleClass = concatClasses(getRowClass(context, parentId), getFirstRowClass(context, parentId), component
             .getAttributes().get(ROW_CLASS));
         encodeStyleClass(writer, context, component, HtmlConstants.STYLE_CLASS_ATTR, styleClass);
+        UIComponent parent = component.getParent();
+        if (parent instanceof AbstractCollapsibleSubTable && Boolean.TRUE.equals(parent.getAttributes().get("isNested"))) {
+            AbstractCollapsibleSubTable subTable = (AbstractCollapsibleSubTable) parent;
+            if (!subTable.isExpanded()) {
+                writer.writeAttribute(HtmlConstants.STYLE_ATTRIBUTE, DISPLAY_NONE, null);
+            }
+        }
     }
 
     @Override
@@ -129,6 +149,13 @@ public class CollapsibleSubTableRenderer extends AbstractTableRenderer {
         writer.writeAttribute(HtmlConstants.ID_ATTRIBUTE, parentId + ":" + currentRow + ":b", null);
         String styleClass = concatClasses(getRowClass(context, parentId), component.getAttributes().get(ROW_CLASS));
         encodeStyleClass(writer, context, component, HtmlConstants.STYLE_CLASS_ATTR, styleClass);
+        UIComponent parent = component.getParent();
+        if (parent instanceof AbstractCollapsibleSubTable && Boolean.TRUE.equals(parent.getAttributes().get("isNested"))) {
+            AbstractCollapsibleSubTable subTable = (AbstractCollapsibleSubTable) parent;
+            if (!subTable.isExpanded()) {
+                writer.writeAttribute(HtmlConstants.STYLE_ATTRIBUTE, DISPLAY_NONE, null);
+            }
+        }
     }
 
     public void encodeTableFacets(ResponseWriter writer, FacesContext context, UIDataTableBase dataTable) throws IOException {
@@ -154,16 +181,18 @@ public class CollapsibleSubTableRenderer extends AbstractTableRenderer {
         throws IOException {
         AbstractCollapsibleSubTable subTable = (AbstractCollapsibleSubTable) dataTableBase;
 
-        UIDataTableBase component = findParent(subTable);
-        if (component instanceof AbstractDataTable) {
+        UIDataTableBase parent = findParent(subTable);
+        if (parent instanceof AbstractDataTable) {
             writer.startElement(HtmlConstants.TBODY_ELEMENT, null);
             writer.writeAttribute(HtmlConstants.ID_ATTRIBUTE,
-                component.getRelativeClientId(facesContext) + ":" + subTable.getId() + TB_ROW, null);
+                parent.getRelativeClientId(facesContext) + ":" + subTable.getId() + TB_ROW, null);
             writer.writeAttribute(HtmlConstants.CLASS_ATTRIBUTE, getTableSkinClass(), null);
 
             String predefinedStyles = !subTable.isExpanded() ? DISPLAY_NONE : null;
             encodeStyle(writer, facesContext, subTable, predefinedStyles);
         }
+        // stash whether or not this subTable is nested in the attribute map for later retrieval
+        subTable.getAttributes().put("isNested", (parent instanceof AbstractCollapsibleSubTable));
     }
 
     @Override
@@ -196,6 +225,7 @@ public class CollapsibleSubTableRenderer extends AbstractTableRenderer {
         }
 
         int columnNumber = 0;
+        boolean rowEnded = false;
         while (components.hasNext()) {
             UIComponent component = components.next();
             if (component.isRendered()) {
@@ -205,6 +235,7 @@ public class CollapsibleSubTableRenderer extends AbstractTableRenderer {
                     columnNumber++;
                 } else if (component instanceof AbstractCollapsibleSubTable) {
                     if (component.isRendered()) {
+                        rowEnded = true;
                         encodeRowEnd(writer);
                     }
 
@@ -214,7 +245,9 @@ public class CollapsibleSubTableRenderer extends AbstractTableRenderer {
             }
         }
 
-        encodeRowEnd(writer);
+        if (!rowEnded) {
+            encodeRowEnd(writer);
+        }
 
         if (rowHolder.isUpdatePartial()) {
             partialEnd(facesContext);
@@ -276,11 +309,16 @@ public class CollapsibleSubTableRenderer extends AbstractTableRenderer {
 
         UIComponent nestingForm = getUtils().getNestingForm(subTable);
         String formId = nestingForm != null ? nestingForm.getClientId(facesContext) : "";
+        AjaxOptions ajaxOptions = AjaxRendererUtils.buildEventOptions(facesContext, subTable);
 
         Map<String, Object> options = new HashMap<String, Object>();
+        options.put("ajaxEventOptions", ajaxOptions.getParameters());
         options.put("stateInput", subTable.getClientId(facesContext) + STATE);
         options.put("optionsInput", subTable.getClientId(facesContext) + OPTIONS);
-        options.put("expandMode", subTable.getExpandMode());
+        boolean isNested = Boolean.TRUE.equals(subTable.getAttributes().get("isNested"));
+        String expandMode = isNested ? "client" : subTable.getExpandMode();
+        options.put("expandMode", expandMode);
+        options.put("isNested", isNested);
         options.put("eventOptions", AjaxRendererUtils.buildEventOptions(facesContext, subTable));
 
         JSFunction jsFunction = new JSFunction("new RichFaces.ui.CollapsibleSubTable");

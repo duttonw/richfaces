@@ -15,6 +15,16 @@
         cssClasses : {}
     };
 
+    /**
+     * Parent class for menu objects
+     * 
+     * @extends RichFaces.BaseComponent
+     * @memberOf! RichFaces.ui
+     * @constructs RichFaces.ui.MenuBase
+     * 
+     * @param componentId
+     * @param options
+     */
     rf.ui.MenuBase = function(componentId, options) {
         $super.constructor.call(this, componentId, options);
         this.id = componentId;
@@ -122,8 +132,8 @@
                     this.displayed = false;
                     this.__deselectCurrentItem();
                     this.currentSelectedItemIndex = -1;
-                    var parentMenu = rf.component(this.__getParentMenu());
-                    if (this.id != parentMenu.id) {
+                    var parentMenu = this.__getParentMenu();
+                    if (parentMenu && this.id != parentMenu.id) {
                         parentMenu.popupElement.focus();
                         rf.ui.MenuManager.setActiveSubMenu(parentMenu);
                     }
@@ -134,39 +144,18 @@
                 var i = 0;
                 var menuItem;
                 for (i in this.items) {
-                    menuItem = this.items.eq(i);
-                    if (this.__isGroup(menuItem)) {
-                        rf.component(menuItem).hide();
-                    }
-                }
-            },
-
-            __getParentMenuFromItem : function(item) {
-                var menu;
-                if (item)
-                    menu = item.parents('div.' + this.options.cssClasses.itemCss).has('div.' + this.options.cssClasses.listContainerCss).eq(1);
-                if (menu && menu.length > 0)
-                    return menu;
-                else {
-                    menu = item.parents('div.' + this.options.cssClasses.labelCss);
-                    if (menu && menu.length > 0) {
-                        return menu;
-                    }
-                    else {
-                        return null;
+                    if (this.items.hasOwnProperty(i)) {
+                        menuItem = this.items.eq(i);
+                        if (this.__isGroup(menuItem)) {
+                            rf.component(menuItem).hide();
+                        }
                     }
                 }
             },
 
             __getParentMenu : function() {
-                var menu = $(this.element).parents('div.' + this.options.cssClasses.itemCss).has('div.' + this.options.cssClasses.listContainerCss).eq(0);
-                if (menu && menu.length > 0) {
-                    return menu;
-                }
-                else {
-                    var item = this.items.eq(0);
-                    return this.__getParentMenuFromItem(item);
-                }
+                var menu = $(this.element).parents('div[data-rf-parentmenu]').get(0);
+                return menu ? rf.component(menu.getAttribute('data-rf-parentmenu')) : null;
             },
 
             __isGroup : function(item) {
@@ -204,7 +193,13 @@
             },
 
             __showHandler : function(e) {
-                if (!this.__isShown()) {
+                if (!this.__isShown() && !this.showTimeoutId) {
+                    // prevent menu from hiding in case __leaveHandler was triggered
+                    // (happens when showEvent is preceded by a click, e.g. "dblclick")
+                    if (this.hideTimeoutId) {
+                        window.clearTimeout(this.hideTimeoutId);
+                        this.hideTimeoutId = null;
+                    }
                     this.showTimeoutId = window.setTimeout($.proxy(function() {
                         this.show(e);
                     }, this), this.options.showDelay);
@@ -213,9 +208,11 @@
             },
 
             __leaveHandler : function() {
-                this.hideTimeoutId = window.setTimeout($.proxy(function() {
-                    this.hide();
-                }, this), this.options.hideDelay);
+                if (!this.hideTimeoutId) {
+                    this.hideTimeoutId = window.setTimeout($.proxy(function() {
+                        this.hide();
+                    }, this), this.options.hideDelay);
+                }
             },
 
             __overHandler : function() {
@@ -228,9 +225,11 @@
                 this.detach(this.id);
 
                 rf.Event.unbind(this.popupElement, "keydown" + this.namespace);
+                rf.Event.unbindById(this.id, "mouseleave");
 
                 this.popup.destroy();
                 this.popup = null;
+                window.clearTimeout(this.hideTimeoutId);//clean up the hide TO
 
                 // call parent's destroy method
                 $super.destroy.call(this);

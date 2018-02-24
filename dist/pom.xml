@@ -20,14 +20,14 @@
   Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.richfaces</groupId>
         <artifactId>richfaces-parent</artifactId>
-        <version>4.5.0-SNAPSHOT</version>
+        <version>4.5.21-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -36,7 +36,7 @@
     <name>RichFaces Distribution Assembler</name>
 
     <properties>
-        <version.richfaces>4.5.0-SNAPSHOT</version.richfaces>
+        <version.richfaces>4.5.21-SNAPSHOT</version.richfaces>
     </properties>
 
     <profiles>
@@ -85,6 +85,12 @@
                     <version>${project.version}</version>
                 </dependency>
 
+                <dependency>
+                    <groupId>org.richfaces</groupId>
+                    <artifactId>richfaces-page-fragments</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+
                 <!-- Runtime Dependencies -->
                 <dependency>
                     <groupId>net.sourceforge.cssparser</groupId>
@@ -126,6 +132,7 @@
                 <plugins>
 
                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-dependency-plugin</artifactId>
 
                         <!-- unpack the sources -->
@@ -138,7 +145,8 @@
                                 <phase>prepare-package</phase>
                                 <configuration>
                                     <stripVersion>true</stripVersion>
-                                    <includeArtifactIds>richfaces,richfaces-a4j,richfaces-core</includeArtifactIds>
+                                    <classifier>sources</classifier>
+                                    <includeArtifactIds>richfaces,richfaces-a4j,richfaces-core,richfaces-page-fragments</includeArtifactIds>
                                     <outputDirectory>${project.build.directory}/richfaces-sources</outputDirectory>
                                 </configuration>
                             </execution>
@@ -169,11 +177,14 @@
                             <execution>
                                 <configuration>
                                     <sourcepath>${project.build.directory}/richfaces-sources</sourcepath>
+                                    <reportOutputDirectory>${project.reporting.outputDirectory}</reportOutputDirectory>
+                                    <destDir>javadoc</destDir>
+                                    <failOnError>false</failOnError>
                                 </configuration>
                                 <id>generate-javadoc</id>
                                 <phase>package</phase>
                                 <goals>
-                                    <goal>aggregate</goal>
+                                    <goal>javadoc</goal>
                                 </goals>
                             </execution>
                         </executions>
@@ -183,7 +194,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.2.1</version>
+                        <version>1.3.2</version>
                         <executions>
                             <execution>
                                 <id>generate-vdldoc</id>
@@ -219,19 +230,21 @@
 
                     <!-- JSDoc -->
                     <plugin>
-                        <groupId>gr.abiss.mvn.plugins</groupId>
-                        <artifactId>maven-jstools-plugin</artifactId>
-                        <version>0.7</version>
+                        <groupId>com.phasebash.jsdoc</groupId>
+                        <artifactId>jsdoc3-maven-plugin</artifactId>
+                        <version>1.2.0</version>
                         <executions>
                             <execution>
                                 <id>jsdoc</id>
                                 <configuration>
-                                    <jsDir>${project.build.directory}/richfaces-sources/META-INF/resources/org.richfaces</jsDir>
-                                    <includes>**/*.js</includes>
-                                    <caseSensitive>true</caseSensitive>
+                                    <recursive>true</recursive>
+                                    <directoryRoots>
+                                        <directoryRoot>${project.build.directory}/richfaces-sources/META-INF/resources/org.richfaces</directoryRoot>
+                                    </directoryRoots>
+                                    <lenient>true</lenient>
                                 </configuration>
                                 <goals>
-                                    <goal>jsdoc</goal>
+                                    <goal>jsdoc3</goal>
                                 </goals>
                                 <phase>package</phase>
                             </execution>
@@ -239,16 +252,18 @@
                     </plugin>
 
                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-assembly-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>richfaces-a4j-vdldoc-assembly</id>
+                                <id>richfaces-assembly</id>
                                 <phase>package</phase>
                                 <goals>
                                     <goal>single</goal>
                                 </goals>
                                 <configuration>
-                                    <descriptor>src/main/resources/xml/richfaces.xml</descriptor>
+                                    <appendAssemblyId>false</appendAssemblyId>
+                                    <descriptor>${project.basedir}/src/main/resources/xml/richfaces.xml</descriptor>
                                 </configuration>
                             </execution>
                         </executions>

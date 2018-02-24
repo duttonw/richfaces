@@ -44,10 +44,12 @@
     
     var translateProperties = function(target, source, translation) {
         for (var attr in source) {
-            var targetAttr = translation[attr] != null ? translation[attr] : attr;
-            target[targetAttr] = source[attr];
-            if (target[targetAttr] instanceof Object) {
-                target[targetAttr] = $.extend({}, target[targetAttr], translation);
+            if (source.hasOwnProperty(attr)) {
+                var targetAttr = translation[attr] != null ? translation[attr] : attr;
+                target[targetAttr] = source[attr];
+                if (target[targetAttr] instanceof Object) {
+                    target[targetAttr] = $.extend({}, target[targetAttr], translation);
+                }
             }
         }
         return target;
@@ -76,6 +78,14 @@
         return array.push.apply(array, rest);
     };
     
+    /**
+     * Backing object for notifications
+     * 
+     * @memberOf! RichFaces.ui
+     * @constructs RichFaces.ui.Notify
+     * 
+     * @param options
+     */
     rf.ui.Notify = function(options) {
         var options = $.extend({}, defaultOptions, options);
         
@@ -83,6 +93,8 @@
             var severity = severityClasses[options.severity];
             options.styleClass = options.styleClass ? severity + " " + options.styleClass : severity;
         }
+        
+        options.showCloseButton = options.sticky || options.showCloseButton;
         
         var pnotifyOptions = translateProperties({}, options, propertyTranslation);
 
@@ -102,6 +114,12 @@
                     options['on' + e.type].call(this, e);
                 }
             });
+            if (options.style) {
+                pnotify.attr('style', pnotify.attr('style') + options.style)
+            }
+            if (options.title) {
+                pnotify.attr('title', options.title)
+            }
             stack.addNotification(pnotify);
         }
         

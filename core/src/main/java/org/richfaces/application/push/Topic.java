@@ -71,7 +71,7 @@ public interface Topic {
      *
      * @throws SubscriptionFailureException when given session can't be subscribed to this topic
      */
-    void checkSubscription(Session session) throws SubscriptionFailureException;
+    void checkSubscription(TopicKey topicKey, Session session) throws SubscriptionFailureException;
 
     /**
      * Publishes topic event to all subscribed TopicListeners
@@ -86,4 +86,14 @@ public interface Topic {
      * @throws MessageException
      */
     void publish(Object messageData) throws MessageException;
+
+    /**
+     * Publish data to the subscribed clients
+     *
+     * @param messageData data that will be serialized by MessageDataSerializer
+     * @param subtopicName optional subtopic, used to publish to clients that are only interested in specific subtopics
+     *
+     * @throws MessageException
+     */
+    void publish(Object messageData, String subtopicName) throws MessageException;
 }

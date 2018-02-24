@@ -22,16 +22,11 @@
 package org.richfaces.renderkit;
 
 import java.io.IOException;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.el.ELException;
-import javax.el.ExpressionFactory;
-import javax.el.MethodExpression;
-import javax.el.MethodNotFoundException;
 import javax.el.ValueExpression;
 import javax.faces.application.ResourceDependencies;
 import javax.faces.application.ResourceDependency;
@@ -43,17 +38,13 @@ import javax.faces.context.PartialViewContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.convert.Converter;
 import javax.faces.convert.ConverterException;
-import javax.faces.model.ArrayDataModel;
-import javax.faces.model.DataModel;
-import javax.faces.model.ListDataModel;
-import javax.faces.model.ResultDataModel;
-import javax.faces.model.ResultSetDataModel;
-import javax.servlet.jsp.jstl.sql.Result;
 
 import org.ajax4jsf.javascript.JSObject;
 import org.ajax4jsf.javascript.JSReference;
 import org.richfaces.application.ServiceTracker;
+import org.richfaces.component.AbstractAttachQueue;
 import org.richfaces.component.AbstractAutocomplete;
+import org.richfaces.component.AbstractPlaceholder;
 import org.richfaces.component.AutocompleteLayout;
 import org.richfaces.component.AutocompleteMode;
 import org.richfaces.component.MetaComponentResolver;
@@ -92,59 +83,6 @@ public abstract class AutocompleteRendererBase extends InputRendererBase impleme
     // TODO nick - handle parameter
 
     @SuppressWarnings("unchecked")
-    private DataModel<Object> getItems(FacesContext facesContext, AbstractAutocomplete component) {
-        Object itemsObject = null;
-
-        MethodExpression autocompleteMethod = component.getAutocompleteMethod();
-        if (autocompleteMethod != null) {
-            Map<String, String> requestParameters = facesContext.getExternalContext().getRequestParameterMap();
-            String value = requestParameters.get(component.getClientId(facesContext) + "Value");
-            try {
-                try {
-                    itemsObject = autocompleteMethod.invoke(facesContext.getELContext(), new Object[] { facesContext,
-                            component, value });
-                } catch (MethodNotFoundException e1) {
-                    try {
-                        // fall back to evaluating an expression assuming there is just one parameter (RF-11469)
-                        itemsObject = component.getAutocompleteMethodWithOneParameter().invoke(facesContext.getELContext(), new Object[] { value });
-                    } catch (MethodNotFoundException e2) {
-                        ExpressionFactory expressionFactory = facesContext.getApplication().getExpressionFactory();
-                        autocompleteMethod = expressionFactory.createMethodExpression(facesContext.getELContext(),
-                            autocompleteMethod.getExpressionString(), Object.class, new Class[] { String.class });
-                        itemsObject = autocompleteMethod.invoke(facesContext.getELContext(), new Object[] { value });
-                    }
-                }
-            } catch (ELException ee) {
-                LOGGER.error(ee.getMessage(), ee);
-            }
-        } else {
-            itemsObject = component.getAutocompleteList();
-        }
-
-        DataModel result;
-
-        if (itemsObject instanceof Object[]) {
-            result = new ArrayDataModel((Object[]) itemsObject);
-        } else if (itemsObject instanceof List) {
-            result = new ListDataModel((List<Object>) itemsObject);
-        } else if (itemsObject instanceof Result) {
-            result = new ResultDataModel((Result) itemsObject);
-        } else if (itemsObject instanceof ResultSet) {
-            result = new ResultSetDataModel((ResultSet) itemsObject);
-        } else if (itemsObject != null) {
-            List<Object> temp = new ArrayList<Object>();
-            Iterator<Object> iterator = ((Iterable<Object>) itemsObject).iterator();
-            while (iterator.hasNext()) {
-                temp.add(iterator.next());
-            }
-            result = new ListDataModel(temp);
-        } else {
-            result = new ListDataModel(null);
-        }
-
-        return result;
-    }
-
     private Object saveVar(FacesContext context, String var) {
         if (var != null) {
             Map<String, Object> requestMap = context.getExternalContext().getRequestMap();
@@ -167,7 +105,9 @@ public abstract class AutocompleteRendererBase extends InputRendererBase impleme
         strategy.encodeItemsContainerBegin(facesContext, component);
 
         Object savedVar = saveVar(facesContext, comboBox.getVar());
-        Iterator<Object> itemsIterator = getItems(facesContext, comboBox).iterator();
+        Map<String, String> requestParameters = facesContext.getExternalContext().getRequestParameterMap();
+        String value = requestParameters.get(component.getClientId(facesContext) + "Value");
+        Iterator<Object> itemsIterator = comboBox.getItems(facesContext, value).iterator();
 
         if (!itemsIterator.hasNext()) {
             strategy.encodeFakeItem(facesContext, component);
@@ -219,10 +159,23 @@ public abstract class AutocompleteRendererBase extends InputRendererBase impleme
         }
     }
 
+    private int getLayoutChildCount(AbstractAutocomplete component) {
+        int count = component.getChildCount();
+
+        for (UIComponent c : component.getChildren()) {
+            // do not switch from default strategy if just attachQueue or placeholder is present
+            if (c instanceof AbstractAttachQueue || c instanceof AbstractPlaceholder) {
+                count -= 1;
+            }
+        }
+
+        return count;
+    }
+
     public void encodeItem(FacesContext facesContext, AbstractAutocomplete comboBox, Object item,
         AutocompleteEncodeStrategy strategy) throws IOException {
         ResponseWriter writer = facesContext.getResponseWriter();
-        if (comboBox.getChildCount() > 0) {
+        if (getLayoutChildCount(comboBox) > 0) {
             strategy.encodeItem(facesContext, comboBox);
         } else {
             if (item != null) {

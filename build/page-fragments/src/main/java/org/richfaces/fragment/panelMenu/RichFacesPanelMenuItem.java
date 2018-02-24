@@ -24,11 +24,13 @@ package org.richfaces.fragment.panelMenu;
 import org.jboss.arquillian.graphene.fragment.Root;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+import org.richfaces.fragment.common.AdvancedVisibleComponentIteractions;
+import org.richfaces.fragment.common.Utils;
+import org.richfaces.fragment.common.VisibleComponentInteractions;
+import org.richfaces.fragment.panelMenu.RichFacesPanelMenuItem.AdvancedPanelMenuItemInteractions;
 
-public class RichFacesPanelMenuItem implements PanelMenuItem {
+public class RichFacesPanelMenuItem implements PanelMenuItem, AdvancedVisibleComponentIteractions<RichFacesPanelMenuItem.AdvancedPanelMenuItemInteractions> {
 
-    @FindBy(css = "td[class*=rf-][class*=-itm-lbl]")
-    private WebElement label;
     @FindBy(css = "td[class*=rf-][class*=-itm-ico]")
     private WebElement leftIcon;
     @FindBy(css = "td[class*=rf-][class*=-itm-exp-ico]")
@@ -45,14 +47,15 @@ public class RichFacesPanelMenuItem implements PanelMenuItem {
 
     @Override
     public void select() {
-        root.click();
+        advanced().getRootElement().click();
     }
 
+    @Override
     public AdvancedPanelMenuItemInteractions advanced() {
         return advancedInteractions;
     }
 
-    public class AdvancedPanelMenuItemInteractions {
+    public class AdvancedPanelMenuItemInteractions implements VisibleComponentInteractions {
 
         public WebElement getLeftIconElement() {
             return leftIcon;
@@ -71,7 +74,7 @@ public class RichFacesPanelMenuItem implements PanelMenuItem {
         }
 
         public boolean isSelected() {
-            return root.getAttribute("class").contains("-sel");
+            return getRootElement().getAttribute("class").contains("-sel");
         }
 
         public WebElement getRootElement() {
@@ -79,11 +82,16 @@ public class RichFacesPanelMenuItem implements PanelMenuItem {
         }
 
         public boolean isDisabled() {
-            return root.getAttribute("class").contains("-dis");
+            return getRootElement().getAttribute("class").contains("-dis");
         }
 
         public boolean isTransparent(WebElement icon) {
             return icon.getAttribute("class").contains("-transparent");
+        }
+
+        @Override
+        public boolean isVisible() {
+            return Utils.isVisible(getRootElement());
         }
     }
 }

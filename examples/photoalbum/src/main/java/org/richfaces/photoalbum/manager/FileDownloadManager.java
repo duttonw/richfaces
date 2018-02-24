@@ -23,14 +23,13 @@
 package org.richfaces.photoalbum.manager;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.MalformedInputException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -204,16 +203,11 @@ public class FileDownloadManager implements Serializable {
 
     private void uploadImage(String imageUrl, String imageName, Album album) {
         File file = new File(imageName);
-        int i;
         try {
             URL url = new URL(imageUrl);
             URLConnection con = url.openConnection();
             BufferedInputStream bis = new BufferedInputStream(con.getInputStream());
-            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file.getName()));
-            while ((i = bis.read()) != -1) {
-                bos.write(i);
-            }
-            bos.flush();
+            Files.copy(bis, file.toPath());            
             bis.close();
         } catch (MalformedInputException malformedInputException) {
             error.fire(new ErrorEvent("Error", "error uploading image<br/>" + malformedInputException.getMessage()));

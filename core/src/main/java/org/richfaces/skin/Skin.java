@@ -182,6 +182,9 @@ public interface Skin {
      * top and left borders for the dropdown list box in the ddmenu. Default value #CCCCCC.
      */
     String TABLE_BORDER_COLOR = "tableBorderColor";
+
+    String TABLE_SUBFOOTER_BACKGROUND_COLOR = "tableSubfooterBackgroundColor";
+    String TABLE_FOOTER_BACKGROUND_COLOR = "tableFooterBackgroundColor";
     /**
      * Font name for displaying tab titles. Default value Arial, Verdana.
      *
@@ -226,7 +229,7 @@ public interface Skin {
     Object getParameter(FacesContext context, String name, Object defaultValue);
 
     /**
-     * Get value for configuration parameter & interpret it as color string. If parameter set as EL-expression, calculate it
+     * Get value for configuration parameter and interpret it as color string. If parameter set as EL-expression, calculate it
      * value.
      *
      * @param context - {@link FacesContext } for current request.
@@ -237,13 +240,13 @@ public interface Skin {
     Integer getColorParameter(FacesContext context, String name);
 
     /**
-     * Get value for configuration parameter & interpret it as color string. If parameter set as EL-expression, calculate it
+     * Get value for configuration parameter and interpret it as color string. If parameter set as EL-expression, calculate it
      * value.
      *
      * @param context - {@link FacesContext } for current request.
      * @param name name of parameter.
      * @param defaultValue - default value if parameter not present in Skin
-     * @return
+     * @return value for configuration parameter
      * @since 4.0.M1
      */
     Integer getColorParameter(FacesContext context, String name, Object defaultValue);
@@ -263,7 +266,7 @@ public interface Skin {
      * resources
      *
      * @param context
-     * @return
+     * @return hash code
      */
     int hashCode(FacesContext context);
 

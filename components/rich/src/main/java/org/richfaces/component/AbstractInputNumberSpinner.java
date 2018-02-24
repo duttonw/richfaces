@@ -28,6 +28,7 @@ import org.richfaces.cdk.annotations.JsfRenderer;
 import org.richfaces.cdk.annotations.Tag;
 import org.richfaces.component.attribute.AccesskeyProps;
 import org.richfaces.component.attribute.CoreProps;
+import org.richfaces.component.attribute.DisabledProps;
 import org.richfaces.component.attribute.EventsKeyProps;
 import org.richfaces.component.attribute.EventsMouseProps;
 import org.richfaces.component.attribute.FocusProps;
@@ -41,6 +42,7 @@ import org.richfaces.component.attribute.InputProps;
  * </p>
  */
 @JsfComponent(
+        generate = "org.richfaces.component.html.HtmlInputNumberSpinner",
         type = AbstractInputNumberSpinner.COMPONENT_TYPE,
         family = AbstractInputNumberSpinner.COMPONENT_FAMILY,
         renderer = @JsfRenderer(type = "org.richfaces.InputNumberSpinnerRenderer"),
@@ -52,12 +54,6 @@ public abstract class AbstractInputNumberSpinner extends UIInputNumber implement
 
     @Attribute(hidden = true)
     public abstract boolean isReadonly();
-
-    /**
-     * If "true", this component is disabled
-     */
-    @Attribute(defaultValue = "false")
-    public abstract boolean isDisabled();
 
     /**
      * If "true" after the current value reaches the border value it is reversed to another border value after next increasing/decreasing.
@@ -79,15 +75,6 @@ public abstract class AbstractInputNumberSpinner extends UIInputNumber implement
      */
     @Attribute(passThrough = true)
     public abstract String getInputClass();
-
-    /**
-     * If "right", the InputText Box would be rendered on the right side of the ruler.
-     * If "left", the InputText Box would be rendered on the left side of the ruler.
-     * If "top", the InputText Box would be rendered on the top of the ruler.
-     * If "bottom", the InputText Box would be rendered on the bottom of the ruler.
-     */
-    @Attribute(defaultValue = "InputNumberSliderInputPosition.DEFAULT")
-    public abstract InputNumberSliderInputPosition getInputPosition();
 
     /**
      * Attribute specifies the initial length of input in characters.
@@ -178,12 +165,6 @@ public abstract class AbstractInputNumberSpinner extends UIInputNumber implement
      */
     @Attribute(events = @EventName("inputmouseup"))
     public abstract String getOninputmouseup();
-
-    /**
-     * The client-side script method to be called when some text is selected in the text field. This attribute can be used with the INPUT and TEXTAREA elements.
-     */
-    @Attribute(events = @EventName("select"))
-    public abstract String getOnselect();
 
     /**
      * The client-side script method to be called when the 'Up' button is clicked

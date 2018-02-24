@@ -28,6 +28,8 @@ import org.jboss.arquillian.graphene.findby.FindByJQuery;
 import org.jboss.arquillian.graphene.fragment.Root;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+import org.richfaces.fragment.common.VisibleComponentInteractions;
+import org.richfaces.fragment.panelMenu.RichFacesPanelMenuGroup.AdvancedPanelMenuGroupInteractions;
 
 public class RichFacesPanelMenuGroup extends AbstractPanelMenu {
 
@@ -59,11 +61,13 @@ public class RichFacesPanelMenuGroup extends AbstractPanelMenu {
         return Collections.unmodifiableList(menuGroups);
     }
 
+    @Override
     public AdvancedPanelMenuGroupInteractions advanced() {
         return advancedInteractions;
     }
 
-    public class AdvancedPanelMenuGroupInteractions extends AbstractPanelMenu.AdvancedAbstractPanelMenuInteractions {
+    public class AdvancedPanelMenuGroupInteractions extends AbstractPanelMenu.AdvancedAbstractPanelMenuInteractions
+        implements VisibleComponentInteractions {
 
         public List<WebElement> getMenuGroupElements() {
             return getMenuGroups();
@@ -74,19 +78,20 @@ public class RichFacesPanelMenuGroup extends AbstractPanelMenu {
         }
 
         public boolean isExpanded() {
-            return super.isGroupExpanded(root);
+            return super.isGroupExpanded(getRootElement());
         }
 
         public WebElement getLabelElement() {
             return label;
         }
 
+        @Override
         public WebElement getRootElement() {
             return root;
         }
 
         public boolean isTransparent(WebElement icon) {
-            return icon.getAttribute("class").contains("-transparent");
+            return icon.getAttribute("class").contains(getCssTransparentSuffix());
         }
 
         public WebElement getLeftIconElement() {
@@ -102,11 +107,11 @@ public class RichFacesPanelMenuGroup extends AbstractPanelMenu {
         }
 
         public boolean isDisabled() {
-            return root.getAttribute("class").contains("-dis");
+            return getRootElement().getAttribute("class").contains(getCssDisabledSuffix());
         }
 
         public boolean isSelected() {
-            return getHeaderElement().getAttribute("class").contains("-sel");
+            return getHeaderElement().getAttribute("class").contains(getCssSelectedSuffix());
         }
     }
 }

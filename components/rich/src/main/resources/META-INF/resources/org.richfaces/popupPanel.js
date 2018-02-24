@@ -46,8 +46,17 @@
     };
 
 
+    /**
+     * Backing object for rich:popupPanel
+     * 
+     * @extends RichFaces.BaseComponent
+     * @memberOf! RichFaces.ui
+     * @constructs RichFaces.ui.PopupPanel
+     * 
+     * @param id
+     * @param options
+     */
     rf.ui.PopupPanel = function(id, options) {
-
         $super.constructor.call(this, id);
         this.markerId = id;
         this.attachToDom(this.markerId);
@@ -90,7 +99,11 @@
             $(rf.getDomElement(id + "_header")).css('cursor', 'default');
         }
 
-        this.cdiv.resize($.proxy(this.resizeListener, this));
+        this.resizeProxy = $.proxy(this.resizeListener, this);
+
+        this.cdiv.resize(this.resizeProxy);
+        this.findForm(this.cdiv).on("ajaxcomplete", this.resizeProxy);
+        $(document).on("javascriptServiceComplete", this.resizeProxy);
     };
 
     rf.BaseComponent.extend(rf.ui.PopupPanel);
@@ -102,7 +115,7 @@
             name: "PopupPanel",
             saveInputValues: function(element) {
                 /* Fix for RF-3856 - Checkboxes in modal panel does not hold their states after modal was closed and opened again */
-                if ($.browser.msie /* reproducible for checkbox/radio in IE6, radio in IE 7/8 beta 2 */) {
+                if (rf.browser.msie /* reproducible for checkbox/radio in IE6, radio in IE 7/8 beta 2 */) {
                     $('input[type=checkbox], input[type=radio]', element).each(function(index) {
                         $(this).defaultChecked = $(this).checked;
                     });
@@ -117,10 +130,24 @@
                 return this.getContentElement()[0].clientHeight;//TODO
             },
 
+            /**
+             * Returns the left coordinate of the popup
+             * 
+             * @method
+             * @name RichFaces.ui.PopupPanel#getLeft
+             * @return {string} left coordinate
+             */
             getLeft : function () {
                 return this.cdiv.css('left');
             },
 
+            /**
+             * Returns the top coordinate of the popup
+             * 
+             * @method
+             * @name RichFaces.ui.PopupPanel#getTop
+             * @return {string} top coordinate
+             */
             getTop : function () {
                 return this.cdiv.css('top');
             },
@@ -159,6 +186,14 @@
             },
 
             destroy: function() {
+                if (this.domReattached) {
+                    var div = this.div.get(0);
+                    this.shadeDiv.length && div.appendChild(this.shadeDiv.get(0));
+                    div.appendChild(this.cdiv.get(0));
+                }
+
+                this.findForm(this.cdiv).off("ajaxcomplete", this.resizeProxy);
+                $(document).off("javascriptServiceComplete", this.resizeProxy);
 
                 this._contentElement = null;
                 this.firstOutside = null;
@@ -220,6 +255,14 @@
                 }
             },
 
+            /**
+             * Show the popup panel
+             * 
+             * @method
+             * @name RichFaces.ui.PopupPanel#show
+             * @param [event] {Event} event triggering this behavior
+             * @param [opts] {Object} object containing options for the popup (top, left, width, height)
+             */
             show: function(event, opts) {
                 var element = this.cdiv;
                 if (!this.shown && this.invokeEvent("beforeshow", event, null, element)) {
@@ -331,7 +374,7 @@
                     }
 
                     this.div.css('visibility', '');
-                    if ($.browser.msie) {
+                    if (rf.browser.msie) {
                         $(this.cdiv).find('input').each(function() {
                             // Force a CSS "touch" of all popupPanel children to ensure visibility in IE for RF-12850
                             var $this = $(this);
@@ -340,7 +383,7 @@
                             }
                         })
                     }
-                    this.div.css('display', 'block');
+                    this.div.css('display', 'inline-block');
                     if (this.options.autosized) {
                         this.shadowDiv.css('width', this.cdiv[0].clientWidth);
 
@@ -449,7 +492,7 @@
                     showEvent.parameters = opts || {};
                     this.shown = true;
                     // Cache the height difference between the shadoww div and the scroller div for later height calculations
-                    this.scrollerSizeDelta = parseInt(this.shadowDiv.css('height')) - parseInt(this.scrollerDiv.css('height'));
+                    this.scrollerSizeDelta = this.getStyle(this.shadowDiv, "height") - this.getStyle(this.scrollerDiv, "height");
                     this.invokeEvent("show", showEvent, null, element);
                 }
             },
@@ -563,6 +606,12 @@
                 enableSelection(document.body);
             },
 
+            /**
+             * Hide the popup panel
+             * 
+             * @method
+             * @name RichFaces.ui.PopupPanel#hide
+             */
             hide: function(event, opts) {
                 var element = this.cdiv;
                 this.restoreFocus();
@@ -604,7 +653,7 @@
             },
 
             getStyle: function(elt, name) {
-                return parseInt($(rf.getDomElement(elt)).css(name).replace("px", ""), 10);
+                return Number($(rf.getDomElement(elt)).css(name).replace("px", ""));
             },
 
             resizeListener: function(event, diff) {
@@ -620,6 +669,7 @@
                 var contentHashWH = {};
                 var scrollerHashWH = {};
                 var newSize;
+                var delta;
                 var scrollerHeight = this.scrollerSizeDelta;
                 var scrollerWidth = 0;
                 var eContentElt = this.getContentElement();
@@ -628,8 +678,8 @@
 
                 if (doResize) {
                     if (this.options.autosized) {
-                        this.resetWidth();
                         this.resetHeight();
+                        this.resetWidth();
                     }
 
                     newSize = this.getStyle(eContentElt, "width");
@@ -648,8 +698,9 @@
                         contentHashWH.width = this.currentMinWidth - scrollerWidth + 'px';
                         scrollerHashWH.width = this.currentMinWidth - scrollerWidth + 'px';
 
-                        if (diff.deltaWidth) {
-                            vetoes.vx = oldWidthSize - this.currentMinWidth;
+                        delta = oldWidthSize - this.currentMinWidth;
+                        if (diff.deltaWidth) { 
+                            vetoes.vx = Math.abs(delta) >= 1 ? delta : 0; // avoid rounding errors caused by zooming
                             vetoes.x = true;
                         }
                     }
@@ -660,8 +711,9 @@
                         contentHashWH.width = this.options.maxWidth - scrollerWidth + 'px';
                         scrollerHashWH.width = this.options.maxWidth - scrollerWidth + 'px';
 
+                        delta = oldWidthSize - this.options.maxWidth;
                         if (diff.deltaWidth) {
-                            vetoes.vx = oldWidthSize - this.options.maxWidth;
+                            vetoes.vx = Math.abs(delta) >= 1 ? delta : 0; // avoid rounding errors caused by zooming
                             vetoes.x = true;
                         }
                     }
@@ -699,8 +751,9 @@
                         shadowHashWH.height = this.currentMinHeight + 'px';
                         scrollerHashWH.height = this.currentMinHeight - scrollerHeight + 'px';
 
+                        delta = oldHeightSize - this.currentMinHeight;
                         if (diff.deltaHeight) {
-                            vetoes.vy = oldHeightSize - this.currentMinHeight;
+                            vetoes.vy = Math.abs(delta) >= 1 ? delta : 0; // avoid rounding errors caused by zooming
                             vetoes.y = true;
                         }
                     }
@@ -710,8 +763,9 @@
                         shadowHashWH.height = this.options.maxHeight + 'px';
                         scrollerHashWH.height = this.options.maxHeight - scrollerHeight + 'px';
 
+                        delta = oldHeightSize - this.options.maxHeight;
                         if (diff.deltaHeight) {
-                            vetoes.vy = oldHeightSize - this.options.maxHeight;
+                            vetoes.vy = Math.abs(delta) >= 1 ? delta : 0; // avoid rounding errors caused by zooming
                             vetoes.y = true;
                         }
                     }
@@ -795,6 +849,14 @@
                 this.doResizeOrMove(diff);
             },
 
+            /**
+             * Move the popup panel
+             * 
+             * @method
+             * @name RichFaces.ui.PopupPanel#moveTo
+             * @param top {number|string} top coordinate
+             * @param left {number|string} left coordinate
+             */
             moveTo : function (top, left) {
                 this.cdiv.css('top', top);
                 this.cdiv.css('left', left);
@@ -805,6 +867,14 @@
                 this.doResizeOrMove(diff);
             },
 
+            /**
+             * Resize the popup panel
+             * 
+             * @method
+             * @name RichFaces.ui.PopupPanel#resize
+             * @param dx {number} value to be added to current width
+             * @param dy {number} value to be added to current height
+             */
             resize : function (dx, dy) {
                 var diff = new rf.ui.PopupPanel.Sizer.Diff(0, 0, dx, dy);
                 this.doResizeOrMove(diff);

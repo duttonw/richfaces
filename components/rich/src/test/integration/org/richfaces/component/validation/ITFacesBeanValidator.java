@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.richfaces.component.validation;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -30,7 +29,7 @@ import org.jboss.shrinkwrap.descriptor.api.webapp30.WebAppDescriptor;
 import org.junit.runner.RunWith;
 import org.richfaces.component.GraphBean;
 import org.richfaces.component.Group;
-import org.richfaces.integration.UIDeployment;
+import org.richfaces.integration.RichDeployment;
 
 import com.google.common.base.Function;
 
@@ -40,20 +39,22 @@ public class ITFacesBeanValidator extends GraphValidationTestBase {
 
     @Deployment(testable = false)
     public static WebArchive deployment() {
-        UIDeployment deployment = new UIDeployment(ITFacesBeanValidator.class);
+        RichDeployment deployment = new RichDeployment(ITFacesBeanValidator.class);
 
         deployment.archive().addClasses(GraphBean.class, Group.class);
 
         deployment.webXml(new Function<WebAppDescriptor, WebAppDescriptor>() {
             public WebAppDescriptor apply(WebAppDescriptor webXml) {
-                 webXml.createContextParam()
-                     .paramName("javax.faces.validator.DISABLE_DEFAULT_BEAN_VALIDATOR")
-                     .paramValue("true");
-                 return webXml;
+                webXml.createContextParam()
+                    .paramName("javax.faces.validator.DISABLE_DEFAULT_BEAN_VALIDATOR")
+                    .paramValue("true");
+                return webXml;
             }
         });
 
         ITGraphValidation.addIndexPage(deployment);
+
+        deployment.addHibernateValidatorWhenUsingServletContainer();
 
         return deployment.getFinalArchive();
     }

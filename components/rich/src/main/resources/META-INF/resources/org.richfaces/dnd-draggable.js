@@ -16,6 +16,16 @@
         draggingClass : "rf-ind-drag"
     };
 
+    /**
+     * Backing object for rich:dragSource
+     * 
+     * @extends RichFaces.BaseNonVisualComponent
+     * @memberOf! RichFaces.ui
+     * @constructs RichFaces.ui.Draggable
+     * 
+     * @param id
+     * @param options
+     */
     rf.ui.Draggable = function(id, options) {
         this.options = {};
         $.extend(this.options, defaultOptions, options || {});
@@ -30,8 +40,14 @@
         this.attachToDom(this.parentId);
         this.dragElement = $(document.getElementById(this.options.parentId));
         this.dragElement.draggable();
+        
+        if (options.dragOptions) {
+            this.dragElement.draggable("option", options.dragOptions);
+        }
 
-        if (options.indicator) {
+        if (options.dragOptions && options.dragOptions.helper) {
+            this.dragElement.data("indicator", false);
+        } else if (options.indicator) {
             var element = $(document.getElementById(options.indicator));
             var clone = element.clone();
             $("*[id]", clone).andSelf().each(function() {

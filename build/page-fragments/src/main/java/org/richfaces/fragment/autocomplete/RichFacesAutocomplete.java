@@ -35,11 +35,12 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.richfaces.fragment.common.Actions;
-import org.richfaces.fragment.common.AdvancedInteractions;
+import org.richfaces.fragment.common.AdvancedVisibleComponentIteractions;
 import org.richfaces.fragment.common.ClearType;
 import org.richfaces.fragment.common.ScrollingType;
 import org.richfaces.fragment.common.TextInputComponentImpl;
 import org.richfaces.fragment.common.Utils;
+import org.richfaces.fragment.common.VisibleComponentInteractions;
 import org.richfaces.fragment.common.WaitingWrapper;
 import org.richfaces.fragment.common.WaitingWrapperImpl;
 import org.richfaces.fragment.common.picker.ChoicePicker;
@@ -51,10 +52,7 @@ import com.google.common.base.Predicate;
  * @author <a href="mailto:jhuska@redhat.com">Juraj Huska</a>
  * @author <a href="mailto:jstefek@redhat.com">Jiri Stefek</a>
  */
-public class RichFacesAutocomplete implements Autocomplete, AdvancedInteractions<RichFacesAutocomplete.AdvancedAutocompleteInteractions> {
-
-    private static final String SUGGESTIONS_CSS_SELECTOR_TEMPLATE = ".rf-au-lst-cord[id='%sList'] .rf-au-itm";
-    private static final String CSS_INPUT = "input[type='text']";
+public class RichFacesAutocomplete implements Autocomplete, AdvancedVisibleComponentIteractions<RichFacesAutocomplete.AdvancedAutocompleteInteractions> {
 
     @Drone
     private WebDriver driver;
@@ -62,7 +60,7 @@ public class RichFacesAutocomplete implements Autocomplete, AdvancedInteractions
     @Root
     private WebElement root;
 
-    @FindBy(css = CSS_INPUT)
+    @FindBy(css = "input[type='text']")
     private TextInputComponentImpl input;
 
     private final AdvancedAutocompleteInteractions advancedInteractions = new AdvancedAutocompleteInteractions();
@@ -78,16 +76,19 @@ public class RichFacesAutocomplete implements Autocomplete, AdvancedInteractions
 
     @Override
     public SelectOrConfirm type(String str) {
-        if (!input.getStringValue().isEmpty()) {
-            input.sendKeys(advanced().getToken() + " ");
+        if (!advanced().getInput().getStringValue().isEmpty()) {
+            advanced().getInput().sendKeys(advanced().getToken() + " ");
         }
-        input.sendKeys(str);
+        advanced().getInput().sendKeys(str);
         return new SelectOrConfirmImpl();
     }
 
-    public class AdvancedAutocompleteInteractions {
+    public class AdvancedAutocompleteInteractions implements VisibleComponentInteractions {
 
+        private static final String SUGGESTIONS_CSS_SELECTOR_TEMPLATE = ".rf-au-lst-cord[id='%sList'] .rf-au-itm";
         private static final String DEFAULT_TOKEN = ",";
+        private static final String SELECT_FIRST_ATT_NAME = "selectFirst";
+
         private final ScrollingType DEFAULT_SCROLLING_TYPE = ScrollingType.BY_MOUSE;
         private ScrollingType scrollingType = DEFAULT_SCROLLING_TYPE;
         private String token = DEFAULT_TOKEN;
@@ -118,16 +119,16 @@ public class RichFacesAutocomplete implements Autocomplete, AdvancedInteractions
             return scrollingType;
         }
 
+        protected String getSuggestionsSelectorTemplate() {
+            return SUGGESTIONS_CSS_SELECTOR_TEMPLATE;
+        }
+
         public List<WebElement> getSuggestionsElements() {
-            String id = root.getAttribute("id");
-            String selectorOfRoot = String.format(SUGGESTIONS_CSS_SELECTOR_TEMPLATE, id);
+            String id = getRootElement().getAttribute("id");
+            String selectorOfRoot = String.format(getSuggestionsSelectorTemplate(), id);
             List<WebElement> foundElements = driver.findElements(By.cssSelector(selectorOfRoot));
-            if (!foundElements.isEmpty() && foundElements.get(0).isDisplayed()) { // prevent
-                                                                                  // returning
-                                                                                  // of
-                                                                                  // not
-                                                                                  // visible
-                // elements
+            if (!foundElements.isEmpty() && foundElements.get(0).isDisplayed()) {
+                // prevent returning of not visible elements
                 return Collections.unmodifiableList(foundElements);
             } else {
                 return Collections.emptyList();
@@ -138,19 +139,19 @@ public class RichFacesAutocomplete implements Autocomplete, AdvancedInteractions
             return token;
         }
 
-        public void setupToken() {
+        public void setToken() {
             token = DEFAULT_TOKEN;
         }
 
-        public void setupToken(String value) {
+        public void setToken(String value) {
             token = value;
         }
 
-        public void setupScrollingType() {
+        public void setScrollingType() {
             scrollingType = DEFAULT_SCROLLING_TYPE;
         }
 
-        public void setupScrollingType(ScrollingType type) {
+        public void setScrollingType(ScrollingType type) {
             scrollingType = type;
         }
 
@@ -167,7 +168,7 @@ public class RichFacesAutocomplete implements Autocomplete, AdvancedInteractions
                     });
                 }
             }.withMessage("Waiting for suggestions to be not visible")
-             .withTimeout(getTimeoutForSuggestionsToBeNotVisible(), TimeUnit.MILLISECONDS);
+                .withTimeout(getTimeoutForSuggestionsToBeNotVisible(), TimeUnit.MILLISECONDS);
         }
 
         public WaitingWrapper waitForSuggestionsToBeVisible() {
@@ -183,14 +184,14 @@ public class RichFacesAutocomplete implements Autocomplete, AdvancedInteractions
                     });
                 }
             }.withMessage("Waiting for suggestions to be visible")
-             .withTimeout(getTimeoutForSuggestionsToBeVisible(), TimeUnit.MILLISECONDS);
+                .withTimeout(getTimeoutForSuggestionsToBeVisible(), TimeUnit.MILLISECONDS);
         }
 
-        public void setupTimeoutForSuggestionsToBeNotVisible(long timeoutInMilliseconds) {
+        public void setTimeoutForSuggestionsToBeNotVisible(long timeoutInMilliseconds) {
             _timeoutForSuggestionsToBeNotVisible = timeoutInMilliseconds;
         }
 
-        public void setupTimeoutForSuggestionsToBeVisible(long timeoutInMilliseconds) {
+        public void setTimeoutForSuggestionsToBeVisible(long timeoutInMilliseconds) {
             _timeoutForSuggestionsToBeVisible = timeoutInMilliseconds;
         }
 
@@ -201,17 +202,32 @@ public class RichFacesAutocomplete implements Autocomplete, AdvancedInteractions
         public long getTimeoutForSuggestionsToBeVisible() {
             return (_timeoutForSuggestionsToBeVisible == -1L) ? Utils.getWaitAjaxDefaultTimeout(driver) : _timeoutForSuggestionsToBeVisible;
         }
+
+        protected boolean isSelectFirst() {
+            return Utils.<Boolean>getComponentOption(getRootElement(), SELECT_FIRST_ATT_NAME).or(Boolean.TRUE);
+        }
+
+        @Override
+        public boolean isVisible() {
+            return Utils.isVisible(getRootElement());
+        }
     }
 
     public class SelectOrConfirmImpl implements SelectOrConfirm {
 
         @Override
         public Autocomplete confirm() {
-            // these two actions need to be split in order to prevent NoSuchElementException
-            new Actions(driver).sendKeys(Keys.RETURN).perform();
-            Graphene.waitModel().until().element(By.cssSelector("body")).is().present();
-            new Actions(driver).click(driver.findElement(Utils.BY_BODY)).perform();
-            advanced().waitForSuggestionsToBeNotVisible().perform();
+            // in normal circumstances the confirmation could be done with `ENTER` key, but in WebDriver this causes the form
+            // to be submitted with HTTP, so we need to workaround it
+            boolean selectFirst = advanced().isSelectFirst();
+            if (selectFirst && !advanced().getSuggestionsElements().isEmpty()) {
+                select();// select the first item
+            } else {
+                // blur the input and focus on it again >>> the change event will be triggered, but we do not lose focus
+                Utils.performUniversalBlur(driver);
+                Graphene.waitModel().until().element(advanced().getInput().advanced().getInputElement()).is().present();
+                advanced().getInput().advanced().getInputElement().click();
+            }
             return RichFacesAutocomplete.this;
         }
 
@@ -248,18 +264,14 @@ public class RichFacesAutocomplete implements Autocomplete, AdvancedInteractions
             return select(ChoicePickerHelper.byVisibleText().match(match));
         }
 
-        private void selectWithKeys(WebElement foundValue) {
-            List<WebElement> suggestions = advanced().getSuggestionsElements();
-            // if selectFirst attribute of autocomplete is set, we don't have to
-            // press arrow down key for first item
-            boolean skip = suggestions.get(0).getAttribute("class").contains("rf-au-itm-sel");
-            int index = Utils.getIndexOfElement(foundValue);
-            int steps = index + (skip ? 0 : 1);
+        protected void selectWithKeys(WebElement foundValue) {
+            // if selectFirst attribute of autocomplete is set, we don't have to press arrow down key for first item
+            int steps = Utils.getIndexOfElement(foundValue) + (advanced().isSelectFirst() ? 0 : 1);
             Actions actions = new Actions(driver);
             for (int i = 0; i < steps; i++) {
                 actions.sendKeys(Keys.ARROW_DOWN);
             }
-            actions.sendKeys(foundValue, Keys.RETURN).perform();
+            actions.sendKeys(foundValue, Keys.TAB).perform();
         }
     }
 }

@@ -8,6 +8,16 @@
         showDelay : 300
     }
     // constructor definition
+    /**
+     * Backing object for rich:menuGroup
+     * 
+     * @extends RichFaces.ui.MenuBase
+     * @memberOf! RichFaces.ui
+     * @constructs RichFaces.ui.MenuGroup
+     * 
+     * @param id
+     * @param options
+     */
     rf.ui.MenuGroup = function(componentId, options) {
         this.id = componentId;
         this.options = {};
@@ -54,6 +64,7 @@
                         .getDomElement(menu.id), null);
                     this.__hidePopup();
                     this.shown = false;
+                    this.unselect();
                 }
             },
 

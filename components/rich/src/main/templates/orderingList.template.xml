@@ -29,7 +29,7 @@
                 <tr>
                     <td cdk:passThrough="onkeypress:onkeypress onkeydown:onkeydown onkeyup:onkeyup">
                         <div id="#{clientId}List" class="rf-ord-cntr">
-                            <input id="#{clientId}ListFocusKeeper" name="#{clientId}ListFocusKeeper" type="button" value="" style="width: 1px; position: absolute; left: -32767px;" />
+                            <input id="#{clientId}ListFocusKeeper" name="#{clientId}ListFocusKeeper" type="button" value="" class="rf-ord-fc" />
                             <cdk:object type="java.lang.Object" name="caption" value="#{component.attributes['caption']}" />
                             <c:if test="#{! empty caption}">
                                 <div class="rf-ord-cptn">
@@ -39,7 +39,7 @@
                             <div class="rf-ord-lst-dcrtn"
                                 cdk:passThrough="onclick:onlistclick ondblclick:onlistdblclick onmousedown:onlistmousedown onmouseup:onlistmouseup onmouseover:onlistmouseover
                                 onmousemove:onlistmousemove onmouseout:onlistmouseout onkeypress:onlistkeypress onkeydown:onlistkeydown onkeyup:onlistkeyup">
-                                <div class="rf-ord-lst-scrl" style="#{encodeHeightAndWidth(component)}">
+                                <div class="rf-ord-lst-scrl" id="#{clientId}Scroll" style="#{encodeHeightAndWidth(component)}">
                                     <c:choose>
                                         <c:when test="#{! hasColumnChildren}">
                                             <div id="#{clientId}Items">

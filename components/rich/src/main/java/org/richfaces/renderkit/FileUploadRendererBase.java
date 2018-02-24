@@ -78,9 +78,9 @@ public class FileUploadRendererBase extends RendererBase {
 
     private Iterable<UploadedFile> initializeUploadedFiles(ExternalContext context, HttpServletRequest request, String uploadId) {
         try {
-            List<UploadedFile> files = new LinkedList<>();
+            List<UploadedFile> files = new LinkedList<UploadedFile>();
 
-              // check if Servlet 3.0+ is being used
+            // check if Servlet 3.0+ is being used
             if (request.getParts().size() > 0) {
                 Collection<Part> parts = request.getParts();
 
@@ -88,7 +88,14 @@ public class FileUploadRendererBase extends RendererBase {
                     String contentDisposition = part.getHeader("Content-Disposition");
                     String filename = MultipartRequestParser.parseFileName(contentDisposition);
                     if (filename != null) {
-                        files.add(new UploadedFile30(part.getName(), filename, part));
+                        // RF-14092: request encoded in UTF8 (XHR2 default) will be parsed as Latin1 (HTTP default)
+                        // on Tomcat it can be any encoding (org.apache.catalina.filters.SetCharacterEncodingFilter)
+                        String encoding = request.getCharacterEncoding();
+                        if (encoding == null) {
+                            encoding = "iso-8859-1";
+                        }
+                        files
+                            .add(new UploadedFile30(part.getName(), new String(filename.getBytes(encoding), "utf-8"), part));
                     }
                 }
             } else {
@@ -106,13 +113,17 @@ public class FileUploadRendererBase extends RendererBase {
         }
     }
 
-    private long getMaxRequestSize(ServletContext servletContext) {
+    public static long getMaxRequestSize(ServletContext servletContext) {
         String param = servletContext.getInitParameter("org.richfaces.fileUpload.maxRequestSize");
         if (param != null) {
             return Long.parseLong(param);
         }
 
         return 0;
+    }
+
+    public static long getMaxRequestSize() {
+        return getMaxRequestSize((ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext());
     }
 
     @Override
@@ -130,7 +141,8 @@ public class FileUploadRendererBase extends RendererBase {
                 if (uid != null) {
                     long contentLength = Long.parseLong(httpRequest.getHeader("Content-Length"));
 
-                    long maxRequestSize = getMaxRequestSize(httpRequest.getServletContext());
+                    long maxRequestSize = fileUpload.getMaxFileSize() != 0 ? fileUpload.getMaxFileSize()
+                        : getMaxRequestSize(httpRequest.getServletContext());
 
                     if (maxRequestSize != 0 && contentLength > maxRequestSize) {
                         externalContext.setResponseStatus(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE);

@@ -5,7 +5,7 @@
 ### Requirements
 
  * Maven 3.0.3 or later
- * JBoss AS 7 or later
+ * Wildfly 8.1  or later
 
 ### Optional Additional Software
 
@@ -31,15 +31,15 @@ In order to run the demo on WildFly the server has to be started with `-Dorg.jbo
     
      
 
-### Testing
+### Integration Testing
 
-The Photoalbum comes with a small set of tests, to run them use
+The Photoalbum comes with a small set of integration tests, to run them use
 
-    mvn test -Parquillian-jbossas-remote
+    mvn clean verify -Dintegration=<nameOfServer> -Dtest=<nameOfTest>
    
-Or select the _arquillian-jbossas-remote_ profile from the IDE (Right click the project -> _Maven_ -> _Select Maven Profiles_) and then run the tests: right click _src/test/java_ -> _Run As_ -> _JUnit Test_
-    
-In order for the tests to execute you need to have a server running.
+Tests are runnable on wildfly81, wildfly81-remote, wildfly82, wildfly82-remote, jbosseap63 and jbosseap63-remote.
+To choose a server, write its name into -Dintegration. To run tests on remote server, you need start the server before running tests.
+In order to execute single test, use -Dtest=TestSomething, to run all the tests, simply omit this parameter.
 
 ### Predefined users
 
@@ -58,6 +58,13 @@ the password is _12345_ in all cases.
 
 The Photoalbum allows you to connect to your Facebook and Google+ accounts and browse and share your photos. 
 Due to limitations put on the apps you need to be running the application on the default `localhost:8080` in order to log in successfully.
+As for Facebook integration, we are using Graph API(version > 2) and there is a test user profile with following credentials:
+E-mail address -> vocfryc_wongwitz_1429527192@tfbnw.net 
+Password -> 12345
+
+n order to successfully run integration tests which include Google+ login, you need to provide your own credentials. This can be
+achieved by adding following parameters when executing maven: -DgooglePlus.username=yourName -DgooglePlus.password=yourPswd
+If not provided, these tests will end up with IllegalArgumentException.
 
 ## Known issues
 ### Database error during deployment

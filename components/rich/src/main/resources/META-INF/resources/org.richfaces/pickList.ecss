@@ -1,7 +1,7 @@
 .rf-pick-opt {
-    color: '#{richSkin.generalTextColor}';
-    font-size: '#{richSkin.generalSizeFont}';
-    font-family: '#{richSkin.generalFamilyFont}';
+    color: '#{a4jSkin.generalTextColor}';
+    font-size: '#{a4jSkin.generalSizeFont}';
+    font-family: '#{a4jSkin.generalFamilyFont}';
 }
 
 .rf-pick {
@@ -14,14 +14,14 @@
     text-align: left;
     height: 22px;
     white-space: nowrap;
-    background-image: "#{richSkin.imageUrl('colHdrGrad.png')}";
+    background-image: "#{a4jSkin.imageUrl('colHdrGrad.png')}";
     background-repeat: repeat-x;
     background-position: top left;
-    background-color: '#{richSkin.headerBackgroundColor}';
-    font-size: '#{richSkin.headerSizeFont}';
-    font-family: '#{richSkin.headerFamilyFont}';
-    font-weight: '#{richSkin.headerWeightFont}';
-    color: '#{richSkin.headerTextColor}';
+    background-color: '#{a4jSkin.tableHeaderBackgroundColor}';
+    font-size: '#{a4jSkin.headerSizeFont}';
+    font-family: '#{a4jSkin.headerFamilyFont}';
+    font-weight: '#{a4jSkin.headerWeightFont}';
+    color: '#{a4jSkin.headerTextColor}';
 }
 
 .rf-pick-hdr-c {
@@ -29,22 +29,22 @@
 }
 
 .rf-pick-src-cptn, .rf-pick-tgt-cptn {
-    font-size: '#{richSkin.headerSizeFont}';
-    font-family: '#{richSkin.headerFamilyFont}';
-    font-weight: '#{richSkin.headerWeightFont}';
-    color: '#{richSkin.headerTextColor}';
+    font-size: '#{a4jSkin.headerSizeFont}';
+    font-family: '#{a4jSkin.headerFamilyFont}';
+    font-weight: '#{a4jSkin.headerWeightFont}';
+    color: '#{a4jSkin.headerTextColor}';
 }
 
 .rf-pick-btn {
     width : 100%;
     white-space:nowrap;
-    background-image: "#{richSkin.imageUrl('autocompleteButtonGradient.png')}";
+    background-image: "#{a4jSkin.imageUrl('autocompleteButtonGradient.png')}";
     background-repeat: repeat-x;
     background-position: top left;
-    background-color: '#{richSkin.headerBackgroundColor}';
+    background-color: '#{a4jSkin.headerBackgroundColor}';
     border-left-width: 1px;
     border-left-style: solid;
-    border-left-color: '#{richSkin.panelBorderColor}';
+    border-left-color: '#{a4jSkin.panelBorderColor}';
     display: inline-block;
     vertical-align: top;
     cursor: pointer;
@@ -59,9 +59,9 @@
 .rf-pick-lst-dcrtn {
     border-width: 1px;
     border-style: solid;
-    border-color: '#{richSkin.panelBorderColor}';
+    border-color: '#{a4jSkin.panelBorderColor}';
     padding: 0px;
-    background-color: '#{richSkin.tableBackgroundColor}';
+    background-color: '#{a4jSkin.tableBackgroundColor}';
 }
 
 .rf-pick-lst-scrl {
@@ -78,14 +78,15 @@
 
 .rf-pick-opt-dis {
     cursor: default;
+    color: '#{a4jSkin.tabDisabledTextColor}';
 }
 
 .rf-pick-sel {
     width: 100%;
-    background-color: '#{richSkin.headerBackgroundColor}';
+    background-color: '#{a4jSkin.additionalBackgroundColor}';
     border-width: 1px;
     border-style: dotted;
-    border-color: '#{richSkin.generalTextColor}';
+    border-color: '#{a4jSkin.generalTextColor}';
 }
 
 input.rf-pick-dflt-lbl {
@@ -94,4 +95,16 @@ input.rf-pick-dflt-lbl {
 
 .rf-pick-tbl {
     width : 100%;
+}
+
+.rf-pick-fc {
+    padding: 0px;
+    border: 0px;
+    width: 0px;
+    height: 0px;
+    position: absolute;
+}
+
+.rf-pick-fc:focus {
+    outline: none;
 }

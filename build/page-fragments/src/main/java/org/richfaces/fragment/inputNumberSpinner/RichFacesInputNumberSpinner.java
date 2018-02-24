@@ -21,17 +21,18 @@
  */
 package org.richfaces.fragment.inputNumberSpinner;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.fragment.Root;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
-import org.richfaces.fragment.common.AdvancedInteractions;
+import org.richfaces.fragment.common.AdvancedVisibleComponentIteractions;
 import org.richfaces.fragment.common.TextInputComponentImpl;
+import org.richfaces.fragment.common.Utils;
+import org.richfaces.fragment.common.VisibleComponentInteractions;
 import org.richfaces.fragment.inputNumberSlider.AbstractNumberInput;
 import org.richfaces.fragment.inputNumberSlider.NumberInput;
 
-public class RichFacesInputNumberSpinner extends AbstractNumberInput implements NumberInput, AdvancedInteractions<RichFacesInputNumberSpinner.AdvancedInputNumberSpinnerInteractions> {
+public class RichFacesInputNumberSpinner extends AbstractNumberInput implements NumberInput,
+    AdvancedVisibleComponentIteractions<RichFacesInputNumberSpinner.AdvancedInputNumberSpinnerInteractions> {
 
     @FindBy(css = "input.rf-insp-inp")
     private TextInputComponentImpl input;
@@ -41,9 +42,6 @@ public class RichFacesInputNumberSpinner extends AbstractNumberInput implements 
 
     @FindBy(css = "span.rf-insp-btns > span.rf-insp-dec")
     private WebElement arrowDecrease;
-
-    @Drone
-    private WebDriver browser;
 
     @Root
     private WebElement root;
@@ -55,30 +53,31 @@ public class RichFacesInputNumberSpinner extends AbstractNumberInput implements 
         return advancedInteractions;
     }
 
-    @Override
-    protected WebElement getArrowDecreaseElement() {
-        return arrowDecrease;
-    }
+    public class AdvancedInputNumberSpinnerInteractions extends AbstractNumberInput.AdvancedNumberInputInteractions
+        implements VisibleComponentInteractions {
 
-    @Override
-    protected WebElement getArrowIncreaseElement() {
-        return arrowIncrease;
-    }
+        @Override
+        public WebElement getArrowDecreaseElement() {
+            return arrowDecrease;
+        }
 
-    @Override
-    protected WebDriver getBrowser() {
-        return browser;
-    }
+        @Override
+        public WebElement getArrowIncreaseElement() {
+            return arrowIncrease;
+        }
 
-    @Override
-    protected TextInputComponentImpl getInput() {
-        return input;
-    }
-
-    public class AdvancedInputNumberSpinnerInteractions extends AbstractNumberInput.AdvancedNumberInputInteractions {
+        @Override
+        public TextInputComponentImpl getInput() {
+            return input;
+        }
 
         public WebElement getRootElement() {
             return root;
+        }
+
+        @Override
+        public boolean isVisible() {
+            return Utils.isVisible(getRootElement());
         }
     }
 }

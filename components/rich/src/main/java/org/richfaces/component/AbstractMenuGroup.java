@@ -1,6 +1,8 @@
 package org.richfaces.component;
 
+import javax.faces.component.UIComponent;
 import javax.faces.component.UIOutput;
+import javax.faces.convert.Converter;
 
 import org.richfaces.cdk.annotations.Attribute;
 import org.richfaces.cdk.annotations.EventName;
@@ -9,8 +11,10 @@ import org.richfaces.cdk.annotations.JsfComponent;
 import org.richfaces.cdk.annotations.JsfRenderer;
 import org.richfaces.cdk.annotations.Tag;
 import org.richfaces.component.attribute.CoreProps;
+import org.richfaces.component.attribute.DisabledProps;
 import org.richfaces.component.attribute.EventsKeyProps;
 import org.richfaces.component.attribute.EventsMouseProps;
+import org.richfaces.component.attribute.EventsPopupsProps;
 import org.richfaces.component.attribute.I18nProps;
 import org.richfaces.component.attribute.PositionProps;
 import org.richfaces.renderkit.html.MenuGroupRendererBase;
@@ -23,14 +27,10 @@ import org.richfaces.renderkit.html.MenuGroupRendererBase;
 @JsfComponent(family = AbstractDropDownMenu.COMPONENT_FAMILY, type = AbstractMenuGroup.COMPONENT_TYPE,
         facets = {@Facet(name = "icon", generate = false), @Facet(name = "iconDisabled", generate = false) },
         renderer = @JsfRenderer(type = MenuGroupRendererBase.RENDERER_TYPE), tag = @Tag(name = "menuGroup"))
-public abstract class AbstractMenuGroup extends UIOutput implements CoreProps, EventsKeyProps, EventsMouseProps, I18nProps, PositionProps {
+public abstract class AbstractMenuGroup extends UIOutput implements CoreProps, DisabledProps, EventsKeyProps, EventsMouseProps, EventsPopupsProps, I18nProps, PositionProps {
     public static final String COMPONENT_TYPE = "org.richfaces.MenuGroup";
 
-    /**
-     * Disables the menu component, so it will not activate/expand
-     */
-    @Attribute
-    public abstract boolean isDisabled();
+    private AbstractMenuContainer parent;
 
     /**
      * The icon to be displayed with the menu item
@@ -50,28 +50,32 @@ public abstract class AbstractMenuGroup extends UIOutput implements CoreProps, E
     @Attribute
     public abstract String getLabel();
 
-    /**
-     * The client-side script method to be called when this menuGroup is shown
-     */
-    @Attribute(events = @EventName("show"))
-    public abstract String getOnshow();
-
-    /**
-     * The client-side script method to be called when this menuGroup is hidden
-     */
-    @Attribute(events = @EventName("hide"))
-    public abstract String getOnhide();
-
     @Attribute(hidden = true)
     public abstract Object getValue();
 
+    @Attribute(hidden = true)
+    public abstract Converter getConverter();
+
     @Attribute(generate = false, hidden = true, readOnly = true)
     public Object getCssRoot() {
-        return getParent().getAttributes().get("cssRoot");
+        return findMenuComponent().getAttributes().get("cssRoot");
     }
 
     public enum Facets {
         icon,
         iconDisabled
+    }
+
+    public AbstractMenuContainer findMenuComponent() {
+        if (parent != null) {
+            return parent;
+        }
+        UIComponent c = this;
+        while (c != null && !(c instanceof AbstractMenuContainer)) {
+            c = c.getParent();
+        }
+
+        parent = (AbstractMenuContainer) c;
+        return parent;
     }
 }

@@ -41,6 +41,7 @@ import javax.faces.component.visit.VisitContext;
 import javax.faces.component.visit.VisitHint;
 import javax.faces.component.visit.VisitResult;
 import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
 import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.ExceptionQueuedEvent;
@@ -52,6 +53,7 @@ import javax.faces.event.PreValidateEvent;
 
 import org.richfaces.application.FacesMessages;
 import org.richfaces.application.MessageFactory;
+import org.richfaces.application.ServiceTracker;
 import org.richfaces.cdk.annotations.Attribute;
 import org.richfaces.cdk.annotations.EventName;
 import org.richfaces.cdk.annotations.JsfComponent;
@@ -71,11 +73,10 @@ import org.richfaces.event.ItemChangeSource;
 import org.richfaces.log.Logger;
 import org.richfaces.log.RichfacesLogger;
 import org.richfaces.renderkit.MetaComponentRenderer;
-import org.richfaces.application.ServiceTracker;
 import org.richfaces.renderkit.util.RendererUtils;
+import org.richfaces.view.facelets.html.TogglePanelTagHandler;
 
 import com.google.common.base.Strings;
-import org.richfaces.view.facelets.html.TogglePanelTagHandler;
 
 /**
  * <p>The &lt;rich:togglePanel&gt; component is used as a base for the other switchable components, the
@@ -124,6 +125,9 @@ public abstract class AbstractTogglePanel extends UIOutput implements AbstractDi
         }
         return false;
     }
+
+    @Attribute(hidden = true)
+    public abstract Converter getConverter();
 
     // -------------------------------------------------- Editable Value Holder
 
@@ -554,14 +558,8 @@ public abstract class AbstractTogglePanel extends UIOutput implements AbstractDi
             String newItemName = ((ItemChangeEvent) event).getNewItemName();
             setValue(newItemName);
             setSubmittedActiveItem(newItemName);
-            if (event.getPhaseId() == PhaseId.UPDATE_MODEL_VALUES) {
-                try {
-                    updateModel(facesContext);
-                } catch (RuntimeException e) {
-                    facesContext.renderResponse();
-                    throw e;
-                }
-            } else {
+            updateModel(facesContext);
+            if (event.getPhaseId() != PhaseId.UPDATE_MODEL_VALUES) {
                 facesContext.renderResponse();
             }
         }
@@ -649,7 +647,7 @@ public abstract class AbstractTogglePanel extends UIOutput implements AbstractDi
                     }
                     visitState.increment();
                     visitState.setState(null, null);
-                    return VisitResult.ACCEPT;
+                    return VisitResult.REJECT;
                 } else if (AbstractTogglePanel.this == target || target instanceof UIRepeat) {
                     return VisitResult.ACCEPT;
                 } else {
@@ -948,6 +946,12 @@ public abstract class AbstractTogglePanel extends UIOutput implements AbstractDi
             }
 
             if (result == VisitResult.ACCEPT) {
+                if (this instanceof AbstractCollapsiblePanel) {
+                    if (this.getSwitchType() != SwitchType.client && !((AbstractCollapsiblePanel) this).isExpanded()) {
+                        return false;
+                    }
+                }
+
                 Iterator<UIComponent> kids = this.getFacetsAndChildren();
 
                 while (kids.hasNext()) {

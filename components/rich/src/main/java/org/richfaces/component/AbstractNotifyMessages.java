@@ -34,6 +34,7 @@ import org.richfaces.component.attribute.CoreProps;
 import org.richfaces.component.attribute.EventsKeyProps;
 import org.richfaces.component.attribute.EventsMouseProps;
 import org.richfaces.component.attribute.I18nProps;
+import org.richfaces.component.attribute.OutputFormatProps;
 
 /**
  * <p> The &lt;rich:notifyMessages&gt; component is the same as the &lt;rich:notifyMessage&gt; component, but each of
@@ -43,20 +44,17 @@ import org.richfaces.component.attribute.I18nProps;
  * @author <a href="http://community.jboss.org/people/bleathem">Brian Leathem</a>
  */
 @JsfComponent(
-        generate = "org.richfaces.component.UINotifyMessages",
+        generate = "org.richfaces.component.html.HtmlNotifyMessages",
         type = "org.richfaces.NotifyMessages",
         tag = @Tag(name = "notifyMessages"),
         renderer = @JsfRenderer(template = "notifyMessages.template.xml", type = "org.richfaces.NotifyMessagesRenderer"))
-public abstract class AbstractNotifyMessages extends UIMessages implements AjaxOutput, ClientSideMessage, NotifyAttributes, AjaxOutputProps, CoreProps, EventsKeyProps, EventsMouseProps, I18nProps {
-
-    @Attribute(defaultValue = "true")
-    public abstract boolean isAjaxRendered();
+public abstract class AbstractNotifyMessages extends UIMessages implements AjaxOutput, ClientSideMessage, NotifyAttributes, AjaxOutputProps, CoreProps, EventsKeyProps, EventsMouseProps, I18nProps, OutputFormatProps {
 
     @Attribute(hidden = true)
     public abstract boolean isKeepTransient();
 
-    @Attribute(defaultValue = "true")
-    public abstract boolean isEscape();
+    @Attribute(hidden = true)
+    public abstract boolean isDisabled();
 
     public void updateMessages(FacesContext context, String clientId) {
         // TODO why this need to be implemented?

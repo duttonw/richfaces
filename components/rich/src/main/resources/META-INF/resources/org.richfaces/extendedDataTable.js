@@ -71,6 +71,9 @@
         },
 
         remove: function(index) {
+            if (!this.contains(index)) {
+                return;
+            }
             var i = 0;
             while (i < this.ranges.length && index > this.ranges[i++][1]);
             i--;
@@ -118,6 +121,7 @@
     };
 
     var WIDTH_CLASS_NAME_BASE = "rf-edt-c-";
+    var DATA_ATTRIBUTE = "rf-column-name";
     var MIN_WIDTH = 20;
 
     rf.ui = rf.ui || {};
@@ -126,12 +130,26 @@
 
             name: "ExtendedDataTable",
 
+            /**
+             * Backing object for rich:extendedDataTable
+             * 
+             * @extends RichFaces.BaseComponent
+             * @memberOf! RichFaces.ui
+             * @constructs RichFaces.ui.ExtendedDataTable
+             * 
+             * @param id
+             * @param rowCount
+             * @param ajaxFunction
+             * @param options
+             */
             init: function (id, rowCount, ajaxFunction, options) {
                 $super.constructor.call(this, id);
                 this.ranges = new rf.utils.Ranges();
                 this.rowCount = rowCount;
                 this.ajaxFunction = ajaxFunction;
                 this.options = options || {};
+                this.options.loadDelay = 400;
+                this.options.selectionMode = this.options.selectionMode || "multiple";
                 this.element = this.attachToDom();
                 this.newWidths = {};
                 this.storeDomReferences();
@@ -141,6 +159,19 @@
                 this.resizeEventName = "resize.rf.edt." + this.id;
                 $(document).ready($.proxy(this.initialize, this));
                 this.activateResizeListener();
+                var body = $(this.element).find(".rf-edt-b .rf-edt-cnt");
+                var delayedScroll = function(table, body) {
+                    return function () {
+                        // let browser scroll the element
+                        setTimeout(function() {
+                            table.scrollElement.scrollLeft = body.scrollLeft();
+                            table.updateScrollPosition();
+                        }, 0);
+                    };
+                };
+                
+                body.bind("scroll", delayedScroll(this, body));
+                body.bind("mousewheel", $.proxy(this.horizontalScrollHandler, this));
                 $(this.scrollElement).bind("scroll", $.proxy(this.updateScrollPosition, this));
                 this.bindHeaderHandlers();
                 $(this.element).bind("rich:onajaxcomplete", $.proxy(this.ajaxComplete, this));
@@ -213,7 +244,9 @@
                 this.newWidths[columnId] = width;
                 var widthsArray = new Array();
                 for (var id in this.newWidths) {
-                    widthsArray.push(id + ":" + this.newWidths[id]);
+                    if (this.newWidths.hasOwnProperty(id)) {
+                        widthsArray.push(id + ":" + this.newWidths[id]);
+                    }
                 }
                 this.widthInput.value = widthsArray.toString();
                 this.updateLayout();
@@ -221,6 +254,15 @@
                 this.ajaxFunction(); // TODO Maybe, event model should be used here.
             },
 
+            /**
+             * Filter a table column
+             * 
+             * @method
+             * @name RichFaces.ui.ExtendedDataTable#filter
+             * @param columnId {string} short column id
+             * @param filterValue {string} value to filter by
+             * @param [isClear] {boolean} whether or not to clear the previous filter, default - false
+             */
             filter: function(colunmId, filterValue, isClear) {
                 if (typeof(filterValue) == "undefined" || filterValue == null) {
                     filterValue = "";
@@ -230,6 +272,12 @@
                 this.ajaxFunction(null, map); // TODO Maybe, event model should be used here.
             },
 
+            /**
+             * Clear any filtering currently applied to the table
+             * 
+             * @method
+             * @name RichFaces.ui.ExtendedDataTable#clearFiltering
+             */
             clearFiltering: function() {
                 this.filter("", "", true);
             },
@@ -243,6 +291,9 @@
             },
 
             filterHandler: function(event) {
+                if (event.type == "keyup" && event.keyCode != 13) {
+                    return;
+                }
                 var filterHandle = $(event.data.filterHandle);
                 var columnId = filterHandle.data('columnid');
                 var filterValue = filterHandle.val();
@@ -250,6 +301,16 @@
             },
 
 
+            /**
+             * Sort a table column
+             * 
+             * @method
+             * @name RichFaces.ui.ExtendedDataTable#sort
+             * @param columnId {string} short column id
+             * @param [direction] {string} sort direction ("ascending", "descending", "unsorted")
+             *          if not provided and the column is sorted the direction switches, if it's unsorted it will be sorted in ascending sirection
+             * @param [isClear] {boolean} whether or not to clear the previous sort, default - false
+             */
             sort: function(colunmId, sortOrder, isClear) {
                 if (typeof(sortOrder) == "string") {
                     sortOrder = sortOrder.toLowerCase();
@@ -259,6 +320,12 @@
                 this.ajaxFunction(null, map); // TODO Maybe, event model should be used here.
             },
 
+            /**
+             * Clear any sorting currently applied to the table
+             * 
+             * @method
+             * @name RichFaces.ui.ExtendedDataTable#clearSorting
+             */
             clearSorting: function() {
                 this.sort("", "", true);
             },
@@ -266,6 +333,9 @@
             destroy: function() {
                 $(window).unbind("resize", this.updateLayout);
                 $(rf.getDomElement(this.id + ':st')).remove();
+                if (this.columnControl) {
+                    this.columnControl.destroy();
+                }
                 $super.destroy.call(this);
             },
 
@@ -278,6 +348,7 @@
                 });
                 this.header.find(".rf-edt-flt-i").each(function() {
                     $(this).bind("blur", {filterHandle: this}, $.proxy(self.filterHandler, self));
+                    $(this).bind("keyup", {filterHandle: this}, $.proxy(self.filterHandler, self));
                 });
             },
 
@@ -320,6 +391,7 @@
                         this.scrollElement.style.overflowX = "scroll";
                         this.scrollElement.style.width = width + "px";
                         this.scrollContentElement.style.width = contentWidth + "px";
+                        this.scrollElement.scrollLeft = document.getElementById(this.id + ":scroll").value;
                         this.updateScrollPosition();
                     } else {
                         this.parts.each(function() {
@@ -327,7 +399,7 @@
                         });
                         this.scrollElement.style.display = "none";
                     }
-                } else {
+                } else if (this.element.clientWidth != 0) {
                     this.contentDivElement.css('display', 'none');
                 }
                 var height = this.element.clientHeight;
@@ -338,8 +410,8 @@
                     }
                     el = el.nextSibling;
                 }
-                if (this.bodyElement.offsetHeight > height || !this.contentElement) {
-                    this.bodyElement.style.height = height + "px";
+                if (this.bodyElement.offsetHeight != height || !this.contentElement) {
+                    this.bodyElement.style.height = height > this.contentDivElement.height() ? "" : height + "px";
                 }
                 this.activateResizeListener();
             },
@@ -387,8 +459,19 @@
                     this.parts.each(function() {
                         this.scrollLeft = scrollLeft;
                     });
+                    document.getElementById(this.id + ":scroll").value = scrollLeft;
                 }
                 this.adjustResizers();
+            },
+            
+            horizontalScrollHandler: function(event) {
+                var scrollDelta = event.deltaFactor * event.deltaX;
+                
+                // ignore vertical scroll (deltaX = 0)
+                if (scrollDelta && this.scrollElement) {
+                    this.scrollElement.scrollLeft += scrollDelta;
+                    this.updateScrollPosition();
+                }  
             },
 
             initialize: function() {
@@ -424,12 +507,15 @@
                 this.parts = $(this.element).find(".rf-edt-cnt, .rf-edt-ftr-cnt").filter(function() {
                     return $(this).parents('.rf-edt').get(0) === edt;
                 });
-                this.updateLayout();
-                this.updateScrollPosition(); //TODO Restore horizontal scroll position
                 if ($(this.element).data('offscreenElements')) {
                     this.hideOffscreen(this.element);
                 }
                 this.activateResizeListener();
+                if (this.options['showColumnControl']) {
+                    this.__addColumnControl();
+                }
+                this.updateLayout();
+                this.updateScrollPosition(); //TODO Restore horizontal scroll position
                 $(this.element).trigger("rich:ready", this);
             },
 
@@ -479,7 +565,7 @@
             },
 
             drag: function(event) {
-                $(this.dragElement).setPosition({left:Math.max(this.resizeData.left + MIN_WIDTH, event.pageX)});
+                $(this.dragElement).setPosition({left:Math.max(this.resizeData.left + MIN_WIDTH, event.pageX), top: $(this.dragElement).offset().top});
                 return false;
             },
 
@@ -579,7 +665,7 @@
                     var _this = this;
                     this.timeoutId = window.setTimeout(function (event) {
                         _this.loadData(event)
-                    }, 1000);
+                    }, this.options.loadDelay);
                 }
             },
 
@@ -589,20 +675,43 @@
                 } else if (this.bodyElement.scrollTop + this.bodyElement.clientHeight
                     < (this.activeIndex + 1) * this.rowHeight + this.spacerElement.offsetHeight) { //DOWN
                     this.bodyElement.scrollTop = Math.min(this.bodyElement.scrollTop + this.rowHeight, this.bodyElement.scrollHeight - this.bodyElement.clientHeight);
+                } else if (this.activeIndex == 0) {
+                    this.bodyElement.scrollTop -= 5; // scroll top item down to force loading
+                } else if (this.activeIndex + 1 == this.rows) {
+                    this.bodyElement.scrollTop += 5; // scroll bottom up
                 }
             },
 
-            selectRow: function(index) {
+            selectRow: function(index, skipEvent) {
                 this.ranges.add(index);
                 for (var i = 0; i < this.tbodies.length; i++) {
                     $(this.tbodies[i].rows[index]).addClass("rf-edt-r-sel");
                 }
+                
+                if (!skipEvent) {
+                    this.onselectionchange({}, index, true);
+                }
             },
 
-            deselectRow: function (index) {
+            /**
+             * Deselect a table row
+             * 
+             * @method
+             * @name RichFaces.ui.ExtendedDataTable#deselectRow
+             * @param index {int} row index, 0-based
+             */
+            deselectRow: function (index, skipEvent) {
+                if (!this.options.selectionMode || this.options.selectionMode == 'none' 
+                    || !this.ranges.contains(index) || (!skipEvent && !this.onbeforeselectionchange({}))) {
+                    return;
+                }
                 this.ranges.remove(index);
                 for (var i = 0; i < this.tbodies.length; i++) {
                     $(this.tbodies[i].rows[index]).removeClass("rf-edt-r-sel");
+                }
+                
+                if (!skipEvent) {
+                    this.onselectionchange({}, index, true);
                 }
             },
 
@@ -665,31 +774,49 @@
                 this.selectionInput.value = [this.ranges, this.activeIndex, this.shiftIndex, this.selectionFlag].join("|");
             },
 
-            selectRows: function(range) {
+            /**
+             * Select one or more table rows
+             * 
+             * @method
+             * @name RichFaces.ui.ExtendedDataTable#selectRow
+             * @param index {int|int[]} row index (2) or range ([2,5])
+             */
+            selectRows: function(range, skipEvent) {
+                if (!this.options.selectionMode || this.options.selectionMode == 'none' 
+                    || (!skipEvent && !this.onbeforeselectionchange({}))) {
+                    return;
+                }
                 if (typeof range == "number") {
                     range = [range, range];
+                }
+                if (this.options.selectionMode == 'single') {
+                    range[1] = range[0];
                 }
                 var changed;
                 var i = 0;
                 for (; i < range[0]; i++) {
                     if (this.ranges.contains(i)) {
-                        this.deselectRow(i);
+                        this.deselectRow(i, true);
                         changed = true;
                     }
                 }
                 for (; i <= range[1]; i++) {
                     if (!this.ranges.contains(i)) {
-                        this.selectRow(i);
+                        this.selectRow(i, true);
                         changed = true;
                     }
                 }
                 for (; i < this.rows; i++) {
                     if (this.ranges.contains(i)) {
-                        this.deselectRow(i);
+                        this.deselectRow(i, true);
                         changed = true;
                     }
                 }
                 this.selectionFlag = typeof this.shiftIndex == "string" ? this.shiftIndex : "x";
+                if (!skipEvent) {
+                    this.onselectionchange({}, range, true);
+                    return;
+                }
                 return changed;
             },
 
@@ -707,7 +834,7 @@
                 } else {
                     range = [index, this.shiftIndex];
                 }
-                return this.selectRows(range);
+                return this.selectRows(range, true);
             },
 
             onbeforeselectionchange: function (event) {
@@ -747,18 +874,19 @@
                     tr = tr.parentNode;
                 }
                 var index = tr.rowIndex;
-                if (this.options.selectionMode == "single" || (this.options.selectionMode != "multipleKeyboardFree"
-                    && !event.shiftKey && !event.ctrlKey)) {
-                    changed = this.selectRows(index);
-                } else if (this.options.selectionMode == "multipleKeyboardFree" || (!event.shiftKey && event.ctrlKey)) {
-                    if (this.ranges.contains(index)) {
-                        this.deselectRow(index);
-                    } else {
-                        this.selectRow(index);
-                    }
-                    changed = true;
-                } else {
+                if (typeof(index) === 'undefined') {
+                    return;
+                }
+                if (this.options.selectionMode == "multiple" && event.shiftKey) {
                     changed = this.processSlectionWithShiftKey(index);
+                } else if ((event.ctrlKey || this.options.selectionMode == "multipleKeyboardFree") && this.ranges.contains(index)) {
+                    this.deselectRow(index, true);
+                    changed = true;
+                } else if (this.options.selectionMode == "single" || (this.options.selectionMode == "multiple" && !event.ctrlKey)) {
+                    changed = this.selectRows(index, true);
+                } else {
+                    this.selectRow(index, true);
+                    changed = true;
                 }
                 this.onselectionchange(event, index, changed);
             },
@@ -766,7 +894,7 @@
             selectionKeyDownListener: function(event) {
                 if (event.ctrlKey && this.options.selectionMode != "single" && (event.keyCode == 65 || event.keyCode == 97) //Ctrl-A
                     && this.onbeforeselectionchange(event)) {
-                    this.selectRows([0, rows]);
+                    this.selectRows([0, this.rows], true);
                     this.selectionFlag = "a";
                     this.onselectionchange(event, this.activeIndex, true); //TODO Is there a way to know that selection haven't changed?
                     event.preventDefault();
@@ -783,7 +911,7 @@
                             if (index >= 0 && index < this.rows) {
                                 var changed;
                                 if (this.options.selectionMode == "single" || (!event.shiftKey && !event.ctrlKey)) {
-                                    changed = this.selectRows(index);
+                                    changed = this.selectRows(index, true);
                                 } else if (event.shiftKey) {
                                     changed = this.processSlectionWithShiftKey(index);
                                 }
@@ -797,6 +925,16 @@
 
             ajaxComplete: function (event, data) {
                 this.storeDomReferences();
+
+                var colStateInput = document.getElementById(this.id + ":cols"),
+                    i = colStateInput.value.length;
+
+                while (i--) {
+                    if (colStateInput.value[i] == "x") {
+                        this.__hideColumn(i);
+                    }
+                };
+
                 if (data.reinitializeHeader) {
                     this.bindHeaderHandlers();
                     this.updateLayout();
@@ -817,9 +955,11 @@
                 var $table = $(document.getElementById(this.element.id)),
                     widthsArray = new Array();
                 for (var id in this.newWidths) {
-                    $table.find("." + WIDTH_CLASS_NAME_BASE + id).css('width', this.newWidths[id])
-                        .parent().css('width', this.newWidths[id]);
-                    widthsArray.push(id + ":" + this.newWidths[id]);
+                    if (this.newWidths.hasOwnProperty(id)) {
+                        $table.find("." + WIDTH_CLASS_NAME_BASE + id).css('width', this.newWidths[id])
+                            .parent().css('width', this.newWidths[id]);
+                        widthsArray.push(id + ":" + this.newWidths[id]);
+                    }
                 }
                 this.widthInput.value = widthsArray.toString();
                 this.updateLayout();
@@ -838,12 +978,22 @@
                 }
             },
 
-            contextMenuAttach: function (menu) {
+            __getMenuSelector: function (menu) {
                 var selector = "[id='" + this.element.id + "'] ";
                 selector += (typeof menu.options.targetSelector === 'undefined')
                     ?  ".rf-edt-b td" : menu.options.targetSelector;
                 selector = $.trim(selector);
+                return selector;
+            },
+
+            contextMenuAttach: function (menu) {
+                var selector = this.__getMenuSelector(menu);
                 rf.Event.bind(selector, menu.options.showEvent, $.proxy(menu.__showHandler, menu), menu);
+            },
+
+            contextMenuDetach: function (menu) {
+                var selector = this.__getMenuSelector(menu);
+                rf.Event.unbind(selector, menu.options.showEvent);
             },
 
             contextMenuShow: function (menu, event) {
@@ -855,6 +1005,119 @@
                 if (! this.ranges.contains(index) ) {
                     this.selectionClickListener(event);
                 }
+            },
+
+            __addColumnControl: function () {
+                var button = $('<div class="rf-edt-colctrl-btn" />'),
+                    controlId = this.id + ":colctrl",
+                    controlPopup = $('<div id="' + controlId + '" class="rf-edt-colctrl" style="z-index: 1"/>');
+
+                var tableHeader = $(this.element).find(".rf-edt-tbl-hdr");
+
+                tableHeader.append(button);
+                $(this.element).append(controlPopup);
+
+                var popupOptions = {
+                    jointPoint: "RT",
+                    positionOffset: [8,8],
+                    visible: true,
+                    type: "DROPDOWN",
+                    attachToBody: true
+                };
+
+                this.columnControl = new RichFaces.ui.Popup(controlId, popupOptions);
+                this.columnControl.hide();
+                button.click($.proxy(function(event) {
+                    this.columnControl.visible ? this.columnControl.hide() : this.columnControl.show(event);
+                }, this));
+
+                var columns = $(),
+                    column,
+                    columnNames = this.__getColumnNames(),
+                    patterns = {
+                        tdClass: /rf-edt-td-\w+/,
+                        cellClass: /rf-edt-c-\w+/,
+                        id: /[^:]+$/
+                    },
+                    currSelector;
+
+                if (this.tbodies) {
+                    this.tbodies.each(function() {
+                        columns = columns.add($(this).children(':eq(0)').children())}
+                    );
+                } else {
+                    columns = this.headerCells.parent();
+                    if (!columns.length) {
+                        columns = this.footerCells.parent();
+                    }
+                    if (!columns.length) {
+                        return;
+                    }
+                }
+
+                this.selectors = [];
+                for (var i = 0; i < columns.length; i++) {
+                    column = columns.eq(i);
+                    currSelector = column.attr('class');
+                    if (currSelector && currSelector.match(patterns.tdClass)) {
+                        currSelector = '.' + currSelector.match(patterns.tdClass)[0];
+                    } else {
+                        currSelector = 'td:has(> .' + column.children(':eq(0)').attr('class').match(patterns.cellClass)[0] + ')';
+                    }
+                    this.selectors.push({
+                        selector: currSelector,
+                        name: column.data(DATA_ATTRIBUTE) || columnNames[i] || "#" + column.attr('id').match(patterns.id)[0]
+                    });
+                }
+
+                var colStateInput = document.getElementById(this.id + ":cols"),
+                    table = this,
+                    $input, $label, newValue = "";
+                this.selectors.forEach(function(item, index) {
+                    $input = $('<input type="checkbox" onclick="event.stopPropagation();" />');
+                    $input.prop('checked', (!colStateInput.value || colStateInput.value[index] == 'o'));
+                    $input.attr('onchange', "RichFaces.component('" + table.id + "').__toggleColumn('" + index + "'); RichFaces.component('" + table.id + "').updateLayout();");
+                    $label = $('<label>' + item.name + '</label>');
+
+                    newValue += colStateInput.value ? colStateInput.value[index] : 'o';
+                    controlPopup.append($label.prepend($input), $('<br />'));
+                    if (newValue[newValue.length - 1] == 'x') {
+                        table.__hideColumn(index);
+                    }
+                });
+
+                colStateInput.value = newValue;
+            },
+
+            __getColumnNames: function () {
+                var names = [];
+
+                this.headerCells.each(function() {
+                    names.push(this.children[0].textContent);
+                });
+
+                if (names.length) {
+                    return names;
+                }
+
+                this.footerCells.each(function() {
+                    names.push(this.children[0].textContent);
+                });
+
+                return names;
+            },
+            
+            __toggleColumn: function(index) {
+                $(this.selectors[index].selector).toggle();
+
+                var colStateInput = document.getElementById(this.id + ":cols"),
+                    colState = colStateInput.value;
+
+                colStateInput.value = colState.substr(0, index) + (colState[index] == "o" ? "x" : "o") + colState.substr(++index);
+            }, 
+
+            __hideColumn: function(index) {
+                $(this.selectors[index].selector).hide();
             }
         });
 

@@ -1,11 +1,11 @@
 package org.richfaces.arquillian.container.installation;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -112,8 +112,6 @@ public class ContainerInstaller {
 
             zipentry = zipinputstream.getNextEntry();
             while (zipentry != null) {
-                int n;
-                FileOutputStream fileoutputstream;
                 File newFile = new File(destination, zipentry.getName());
                 if (zipentry.isDirectory()) {
                     newFile.mkdirs();
@@ -126,13 +124,8 @@ public class ContainerInstaller {
                     newFile.delete();
                 }
 
-                fileoutputstream = new FileOutputStream(newFile);
-
-                while ((n = zipinputstream.read(buf, 0, 1024)) > -1) {
-                    fileoutputstream.write(buf, 0, n);
-                }
-
-                fileoutputstream.close();
+                Files.copy(zipinputstream, newFile.toPath());
+                
                 zipinputstream.closeEntry();
                 zipentry = zipinputstream.getNextEntry();
 

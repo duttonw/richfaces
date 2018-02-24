@@ -29,11 +29,12 @@ import javax.faces.component.visit.VisitCallback;
 import javax.faces.component.visit.VisitContext;
 import javax.faces.component.visit.VisitResult;
 import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
 
 import org.richfaces.TooltipLayout;
 import org.richfaces.TooltipMode;
 import org.richfaces.cdk.annotations.Attribute;
-import org.richfaces.cdk.annotations.EventName;
+import org.richfaces.cdk.annotations.Description;
 import org.richfaces.cdk.annotations.JsfComponent;
 import org.richfaces.cdk.annotations.JsfRenderer;
 import org.richfaces.cdk.annotations.Tag;
@@ -169,30 +170,11 @@ public abstract class AbstractTooltip extends UIOutput implements AbstractDivPan
     @Attribute(hidden = true)
     public abstract Object getExecute();
 
-    // ------------------------------------------------ Html Attributes
-
-    @Attribute
-    public abstract String getStyle();
-
-    @Attribute
-    public abstract String getStyleClass();
-
-    @Attribute
+    @Attribute(defaultValue = "1000", description = @Description("Attribute is similar to the standard HTML attribute and can specify window placement relative to the content. Default value is \"1000\"."))
     public abstract int getZindex();
 
-    @Attribute(events = @EventName("hide"))
-    public abstract String getOnhide();
-
-    @Attribute(events = @EventName("show"))
-    public abstract String getOnshow();
-
-    @Attribute(events = @EventName("beforehide"))
-    public abstract String getOnbeforehide();
-
-    @Attribute(events = @EventName("beforeshow"))
-    public abstract String getOnbeforeshow();
-
-    // ------------------------------------------------ Html Attributes End
+    @Attribute(hidden = true)
+    public abstract Converter getConverter();
 
     @Override
     public boolean visitTree(VisitContext context, VisitCallback callback) {

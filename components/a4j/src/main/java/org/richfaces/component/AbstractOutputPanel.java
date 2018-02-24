@@ -24,6 +24,7 @@ import javax.faces.component.UIPanel;
 
 import org.ajax4jsf.component.AjaxOutput;
 import org.richfaces.cdk.annotations.Attribute;
+import org.richfaces.cdk.annotations.Description;
 import org.richfaces.cdk.annotations.EventName;
 import org.richfaces.cdk.annotations.JsfComponent;
 import org.richfaces.cdk.annotations.JsfRenderer;
@@ -48,7 +49,7 @@ public abstract class AbstractOutputPanel extends UIPanel implements AjaxOutput,
     public static final String COMPONENT_TYPE = "org.richfaces.OutputPanel";
     public static final String COMPONENT_FAMILY = "javax.faces.Panel";
 
-    @Attribute(defaultValue = "false")
+    @Attribute(description = @Description("Defines, whether the content of this component must be (or not) included in AJAX response created by parent AJAX Container, even if it is not forced by reRender list of ajax action. Ignored if component marked to output by some Ajax action component. Default value - \"false\""), defaultValue = "false")
     public abstract boolean isAjaxRendered();
 
     @Attribute(defaultValue= "true")
@@ -62,49 +63,4 @@ public abstract class AbstractOutputPanel extends UIPanel implements AjaxOutput,
      */
     @Attribute
     public abstract OutputPanelLayout getLayout();
-
-    @Attribute(events = @EventName("click"))
-    public abstract String getOnclick();
-
-    @Attribute(events = @EventName("dblclick"))
-    public abstract String getOndblclick();
-
-    @Attribute(events = @EventName("keydown"))
-    public abstract String getOnkeydown();
-
-    @Attribute(events = @EventName("keypress"))
-    public abstract String getOnkeypress();
-
-    @Attribute(events = @EventName("keyup"))
-    public abstract String getOnkeyup();
-
-    @Attribute(events = @EventName("mousedown"))
-    public abstract String getOnmousedown();
-
-    @Attribute(events = @EventName("mousemove"))
-    public abstract String getOnmousemove();
-
-    @Attribute(events = @EventName("mouseout"))
-    public abstract String getOnmouseout();
-
-    @Attribute(events = @EventName("mouseover"))
-    public abstract String getOnmouseover();
-
-    @Attribute(events = @EventName("mouseup"))
-    public abstract String getOnmouseup();
-
-    @Attribute
-    public abstract String getStyle();
-
-    @Attribute
-    public abstract String getStyleClass();
-
-    @Attribute
-    public abstract String getTitle();
-
-    @Attribute
-    public abstract String getDir();
-
-    @Attribute
-    public abstract String getLang();
 }

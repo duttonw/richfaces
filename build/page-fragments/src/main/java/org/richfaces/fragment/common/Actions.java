@@ -21,14 +21,21 @@
  */
 package org.richfaces.fragment.common;
 
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.arquillian.graphene.Graphene;
+import org.openqa.selenium.Dimension;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Action;
+import org.openqa.selenium.phantomjs.PhantomJSDriver;
+
+import com.google.common.collect.Sets;
 
 /**
  * Extending org.openqa.selenium.interactions.Actions by some functionality.
@@ -37,8 +44,13 @@ import org.openqa.selenium.interactions.Action;
  */
 public class Actions extends org.openqa.selenium.interactions.Actions {
 
+    private final WebDriver driver;
+    private static final Set<Event> supportedEventsInTriggerEventByWD = Sets.newHashSet(Event.CLICK, Event.DBLCLICK, Event.MOUSEDOWN,
+        Event.MOUSEDOWN, Event.CONTEXTCLICK, Event.CONTEXTMENU, Event.MOUSEOUT, Event.MOUSEOVER, Event.MOUSEUP);
+
     public Actions(WebDriver driver) {
         super(driver);
+        this.driver = driver;
     }
 
     public Actions addAction(Action a) {
@@ -108,6 +120,40 @@ public class Actions extends org.openqa.selenium.interactions.Actions {
     public Actions dragAndDropBy(WebElement source, int xOffset, int yOffset) {
         super.dragAndDropBy(source, xOffset, yOffset);
         return this;
+    }
+
+    private Point getPossibleCoordinationsForMouseOut(WebElement element) {
+        Locations l = Utils.getLocations(element);
+        Dimension size = driver.manage().window().getSize();
+        // the mouse will be in the middle of the element, these values will be used for counting the final distance
+        int halfWidth = l.getWidth() / 2;
+        int halfHeight = l.getHeight() / 2;
+        int movementDistance = 10;// distance from the element in pixels
+        // check whether position left from the Element is valid
+        Locations moved = l.moveAllBy(-movementDistance, 0);
+        Point point = moved.getTopLeft();
+        if (point.x > 0) {
+            return new Point(-halfWidth - movementDistance, 0);
+        }
+        // check whether position right from the Element is valid
+        moved = l.moveAllBy(movementDistance, 0);
+        point = moved.getTopRight();
+        if (point.x < size.getWidth()) {
+            return new Point(halfWidth + movementDistance, 0);
+        }
+        // check whether position up from the Element is valid
+        moved = l.moveAllBy(0, -movementDistance);
+        point = moved.getTopRight();
+        if (point.y > 0) {
+            return new Point(0, -halfHeight - movementDistance);
+        }
+        // check whether position down from the Element is valid
+        moved = l.moveAllBy(0, movementDistance);
+        point = moved.getBottomRight();
+        if (point.y > size.getHeight()) {
+            return new Point(0, halfHeight + movementDistance);
+        }
+        throw new RuntimeException("Cannot find any suitable position for mouseout event.");
     }
 
     @Override
@@ -181,13 +227,14 @@ public class Actions extends org.openqa.selenium.interactions.Actions {
             @Override
             public void perform() {
                 Graphene.waitGui().until().element(element).is().present();
-                Utils.triggerJQ(event.getEventName(), element);
+                Utils.triggerJQ((JavascriptExecutor) driver, event.getEventName(), element);
             }
         });
     }
 
     /**
      * Will try to trigger given event with webdriver standard API method - nativelly
+     *
      * @param event
      * @param element
      * @return
@@ -202,18 +249,31 @@ public class Actions extends org.openqa.selenium.interactions.Actions {
             return clickAndHold(element);
         } else if (event.equals(Event.MOUSEMOVE)) {
             return moveToElement(element);
-        } else if (event.equals(Event.CONTEXTCLICK)) {
-            return contextClick(element);
-        } else if (event.equals(Event.CONTEXTMENU)) {
-            return contextClick(element);
+        } else if (event.equals(Event.CONTEXTCLICK) || event.equals(Event.CONTEXTMENU)) {
+            // workaround for RF-14034 / RF-14273
+            if (driver instanceof PhantomJSDriver) {
+                return triggerEventByJS(event, element);
+            } else {
+                // all other browsers use former solution - simply invoke context click
+                return contextClick(element);
+            }
         } else if (event.equals(Event.MOUSEOUT)) {
-            return moveToElement(element).moveByOffset(-1000, -1000);
+            Point coords = getPossibleCoordinationsForMouseOut(element);
+            return moveToElement(element).moveByOffset(coords.x, coords.y);
         } else if (event.equals(Event.MOUSEOVER)) {
             return moveToElement(element, 1, 1);
         } else if (event.equals(Event.MOUSEUP)) {
             return clickAndHold(element).release();
         } else {
             throw new IllegalArgumentException("Cannot trigger this event " + event + " with WebDriver. Try to use 'triggerEventByJS' instead.");
+        }
+    }
+
+    public Actions triggerEventByWDOtherwiseByJS(Event event, WebElement element) {
+        if (supportedEventsInTriggerEventByWD.contains(event)) {
+            return triggerEventByWD(event, element);
+        } else {
+            return triggerEventByJS(event, element);
         }
     }
 

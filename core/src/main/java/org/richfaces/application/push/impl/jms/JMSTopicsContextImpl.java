@@ -66,7 +66,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 /**
- * A {@link TopicsContext} that allows Push to listen for messages on Java Messaging Service (JMS)
+ * A {@link org.richfaces.application.push.TopicsContext} that allows Push to listen for messages on Java Messaging Service (JMS)
  *
  * @author Nick Belaevski
  */
@@ -210,7 +210,7 @@ public class JMSTopicsContextImpl extends TopicsContextImpl {
                                 if (pushTopic != null) {
                                     try {
                                         Object messageData = getMessageData(message);
-                                        pushTopic.publish(messageData);
+                                        pushTopic.publish(messageData, subtopicName);
                                     } catch (Exception e) {
                                         LOGGER.error(e.getMessage(), e);
                                     }

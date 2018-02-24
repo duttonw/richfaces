@@ -37,6 +37,7 @@ import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.JavascriptExecutor;
@@ -44,7 +45,7 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
-import org.richfaces.integration.UIDeployment;
+import org.richfaces.integration.RichDeployment;
 import org.richfaces.shrinkwrap.descriptor.FaceletAsset;
 
 import com.google.common.base.Predicate;
@@ -54,6 +55,7 @@ import com.google.common.base.Predicate;
  */
 @RunAsClient
 @RunWith(Arquillian.class)
+@Ignore("https://issues.jboss.org/browse/RF-14095")
 public class ITActivatorComponentNotRenderedProcessing {
 
     @Drone
@@ -70,7 +72,7 @@ public class ITActivatorComponentNotRenderedProcessing {
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
-        UIDeployment deployment = new UIDeployment(ITActivatorComponentNotRenderedProcessing.class);
+        RichDeployment deployment = new RichDeployment(ITActivatorComponentNotRenderedProcessing.class);
 
         addIndexPage(deployment);
 
@@ -108,7 +110,7 @@ public class ITActivatorComponentNotRenderedProcessing {
         }
     }
 
-    private static void addIndexPage(UIDeployment deployment) {
+    private static void addIndexPage(RichDeployment deployment) {
         FaceletAsset p = new FaceletAsset();
 
         p.head("<h:outputScript name='jsf.js' library='javax.faces' />");

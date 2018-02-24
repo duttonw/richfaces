@@ -32,7 +32,9 @@ import org.richfaces.cdk.annotations.TagType;
 import org.richfaces.component.attribute.AjaxProps;
 
 import com.google.common.base.Predicate;
+
 import org.richfaces.component.attribute.BypassProps;
+import org.richfaces.component.attribute.DisabledProps;
 import org.richfaces.component.attribute.EventsMouseProps;
 import org.richfaces.component.attribute.StyleClassProps;
 import org.richfaces.component.attribute.StyleProps;
@@ -44,7 +46,7 @@ import org.richfaces.component.attribute.StyleProps;
  * @author akolonitsky
  */
 @JsfComponent(tag = @Tag(type = TagType.Facelets))
-public abstract class AbstractPanelMenuItem extends AbstractActionComponent implements AjaxProps, BypassProps, EventsMouseProps, StyleProps, StyleClassProps {
+public abstract class AbstractPanelMenuItem extends AbstractActionComponent implements AjaxProps, BypassProps, DisabledProps, EventsMouseProps, StyleProps, StyleClassProps {
     public static final String COMPONENT_TYPE = "org.richfaces.PanelMenuItem";
     public static final String COMPONENT_FAMILY = "org.richfaces.PanelMenuItem";
     private static final ParentItemPredicate PARENT_ITEM_PREDICATE = new ParentItemPredicate();
@@ -78,7 +80,7 @@ public abstract class AbstractPanelMenuItem extends AbstractActionComponent impl
     // ------------------------------------------------ Component Attributes
 
     /**
-     * Defines whenever the item is selectable.
+     * Defines whenever the item is selectable. Default: true.
      */
     @Attribute(defaultValue = "Boolean.TRUE")
     public abstract Boolean getSelectable();
@@ -109,12 +111,6 @@ public abstract class AbstractPanelMenuItem extends AbstractActionComponent impl
      */
     @Attribute
     public abstract String getLabel();
-
-    /**
-     * Defines whenever this component should be disabled.
-     */
-    @Attribute
-    public abstract boolean isDisabled();
 
     public boolean isParentDisabled() {
         return ComponentIterators.getParent(this, DISABLED_PARENT_ITEM_PREDICATE) != null;
@@ -215,9 +211,6 @@ public abstract class AbstractPanelMenuItem extends AbstractActionComponent impl
         getStateHelper().put(Properties.rightDisabledIcon, rightDisabledIcon);
     }
 
-    @Attribute
-    public abstract String getStyle();
-
     @Attribute(generate = false)
     public String getStyleClass() {
         return (String) getStateHelper().eval(Properties.styleClass,
@@ -227,33 +220,6 @@ public abstract class AbstractPanelMenuItem extends AbstractActionComponent impl
     public void setStyleClass(String styleClass) {
         getStateHelper().put(Properties.styleClass, styleClass);
     }
-
-    @Attribute(events = @EventName("click"))
-    public abstract String getOnclick();
-
-    @Attribute(events = @EventName("dblclick"))
-    public abstract String getOndblclick();
-
-    @Attribute(events = @EventName("mousedown"))
-    public abstract String getOnmousedown();
-
-    @Attribute(events = @EventName("mousemove"))
-    public abstract String getOnmousemove();
-
-    @Attribute(events = @EventName("mouseout"))
-    public abstract String getOnmouseout();
-
-    @Attribute(events = @EventName("mouseover"))
-    public abstract String getOnmouseover();
-
-    @Attribute(events = @EventName("mouseup"))
-    public abstract String getOnmouseup();
-
-    /**
-     * The client-side script method to be called after the menu group is unselected
-     */
-    @Attribute(events = @EventName("unselect"))
-    public abstract String getOnunselect();
 
     /**
      * The client-side script method to be called after the menu group is selected

@@ -29,10 +29,13 @@ import javax.faces.application.ResourceDependency;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 
+import org.ajax4jsf.javascript.JSLiteral;
 import org.richfaces.cdk.annotations.JsfRenderer;
 import org.richfaces.component.AbstractDragSource;
 import org.richfaces.javascript.DnDScript;
 import org.richfaces.javascript.DragScript;
+
+import com.google.common.base.Strings;
 
 /**
  * @author abelevich
@@ -44,11 +47,11 @@ import org.richfaces.javascript.DragScript;
         @ResourceDependency(library = "org.richfaces", name = "richfaces-base-component.js"),
         @ResourceDependency(library = "org.richfaces", name = "jquery.position.js"),
         @ResourceDependency(library = "org.richfaces", name = "richfaces-event.js"),
-        @ResourceDependency(library = "com.jqueryui", name = "jquery.ui.core.js"),
-        @ResourceDependency(library = "com.jqueryui", name = "jquery.ui.widget.js"),
-        @ResourceDependency(library = "com.jqueryui", name = "jquery.ui.mouse.js"),
-        @ResourceDependency(library = "com.jqueryui", name = "jquery.ui.draggable.js"),
-        @ResourceDependency(library = "com.jqueryui", name = "jquery.ui.droppable.js"),
+        @ResourceDependency(library = "com.jqueryui", name = "core.js"),
+        @ResourceDependency(library = "com.jqueryui", name = "widget.js"),
+        @ResourceDependency(library = "com.jqueryui", name = "mouse.js"),
+        @ResourceDependency(library = "com.jqueryui", name = "draggable.js"),
+        @ResourceDependency(library = "com.jqueryui", name = "droppable.js"),
         @ResourceDependency(library = "org.richfaces", name = "dnd-draggable.js") })
 @JsfRenderer(type = "org.richfaces.DragSourceRenderer", family = AbstractDragSource.COMPONENT_FAMILY)
 public class DragSourceRenderer extends DnDRenderBase {
@@ -59,6 +62,7 @@ public class DragSourceRenderer extends DnDRenderBase {
             AbstractDragSource dragSource = (AbstractDragSource) component;
             options.put("indicator", getDragIndicatorClientId(facesContext, dragSource));
             options.put("type", dragSource.getType());
+            options.put("dragOptions", getDragOptions(dragSource));
             options.put("parentId", getParentClientId(facesContext, component));
         }
         return options;
@@ -77,11 +81,16 @@ public class DragSourceRenderer extends DnDRenderBase {
     public String getDragIndicatorClientId(FacesContext facesContext, AbstractDragSource dragSource) {
         String indicatorId = dragSource.getDragIndicator();
         if (indicatorId != null) {
-            UIComponent indicator = getUtils().findComponentFor(facesContext, dragSource, indicatorId);
+            UIComponent indicator = getUtils().findComponentFor(dragSource, indicatorId);
             if (indicator != null) {
                 indicatorId = indicator.getClientId(facesContext);
             }
         }
         return indicatorId;
+    }
+
+    public JSLiteral getDragOptions(AbstractDragSource dragSource) {
+        String options = dragSource.getDragOptions();
+        return !Strings.isNullOrEmpty(options) ? new JSLiteral(options) : JSLiteral.EMPTY_HASH;
     }
 }

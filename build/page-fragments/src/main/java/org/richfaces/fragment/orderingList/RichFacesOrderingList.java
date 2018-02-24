@@ -23,8 +23,6 @@ package org.richfaces.fragment.orderingList;
 
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.richfaces.fragment.list.AbstractListComponent;
@@ -35,9 +33,6 @@ import org.richfaces.fragment.list.ListComponent;
  * @author <a href="mailto:jstefek@redhat.com">Jiri Stefek</a>
  */
 public class RichFacesOrderingList extends AbstractOrderingList {
-
-    @Drone
-    private WebDriver driver;
 
     @FindBy(css = "button.rf-ord-dn")
     private WebElement downButtonElement;
@@ -53,24 +48,24 @@ public class RichFacesOrderingList extends AbstractOrderingList {
     @FindBy(css = "thead.rf-ord-lst-hdr > tr.rf-ord-hdr")
     private WebElement headerElement;
     @FindBy(className = "rf-ord-lst-scrl")
-    private WebElement listAreaElement;
+    private WebElement contentAreaElement;
 
     @FindBy(className = "rf-ord-opt")
     private List<WebElement> items;
     @FindBy(className = "rf-ord-sel")
-    private List<WebElement> selectedItems;
+    private List<WebElement> selectedItemsElements;
 
     @FindBy(css = "div.rf-ord-lst-scrl [id$=Items]")
     private SelectableListImpl list;
 
-    private final OrderingListBodyElements elements = new OrderingListBodyElementsImpl();
+    private final AdvancedRichOrderingListInteractions interactions = new AdvancedRichOrderingListInteractions();
 
     @Override
-    protected OrderingListBodyElements getBody() {
-        return elements;
+    public AdvancedRichOrderingListInteractions advanced() {
+        return interactions;
     }
 
-    private class OrderingListBodyElementsImpl implements OrderingListBodyElements {
+    public class AdvancedRichOrderingListInteractions extends AdvancedOrderingListInteractions {
 
         private static final String SELECTED_ITEM_CLASS = "rf-ord-sel";
 
@@ -105,22 +100,17 @@ public class RichFacesOrderingList extends AbstractOrderingList {
         }
 
         @Override
-        public WebElement getListAreaElement() {
-            return listAreaElement;
+        public WebElement getContentAreaElement() {
+            return contentAreaElement;
         }
 
         @Override
-        public WebElement getRootElement() {
-            return getRoot();
+        public List<WebElement> getSelectedItemsElements() {
+            return selectedItemsElements;
         }
 
         @Override
-        public List<WebElement> getSelectedItems() {
-            return selectedItems;
-        }
-
-        @Override
-        public String getStyleForSelectedItem() {
+        protected String getStyleForSelectedItem() {
             return SELECTED_ITEM_CLASS;
         }
 

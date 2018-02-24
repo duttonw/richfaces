@@ -66,14 +66,6 @@ public class RichFacesTreeNode extends RichFacesTree implements Tree.TreeNode {
         return interactions;
     }
 
-    /**
-     * Override this method in case, that tree nodes have different element
-     * for interaction (select, collapse, expand) than the label element.
-     */
-    protected WebElement getCorrectElementForInteraction() {
-        return labelElement;
-    }
-
     @Override
     protected int getIndexOfPickedElement(ChoicePicker picker) {
         // the index of picked element is returned through jQuery function,
@@ -117,6 +109,14 @@ public class RichFacesTreeNode extends RichFacesTree implements Tree.TreeNode {
         @Override
         public WebElement getContainerElement() {
             return containerElement;
+        }
+
+        /**
+         * Override this method in case, that tree nodes have different element
+         * for interaction (select, collapse, expand) than the label element.
+         */
+        protected WebElement getCorrectElementForInteraction() {
+            return getLabelElement();
         }
 
         @Override
@@ -179,7 +179,7 @@ public class RichFacesTreeNode extends RichFacesTree implements Tree.TreeNode {
             return RichFacesTreeNode.this;
         }
 
-        public void setuptimeoutForNodeToBeExpanded(long timeoutInMilliseconds) {
+        public void settimeoutForNodeToBeExpanded(long timeoutInMilliseconds) {
             _timeoutForNodeToBeExpanded = timeoutInMilliseconds;
         }
 
@@ -187,7 +187,7 @@ public class RichFacesTreeNode extends RichFacesTree implements Tree.TreeNode {
             return _timeoutForNodeToBeExpanded == -1 ? Utils.getWaitAjaxDefaultTimeout(driver) : _timeoutForNodeToBeExpanded;
         }
 
-        public void setupTimeoutForNodeToBeCollapsed(long timeoutInMilliseconds) {
+        public void setTimeoutForNodeToBeCollapsed(long timeoutInMilliseconds) {
             _timeoutForNodeToBeCollapsed = timeoutInMilliseconds;
         }
 
@@ -195,7 +195,7 @@ public class RichFacesTreeNode extends RichFacesTree implements Tree.TreeNode {
             return _timeoutForNodeToBeCollapsed == -1 ? Utils.getWaitAjaxDefaultTimeout(driver) : _timeoutForNodeToBeCollapsed;
         }
 
-        public void setupTimeoutForNodeToBeSelected(long timeoutInMilliseconds) {
+        public void setTimeoutForNodeToBeSelected(long timeoutInMilliseconds) {
             _timeoutForNodeToBeSelected = timeoutInMilliseconds;
         }
 
@@ -218,7 +218,7 @@ public class RichFacesTreeNode extends RichFacesTree implements Tree.TreeNode {
                     });
                 }
             }.withMessage("Waiting for node to be collapsed")
-             .withTimeout(getTimeoutForNodeToBeCollapsed(), TimeUnit.MILLISECONDS);
+                .withTimeout(getTimeoutForNodeToBeCollapsed(), TimeUnit.MILLISECONDS);
         }
 
         @Override
@@ -236,7 +236,7 @@ public class RichFacesTreeNode extends RichFacesTree implements Tree.TreeNode {
                     });
                 }
             }.withMessage("Waiting for node to be expanded")
-             .withTimeout(getTimeoutForNodeToBeExpanded(), TimeUnit.MILLISECONDS);
+                .withTimeout(getTimeoutForNodeToBeExpanded(), TimeUnit.MILLISECONDS);
         }
 
         @Override
@@ -271,7 +271,7 @@ public class RichFacesTreeNode extends RichFacesTree implements Tree.TreeNode {
                     });
                 }
             }.withMessage("Waiting for node to be selected")
-             .withTimeout(getTimeoutForNodeToBeSelected(), TimeUnit.MILLISECONDS);
+                .withTimeout(getTimeoutForNodeToBeSelected(), TimeUnit.MILLISECONDS);
         }
     }
 }

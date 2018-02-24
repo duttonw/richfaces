@@ -26,17 +26,18 @@ import javax.el.ValueExpression;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIOutput;
 import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
 import javax.faces.event.AbortProcessingException;
 import javax.faces.event.FacesEvent;
 import javax.faces.event.PhaseId;
 
 import org.richfaces.PanelMenuMode;
 import org.richfaces.cdk.annotations.Attribute;
-import org.richfaces.cdk.annotations.EventName;
 import org.richfaces.cdk.annotations.JsfComponent;
 import org.richfaces.cdk.annotations.JsfRenderer;
 import org.richfaces.cdk.annotations.Tag;
 import org.richfaces.cdk.annotations.TagType;
+import org.richfaces.component.attribute.DisabledProps;
 import org.richfaces.component.attribute.EventsMouseProps;
 import org.richfaces.component.attribute.ImmediateProps;
 import org.richfaces.component.attribute.StyleClassProps;
@@ -56,7 +57,7 @@ import org.richfaces.view.facelets.html.PanelMenuTagHandler;
  */
 @JsfComponent(tag = @Tag(type = TagType.Facelets, handlerClass = PanelMenuTagHandler.class),
         renderer = @JsfRenderer(type = "org.richfaces.PanelMenuRenderer"))
-public abstract class AbstractPanelMenu extends UIOutput implements ItemChangeSource, EventsMouseProps, ImmediateProps, StyleProps, StyleClassProps {
+public abstract class AbstractPanelMenu extends UIOutput implements ItemChangeSource, DisabledProps, EventsMouseProps, ImmediateProps, StyleProps, StyleClassProps {
     public static final String COMPONENT_TYPE = "org.richfaces.PanelMenu";
     public static final String COMPONENT_FAMILY = "org.richfaces.PanelMenu";
     private String submittedActiveItem;
@@ -146,6 +147,9 @@ public abstract class AbstractPanelMenu extends UIOutput implements ItemChangeSo
         this.submittedActiveItem = String.valueOf(submittedValue);
     }
 
+    @Attribute(hidden = true)
+    public abstract Converter getConverter();
+
     /**
      * Holds the active panel name. This name is a reference to the name identifier of the active child
      * &lt;rich:panelMenuItem&gt; or &lt;rich:panelMenuGroup&gt; component.
@@ -184,12 +188,6 @@ public abstract class AbstractPanelMenu extends UIOutput implements ItemChangeSo
     }
 
     // ------------------------------------------------ Component Attributes
-
-    /**
-     * Disables all panel menu items and groups.
-     */
-    @Attribute
-    public abstract boolean isDisabled();
 
     /**
      * The mouse event used for expansion.
@@ -236,14 +234,9 @@ public abstract class AbstractPanelMenu extends UIOutput implements ItemChangeSo
 
     // ------------------------------------------------ Html Attributes
     enum Properties {
-        itemRightIcon, itemDisabledLeftIcon, itemDisabledRightIcon, topItemLeftIcon, topItemRightIcon, topItemDisabledLeftIcon, topItemDisabledRightIcon, groupExpandedLeftIcon, groupExpandedRightIcon, groupCollapsedLeftIcon, groupCollapsedRightIcon, groupDisabledLeftIcon, groupDisabledRightIcon, topGroupExpandedLeftIcon, topGroupExpandedRightIcon, topGroupCollapsedLeftIcon, topGroupCollapsedRightIcon, topGroupDisabledLeftIcon, topGroupDisabledRightIcon, itemLeftIcon, value
+        itemRightIcon, itemDisabledLeftIcon, itemDisabledRightIcon, topItemLeftIcon, topItemRightIcon, topItemDisabledLeftIcon, topItemDisabledRightIcon, groupExpandedLeftIcon, groupExpandedRightIcon, groupCollapsedLeftIcon, groupCollapsedRightIcon, groupDisabledLeftIcon, groupDisabledRightIcon, topGroupExpandedLeftIcon, topGroupExpandedRightIcon, topGroupCollapsedLeftIcon, topGroupCollapsedRightIcon, topGroupDisabledLeftIcon, topGroupDisabledRightIcon, itemLeftIcon, value,
+        topItemClass, topItemDisabledClass, topGroupClass, topGroupDisabledClass
     }
-
-    @Attribute
-    public abstract String getStyle();
-
-    @Attribute
-    public abstract String getStyleClass();
 
     /**
      * The width of the panel menu in pixels.
@@ -315,20 +308,32 @@ public abstract class AbstractPanelMenu extends UIOutput implements ItemChangeSo
      * Space-separated list of CSS style class(es) to be applied to top-level panel menu items
      */
     @Attribute
-    public abstract String getTopItemClass();
+    public String getTopItemClass() {
+        return (String) getStateHelper().eval(Properties.topItemClass, getItemClass());
+    }
+
+    public void setTopItemClass(String topItemClass) {
+        getStateHelper().put(Properties.topItemClass, topItemClass);
+    }
 
     /**
      * Space-separated list of CSS style class(es) to be applied to disabled top-level panel menu items
      */
     @Attribute
-    public abstract String getTopItemDisabledClass();
+    public String getTopItemDisabledClass() {
+        return (String) getStateHelper().eval(Properties.topItemDisabledClass, getItemDisabledClass());
+    }
+
+    public void setTopItemDisabledClass(String topItemDisabledClass) {
+        getStateHelper().put(Properties.topItemDisabledClass, topItemDisabledClass);
+    }
 
     /**
      * The left icon for top-level panel menu items
      */
     @Attribute(generate = false)
     public String getTopItemLeftIcon() {
-        return (String) getStateHelper().eval(Properties.topItemLeftIcon, PanelIcons.transparent.toString());
+        return (String) getStateHelper().eval(Properties.topItemLeftIcon, getItemLeftIcon());
     }
 
     public void setTopItemLeftIcon(String topItemLeftIcon) {
@@ -340,7 +345,7 @@ public abstract class AbstractPanelMenu extends UIOutput implements ItemChangeSo
      */
     @Attribute(generate = false)
     public String getTopItemRightIcon() {
-        return (String) getStateHelper().eval(Properties.topItemRightIcon, PanelIcons.transparent.toString());
+        return (String) getStateHelper().eval(Properties.topItemRightIcon, getItemRightIcon());
     }
 
     public void setTopItemRightIcon(String topItemRightIcon) {
@@ -352,7 +357,7 @@ public abstract class AbstractPanelMenu extends UIOutput implements ItemChangeSo
      */
     @Attribute(generate = false)
     public String getTopItemDisabledLeftIcon() {
-        return (String) getStateHelper().eval(Properties.topItemDisabledLeftIcon, PanelIcons.transparent.toString());
+        return (String) getStateHelper().eval(Properties.topItemDisabledLeftIcon, getItemDisabledLeftIcon());
     }
 
     public void setTopItemDisabledLeftIcon(String topItemDisabledLeftIcon) {
@@ -364,7 +369,7 @@ public abstract class AbstractPanelMenu extends UIOutput implements ItemChangeSo
      */
     @Attribute(generate = false)
     public String getTopItemDisabledRightIcon() {
-        return (String) getStateHelper().eval(Properties.topItemDisabledRightIcon, PanelIcons.transparent.toString());
+        return (String) getStateHelper().eval(Properties.topItemDisabledRightIcon, getItemDisabledRightIcon());
     }
 
     public void setTopItemDisabledRightIcon(String topItemDisabledRightIcon) {
@@ -459,20 +464,32 @@ public abstract class AbstractPanelMenu extends UIOutput implements ItemChangeSo
      * Space-separated list of CSS style class(es) to be applied to top-level panel menu groups
      */
     @Attribute
-    public abstract String getTopGroupClass();
+    public String getTopGroupClass() {
+        return (String) getStateHelper().eval(Properties.topGroupClass, getGroupClass());
+    }
+
+    public void setTopGroupClass(String topGroupClass) {
+        getStateHelper().put(Properties.topGroupClass, topGroupClass);
+    }
 
     /**
      * Space-separated list of CSS style class(es) to be applied to disabled top-level panel menu groups
      */
     @Attribute
-    public abstract String getTopGroupDisabledClass();
+    public String getTopGroupDisabledClass() {
+        return (String) getStateHelper().eval(Properties.topGroupDisabledClass, getGroupDisabledClass());
+    }
+
+    public void setTopGroupDisabledClass(String topGroupDisabledClass) {
+        getStateHelper().put(Properties.topGroupDisabledClass, topGroupDisabledClass);
+    }
 
     /**
      * The left icon for expanded top-level panel menu groups
      */
     @Attribute(generate = false)
     public String getTopGroupExpandedLeftIcon() {
-        return (String) getStateHelper().eval(Properties.topGroupExpandedLeftIcon, PanelIcons.transparent.toString());
+        return (String) getStateHelper().eval(Properties.topGroupExpandedLeftIcon, getGroupExpandedLeftIcon());
     }
 
     public void setTopGroupExpandedLeftIcon(String topGroupExpandedLeftIcon) {
@@ -484,7 +501,7 @@ public abstract class AbstractPanelMenu extends UIOutput implements ItemChangeSo
      */
     @Attribute(generate = false)
     public String getTopGroupExpandedRightIcon() {
-        return (String) getStateHelper().eval(Properties.topGroupExpandedRightIcon, PanelIcons.transparent.toString());
+        return (String) getStateHelper().eval(Properties.topGroupExpandedRightIcon, getGroupExpandedRightIcon());
     }
 
     public void setTopGroupExpandedRightIcon(String topGroupExpandedRightIcon) {
@@ -496,7 +513,7 @@ public abstract class AbstractPanelMenu extends UIOutput implements ItemChangeSo
      */
     @Attribute(generate = false)
     public String getTopGroupCollapsedLeftIcon() {
-        return (String) getStateHelper().eval(Properties.topGroupCollapsedLeftIcon, PanelIcons.transparent.toString());
+        return (String) getStateHelper().eval(Properties.topGroupCollapsedLeftIcon, getGroupCollapsedLeftIcon());
     }
 
     public void setTopGroupCollapsedLeftIcon(String topGroupCollapsedLeftIcon) {
@@ -508,7 +525,7 @@ public abstract class AbstractPanelMenu extends UIOutput implements ItemChangeSo
      */
     @Attribute(generate = false)
     public String getTopGroupCollapsedRightIcon() {
-        return (String) getStateHelper().eval(Properties.topGroupCollapsedRightIcon, PanelIcons.transparent.toString());
+        return (String) getStateHelper().eval(Properties.topGroupCollapsedRightIcon, getGroupCollapsedRightIcon());
     }
 
     public void setTopGroupCollapsedRightIcon(String topGroupCollapsedRightIcon) {
@@ -521,7 +538,7 @@ public abstract class AbstractPanelMenu extends UIOutput implements ItemChangeSo
 
     @Attribute(generate = false)
     public String getTopGroupDisabledLeftIcon() {
-        return (String) getStateHelper().eval(Properties.topGroupDisabledLeftIcon, PanelIcons.transparent.toString());
+        return (String) getStateHelper().eval(Properties.topGroupDisabledLeftIcon, getGroupDisabledLeftIcon());
     }
 
     public void setTopGroupDisabledLeftIcon(String topGroupDisabledLeftIcon) {
@@ -533,33 +550,12 @@ public abstract class AbstractPanelMenu extends UIOutput implements ItemChangeSo
      */
     @Attribute(generate = false)
     public String getTopGroupDisabledRightIcon() {
-        return (String) getStateHelper().eval(Properties.topGroupDisabledRightIcon, PanelIcons.transparent.toString());
+        return (String) getStateHelper().eval(Properties.topGroupDisabledRightIcon, getGroupDisabledRightIcon());
     }
 
     public void setTopGroupDisabledRightIcon(String topGroupDisabledRightIcon) {
         getStateHelper().put(Properties.topGroupDisabledRightIcon, topGroupDisabledRightIcon);
     }
-
-    @Attribute(events = @EventName("click"))
-    public abstract String getOnclick();
-
-    @Attribute(events = @EventName("dblclick"))
-    public abstract String getOndblclick();
-
-    @Attribute(events = @EventName("mousedown"))
-    public abstract String getOnmousedown();
-
-    @Attribute(events = @EventName("mousemove"))
-    public abstract String getOnmousemove();
-
-    @Attribute(events = @EventName("mouseout"))
-    public abstract String getOnmouseout();
-
-    @Attribute(events = @EventName("mouseover"))
-    public abstract String getOnmouseover();
-
-    @Attribute(events = @EventName("mouseup"))
-    public abstract String getOnmouseup();
 
     public AbstractPanelMenuItem getItem(String itemName) {
         if (itemName == null) {

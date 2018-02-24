@@ -30,14 +30,16 @@ import org.jboss.arquillian.graphene.Graphene;
 import org.jboss.arquillian.graphene.fragment.Root;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.richfaces.fragment.common.AdvancedInteractions;
+import org.richfaces.fragment.common.AdvancedVisibleComponentIteractions;
 import org.richfaces.fragment.common.TypeResolver;
+import org.richfaces.fragment.common.Utils;
+import org.richfaces.fragment.common.VisibleComponentInteractions;
 import org.richfaces.fragment.common.picker.ChoicePicker;
 import org.richfaces.fragment.common.picker.ChoicePickerHelper;
 
 import com.google.common.base.Predicate;
 
-public abstract class AbstractSwitchableComponent<T extends ComponentContainer> implements SwitchableComponent<T>, AdvancedInteractions<AbstractSwitchableComponent<T>.AdvancedSwitchableComponentInteractions> {
+public abstract class AbstractSwitchableComponent<T extends ComponentContainer> implements SwitchableComponent<T>, AdvancedVisibleComponentIteractions<AbstractSwitchableComponent<T>.AdvancedSwitchableComponentInteractions> {
 
     @Root
     private WebElement root;
@@ -49,18 +51,14 @@ public abstract class AbstractSwitchableComponent<T extends ComponentContainer> 
         this.containerClass = (Class<T>) TypeResolver.resolveRawArgument(SwitchableComponent.class, getClass());
     }
 
-    protected abstract WebElement getRootOfContainerElement();
-
-    protected abstract List<WebElement> getSwitcherControllerElements();
-
     @Override
     public T switchTo(ChoicePicker picker) {
-        WebElement switcher = picker.pick(getSwitcherControllerElements());
+        WebElement switcher = picker.pick(advanced().getSwitcherControllerElements());
         if (switcher == null) {
             throw new IllegalArgumentException("No such item which fulfill the conditions from picker: " + picker);
         }
         switchTo(switcher);
-        return Graphene.createPageFragment(containerClass, getRootOfContainerElement());
+        return Graphene.createPageFragment(containerClass, advanced().getRootOfContainerElement());
     }
 
     @Override
@@ -89,7 +87,7 @@ public abstract class AbstractSwitchableComponent<T extends ComponentContainer> 
         advanced().waitUntilContentSwitched(textToContain);
     }
 
-    public abstract class AdvancedSwitchableComponentInteractions {
+    public abstract class AdvancedSwitchableComponentInteractions implements VisibleComponentInteractions {
 
         private final SwitchType DEFAULT_SWITCH_TYPE = SwitchType.AJAX;
         private SwitchType switchType = SwitchType.AJAX;
@@ -98,11 +96,11 @@ public abstract class AbstractSwitchableComponent<T extends ComponentContainer> 
             return switchType;
         }
 
-        public void setupSwitchType() {
+        public void setSwitchType() {
             switchType = DEFAULT_SWITCH_TYPE;
         }
 
-        public void setupSwitchType(SwitchType newSwitchType) {
+        public void setSwitchType(SwitchType newSwitchType) {
             switchType = newSwitchType;
         }
 
@@ -110,16 +108,25 @@ public abstract class AbstractSwitchableComponent<T extends ComponentContainer> 
             return root;
         }
 
+        protected abstract WebElement getRootOfContainerElement();
+
+        protected abstract List<WebElement> getSwitcherControllerElements();
+
         protected abstract Predicate<WebDriver> getConditionForContentSwitched(String textToContain);
 
         protected void waitUntilContentSwitched(String textToContain) {
             (switchType.equals(SwitchType.CLIENT)
                 ? Graphene.waitGui()
                 : switchType.equals(SwitchType.AJAX)
-                ? Graphene.waitAjax()
-                : Graphene.waitModel())
+                    ? Graphene.waitAjax()
+                    : Graphene.waitModel())
                 .withMessage("Waiting for content to be switched")
                 .until(getConditionForContentSwitched(textToContain));
+        }
+
+        @Override
+        public boolean isVisible() {
+            return Utils.isVisible(getRootElement());
         }
     }
 }

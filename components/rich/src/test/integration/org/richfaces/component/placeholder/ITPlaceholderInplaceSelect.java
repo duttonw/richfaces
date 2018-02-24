@@ -1,4 +1,4 @@
-/**
+/*
  * JBoss, Home of Professional Open Source
  * Copyright 2012, Red Hat, Inc. and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
@@ -29,7 +29,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.openqa.selenium.support.FindBy;
-import org.richfaces.integration.UIDeployment;
+import org.richfaces.integration.RichDeployment;
 import org.richfaces.shrinkwrap.descriptor.FaceletAsset;
 
 import category.Failing;
@@ -44,32 +44,32 @@ public class ITPlaceholderInplaceSelect extends AbstractPlaceholderTest {
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
-        UIDeployment deployment = new UIDeployment(ITPlaceholderInputText.class);
+        RichDeployment deployment = new RichDeployment(ITPlaceholderInplaceSelect.class);
 
         deployment.archive().addClasses(PlaceHolderValueConverter.class, PlaceHolderValue.class);
 
         FaceletAsset p;
-        p = deployment.baseFacelet("index.xhtml");
+        p = placeholderFacelet("index.xhtml", deployment);
         p.body("<rich:inplaceSelect id='input'>");
         p.body("    <f:selectItems value='#{placeHolderValue.items}' />");
         p.body("    <rich:placeholder id='placeholderID' styleClass='#{param.styleClass}' value='Placeholder Text' />");
         p.body("</rich:inplaceSelect>");
 
-        p = deployment.baseFacelet("selector.xhtml");
+        p = placeholderFacelet("selector.xhtml", deployment);
         p.body("<rich:inplaceSelect id='input' />");
         p.body("<rich:placeholder id='placeholderID' value='Placeholder Text' selector='[id=input]' />");
 
-        p = deployment.baseFacelet("rendered.xhtml");
+        p = placeholderFacelet("rendered.xhtml", deployment);
         p.body("<rich:inplaceSelect id='input' defaultLabel='#{not empty param.defaultLabel ? param.defaultLabel : null}' >");
         p.body("    <rich:placeholder id='placeholderID' value='Placeholder Text' rendered='false' />");
         p.body("</rich:inplaceSelect>");
 
-        p = deployment.baseFacelet("converter.xhtml");
+        p = placeholderFacelet("converter.xhtml", deployment);
         p.body("<rich:inplaceSelect id='input' >");
         p.body("    <rich:placeholder id='placeholderID' converter='placeHolderValueConverter' value='#{placeHolderValue}' />");
         p.body("</rich:inplaceSelect>");
 
-        p = deployment.baseFacelet("submit.xhtml");
+        p = placeholderFacelet("submit.xhtml", deployment);
         p.form("<rich:inplaceSelect id='input' value='#{placeHolderValue.value2}' >");
         p.form("    <f:selectItems value='#{placeHolderValue.items}' />");
         p.form("    <rich:placeholder id='placeholderID' value='Placeholder Text' />");
@@ -84,11 +84,6 @@ public class ITPlaceholderInplaceSelect extends AbstractPlaceholderTest {
     }
 
     @Override
-    Input input() {
-        return firstInplaceSelect;
-    }
-
-    @Override
     protected String getTestedValue() {
         return "item1";
     }
@@ -98,33 +93,22 @@ public class ITPlaceholderInplaceSelect extends AbstractPlaceholderTest {
         return "item1";
     }
 
+    @Override
+    Input input() {
+        return firstInplaceSelect;
+    }
+
     @Test
     @Override
     public void testAjaxSendsEmptyValue() {
         // given
-        browser.get(contextPath.toExternalForm() + "submit.jsf");
+        getBrowser().get(getContextPath().toExternalForm() + "submit.jsf");
 
         //when
-        Graphene.guardAjax(a4jSubmitBtn).click();
+        Graphene.guardAjax(getA4jSubmitBtn()).click();
 
         // then
-        Graphene.waitAjax().until().element(output).is().not().visible();
-    }
-
-    @Test
-    public void testRendered() {
-        // having
-        browser.navigate().to(contextPath.toExternalForm() + "rendered.jsf");
-        // then
-        assertEquals("", input().getDefaultText().trim());
-    }
-
-    @Test
-    public void when_placeholder_is_not_rendered_and_defaultLabel_is_defined_then_is_should_be_used() {
-        // having
-        browser.navigate().to(contextPath.toExternalForm() + "rendered.jsf?defaultLabel=defaultLabel");
-        // then
-        assertEquals("defaultLabel", input().getDefaultText());
+        Graphene.waitAjax().until().element(getOutput()).is().not().visible();
     }
 
     /**
@@ -136,11 +120,21 @@ public class ITPlaceholderInplaceSelect extends AbstractPlaceholderTest {
     public void testDefaultAttributes() {
     }
 
+    @Test
+    @Override
+    public void testRendered() {
+        // having
+        getBrowser().get(getContextPath().toExternalForm() + "rendered.jsf");
+        // then
+        assertEquals("", input().getDefaultText().trim());
+    }
+
     /**
      * {@link https://issues.jboss.org/browse/RF-12651}
      */
     @Test
     @Category(Failing.class)
+    @Override
     public void testSelector() {
     }
 
@@ -149,7 +143,16 @@ public class ITPlaceholderInplaceSelect extends AbstractPlaceholderTest {
      */
     @Test
     @Category(Failing.class)
+    @Override
     public void testStyleClass() {
+    }
+
+    @Test
+    public void testWhenPlaceholderIsNotRenderedAndDefaultLabelIsDefined_defaultLabelShouldBeUsed() {
+        // having
+        getBrowser().get(getContextPath().toExternalForm() + "rendered.jsf?defaultLabel=defaultLabel");
+        // then
+        assertEquals("defaultLabel", input().getDefaultText());
     }
 
     /**
@@ -157,7 +160,8 @@ public class ITPlaceholderInplaceSelect extends AbstractPlaceholderTest {
      */
     @Test
     @Category(Failing.class)
-    public void when_text_is_changed_then_text_changes_color_to_default_and_removes_placeholder_style_classes() {
+    @Override
+    public void testWhenTextIsChanged_textChangesColorToDefaultAndRemovesPlaceholderStyleClasses() {
     }
 
     /**
@@ -166,6 +170,6 @@ public class ITPlaceholderInplaceSelect extends AbstractPlaceholderTest {
     @Test
     @Override
     @Category(Failing.class)
-    public void when_text_is_cleared_then_input_gets_placeholder_text_and_style_again() {
+    public void testWhenTextIsCleared_inputGetsPlaceholderTextAndStyleAgain() {
     }
 }

@@ -8,7 +8,16 @@
     }
 
     // constructor definition
-
+    /**
+     * Backing object for rich:menuItem
+     * 
+     * @extends RichFaces.BaseComponent
+     * @memberOf! RichFaces.ui
+     * @constructs RichFaces.ui.MenuItem
+     * 
+     * @param componentId
+     * @param options
+     */
     rf.ui.MenuItem = function(componentId, options) {
         this.options = {};
         $.extend(this.options, defaultOptions, options || {});
@@ -78,18 +87,17 @@
                 e.form = form;
                 e.itemId = itemId;
                 this.options.onClickHandler.call(this, e);
+                this.unselect();
             },
 
             __getParentForm : function(item) {
-                return $($(item).parents("form").get(0));
+                var menu = this.__getParentMenu();
+                return $(menu ? menu.element : this.element).parents("form").eq(0);
             },
 
             __getParentMenu : function() {
-                var menu = this.element.parents('div.' + this.options.cssClasses.labelCss);
-                if (menu && menu.length > 0)
-                    return rf.component(menu);
-                else
-                    return null;
+                var menu = $(this.element).parents('div[data-rf-parentmenu]').get(0);
+                return menu ? rf.component(menu.getAttribute('data-rf-parentmenu')) : null;
             }
         };
     })());

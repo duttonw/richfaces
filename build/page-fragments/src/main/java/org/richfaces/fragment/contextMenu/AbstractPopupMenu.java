@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
+import org.jboss.arquillian.graphene.Graphene;
 import org.jboss.arquillian.graphene.fragment.Root;
 import org.jboss.arquillian.graphene.wait.FluentWait;
 import org.openqa.selenium.By;
@@ -33,9 +34,10 @@ import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.richfaces.fragment.common.Actions;
-import org.richfaces.fragment.common.AdvancedInteractions;
+import org.richfaces.fragment.common.AdvancedVisibleComponentIteractions;
 import org.richfaces.fragment.common.Event;
 import org.richfaces.fragment.common.Utils;
+import org.richfaces.fragment.common.VisibleComponentInteractions;
 import org.richfaces.fragment.common.WaitingWrapper;
 import org.richfaces.fragment.common.WaitingWrapperImpl;
 import org.richfaces.fragment.common.picker.ChoicePicker;
@@ -46,7 +48,7 @@ import com.google.common.base.Optional;
 /**
  * @author <a href="mailto:jhuska@redhat.com">Juraj Huska</a>
  */
-public abstract class AbstractPopupMenu implements PopupMenu, AdvancedInteractions<AbstractPopupMenu.AdvancedPopupMenuInteractions> {
+public abstract class AbstractPopupMenu implements PopupMenu, AdvancedVisibleComponentIteractions<AbstractPopupMenu.AdvancedPopupMenuInteractions> {
 
     @Drone
     private WebDriver browser;
@@ -54,24 +56,12 @@ public abstract class AbstractPopupMenu implements PopupMenu, AdvancedInteractio
     @Root
     private WebElement root;
 
-    private final AdvancedPopupMenuInteractions advancedInteractions = new AdvancedPopupMenuInteractions();
-
-    /* ************************************************************************************************
-     * Abstract methods
-     */
     /**
-     * Returns the popup element of the menu
-     *
-     * @return
+     * Creates a page fragment for menu group.
      */
-    protected abstract WebElement getMenuPopupInternal();
-
-    /**
-     * Returns all elements of this menu
-     *
-     * @return
-     */
-    protected abstract List<WebElement> getMenuItemElementsInternal();
+    protected AbstractPopupMenu createSubMenuFragment(WebElement itemElement) {
+        return Graphene.createPageFragment(getClass(), itemElement);
+    }
 
     /**
      * Returns the name of the actual page fragment.
@@ -86,21 +76,64 @@ public abstract class AbstractPopupMenu implements PopupMenu, AdvancedInteractio
         return root;
     }
 
-    protected abstract WebElement getScriptElement();
-
     /* ************************************************************************************************
      * API
      */
     @Override
-    public AdvancedPopupMenuInteractions advanced() {
-        return advancedInteractions;
+    public abstract AdvancedPopupMenuInteractions advanced();
+
+    @Override
+    public PopupMenuGroup expandGroup(ChoicePicker picker, WebElement target) {
+        advanced().setTarget(target);
+        return expandGroup(picker);
+    }
+
+    @Override
+    public PopupMenuGroup expandGroup(String header, WebElement target) {
+        return expandGroup(ChoicePickerHelper.byVisibleText().match(header), target);
+    }
+
+    @Override
+    public PopupMenuGroup expandGroup(int index, WebElement target) {
+        return expandGroup(ChoicePickerHelper.byIndex().index(index), target);
+    }
+
+    @Override
+    public PopupMenuGroup expandGroup(ChoicePicker picker) {
+        if (!advanced().isVisible()) {
+            advanced().show();
+        }
+        WebElement item = picker.pick(advanced().getMenuItemElements());
+        if (item == null) {
+            throw new IllegalArgumentException("There is no such group to be expanded, which satisfied the given rules!");
+        }
+        // open the sub menu
+        new Actions(browser).moveToElement(item).perform();
+        // create fragment and wait until it is visible
+        AbstractPopupMenu expandedGroup = createSubMenuFragment(item);
+        expandedGroup.advanced().waitUntilIsVisible().withMessage("The menu group did not show in given timeout!").perform();
+        // set target to sub menu root
+        expandedGroup.advanced().setTarget(item);
+        return expandedGroup;
+    }
+
+    @Override
+    public PopupMenuGroup expandGroup(String header) {
+        return expandGroup(ChoicePickerHelper.byVisibleText().match(header));
+    }
+
+    @Override
+    public PopupMenuGroup expandGroup(int index) {
+        return expandGroup(ChoicePickerHelper.byIndex().index(index));
     }
 
     @Override
     public void selectItem(ChoicePicker picker) {
-        advanced().show();
-        WebElement item = picker.pick(getMenuItemElementsInternal());
-        if(item == null) {
+        if (!advanced().isVisible()) {
+            advanced().show();
+        }
+        WebElement item = picker.pick(advanced().getMenuItemElements());
+        if (item == null) {
             throw new IllegalArgumentException("There is no such option to be selected, which satisfied the given rules!");
         }
         item.click();
@@ -118,29 +151,27 @@ public abstract class AbstractPopupMenu implements PopupMenu, AdvancedInteractio
 
     @Override
     public void selectItem(ChoicePicker picker, WebElement target) {
-        advanced().setupTarget(target);
+        advanced().setTarget(target);
         selectItem(picker);
     }
 
     @Override
     public void selectItem(String header, WebElement target) {
-        advanced().setupTarget(target);
-        selectItem(header);
+        selectItem(ChoicePickerHelper.byVisibleText().match(header), target);
     }
 
     @Override
     public void selectItem(int index, WebElement target) {
-        advanced().setupTarget(target);
-        selectItem(index);
+        selectItem(ChoicePickerHelper.byIndex().index(index), target);
     }
 
     /* ****************************************************************************************************
      * Nested classes
      */
-    public class AdvancedPopupMenuInteractions {
+    public abstract class AdvancedPopupMenuInteractions implements VisibleComponentInteractions {
 
-        private final Event DEFAULT_INVOKE_EVENT = Event.CONTEXTCLICK;
-        private Event invokeEvent = DEFAULT_INVOKE_EVENT;
+        private final Event DEFAULT_SHOW_EVENT = Event.CONTEXTMENU;
+        private Event showEvent = DEFAULT_SHOW_EVENT;
 
         private static final int DEFAULT_HIDEDELAY = 300;
         private int hideDelay = DEFAULT_HIDEDELAY;
@@ -159,11 +190,11 @@ public abstract class AbstractPopupMenu implements PopupMenu, AdvancedInteractio
          * @throws IllegalStateException when no popup menu is displayed in the time of invoking
          */
         public void hide() {
-            if (!getMenuPopupInternal().isDisplayed()) {
+            if (!getMenuPopup().isDisplayed()) {
                 throw new IllegalStateException("You are attemting to dismiss the " + getNameOfFragment() + ", however, no "
                     + getNameOfFragment() + " is displayed at the moment!");
             }
-            browser.findElement(Utils.BY_HTML).click();
+            Utils.performUniversalBlur(browser);
             waitUntilIsNotVisible().perform();
         }
 
@@ -182,13 +213,11 @@ public abstract class AbstractPopupMenu implements PopupMenu, AdvancedInteractio
          *
          * @return
          */
-        public List<WebElement> getMenuItemElements() {
-            return Collections.unmodifiableList(getMenuItemElementsInternal());
-        }
+        public abstract List<WebElement> getMenuItemElements();
 
-        public WebElement getMenuPopup() {
-            return getMenuPopupInternal();
-        }
+        protected abstract WebElement getScriptElement();
+
+        public abstract WebElement getMenuPopup();
 
         protected int getShowDelay() {
             return showDelay;
@@ -196,7 +225,7 @@ public abstract class AbstractPopupMenu implements PopupMenu, AdvancedInteractio
 
         public WebElement getTargetElement() {
             if (target == null) {
-                setupTarget();
+                setTarget();
             }
             return target;
         }
@@ -206,7 +235,7 @@ public abstract class AbstractPopupMenu implements PopupMenu, AdvancedInteractio
          * right click. To change this behavior use <code>setInvoker()</code> method. You have to have a target set before
          * invocation of this method.
          *
-         * @see #setupInvoker(PopupMenuInvoker)
+         * @see #setInvoker(PopupMenuInvoker)
          * @see #setTarget(WebElement)
          */
         public void show() {
@@ -220,12 +249,12 @@ public abstract class AbstractPopupMenu implements PopupMenu, AdvancedInteractio
          *
          * @param givenTarget
          * @see #setupInvoker(PopupMenuInvoker)
-         * @see #setupShowDelay(int)
+         * @see #setShowDelay(int)
          */
         public void show(WebElement givenTarget) {
             new Actions(browser)
                 .moveToElement(givenTarget)
-                .triggerEventByWD(invokeEvent, givenTarget).perform();
+                .triggerEventByWD(getShowEvent(), givenTarget).perform();
 
             advanced().waitUntilIsVisible().perform();
         }
@@ -248,7 +277,7 @@ public abstract class AbstractPopupMenu implements PopupMenu, AdvancedInteractio
 //            advanced().waitUntilIsVisible().perform();
         }
 
-        public void setupHideDelay() {
+        public void setHideDelay() {
             hideDelay = DEFAULT_HIDEDELAY;
         }
 
@@ -257,30 +286,38 @@ public abstract class AbstractPopupMenu implements PopupMenu, AdvancedInteractio
          *
          * @param newHideDelayInMillis
          */
-        public void setupHideDelay(int newHideDelayInMillis) {
+        public void setHideDelay(int newHideDelayInMillis) {
             if (newHideDelayInMillis < 0) {
                 throw new IllegalArgumentException("Can not be negative!");
             }
             hideDelay = newHideDelayInMillis;
         }
 
-        public void setupShowEvent() {
-            invokeEvent = DEFAULT_INVOKE_EVENT;
+        protected Event getDefaultShowEvent() {
+            return DEFAULT_SHOW_EVENT;
         }
 
-        public void setupShowEvent(Event newShowEvent) {
+        protected Event getShowEvent() {
+            return showEvent;
+        }
+
+        public void setShowEvent() {
+            setShowEvent(getDefaultShowEvent());
+        }
+
+        public void setShowEvent(Event newShowEvent) {
             if (newShowEvent == null) {
                 throw new IllegalArgumentException("Parameter newInvokeEvent can not be null!");
             }
-            invokeEvent = newShowEvent;
+            showEvent = newShowEvent;
         }
 
-        public void setupShowEventFromWidget() {
+        public void setShowEventFromWidget() {
             Optional<String> event = Utils.getComponentOption(root, "showEvent");
-            invokeEvent = new Event(event.or(DEFAULT_INVOKE_EVENT.getEventName()));
+            setShowEvent(new Event(event.or(getDefaultShowEvent().getEventName())));
         }
 
-        public void setupShowDelay() {
+        public void setShowDelay() {
             showDelay = DEFAULT_SHOWDELAY;
         }
 
@@ -289,31 +326,31 @@ public abstract class AbstractPopupMenu implements PopupMenu, AdvancedInteractio
          *
          * @param newShowDelayInMillis
          */
-        public void setupShowDelay(int newShowDelayInMillis) {
+        public void setShowDelay(int newShowDelayInMillis) {
             if (newShowDelayInMillis < 0) {
                 throw new IllegalArgumentException("Can not be negative!");
             }
             showDelay = newShowDelayInMillis;
         }
 
-        public void setupTarget() {
-            target = root;
+        public void setTarget() {
+            target = getRootElement();
         }
 
-        public void setupTarget(WebElement target) {
+        public void setTarget(WebElement target) {
             this.target = target;
         }
 
-        public void setupTargetFromWidget() {
-            String targetId = Utils.getComponentOption(root, "target").orNull();
+        public void setTargetFromWidget() {
+            String targetId = Utils.<String>getComponentOption(getRootElement(), "target").orNull();
             if (targetId != null) {
                 target = browser.findElement(By.id(targetId));
             } else {
-                target = root;
+                target = getRootElement();
             }
         }
 
-        public void setupTimeoutForPopupMenuToBeNotVisible(long timeoutInMilliseconds) {
+        public void setTimeoutForPopupMenuToBeNotVisible(long timeoutInMilliseconds) {
             _timeoutForPopupMenuToBeNotVisible = timeoutInMilliseconds;
         }
 
@@ -321,7 +358,7 @@ public abstract class AbstractPopupMenu implements PopupMenu, AdvancedInteractio
             return _timeoutForPopupMenuToBeNotVisible == -1 ? Utils.getWaitAjaxDefaultTimeout(browser) : _timeoutForPopupMenuToBeNotVisible;
         }
 
-        public void setupTimeoutForPopupMenuToBeVisible(long timeoutInMilliseconds) {
+        public void setTimeoutForPopupMenuToBeVisible(long timeoutInMilliseconds) {
             _timeoutForPopupMenuToBeVisible = timeoutInMilliseconds;
         }
 
@@ -332,17 +369,17 @@ public abstract class AbstractPopupMenu implements PopupMenu, AdvancedInteractio
         /**
          * Waits until the popup menu is visible. It takes into account the <code>showDelay</code> which has default value 50ms.
          *
-         * @see #setupShowDelay(int)
+         * @see #setShowDelay(int)
          */
         public WaitingWrapper waitUntilIsNotVisible() {
             return new WaitingWrapperImpl() {
 
                 @Override
                 protected void performWait(FluentWait<WebDriver, Void> wait) {
-                    wait.until().element(getMenuPopupInternal()).is().not().visible();
+                    wait.until().element(getMenuPopup()).is().not().visible();
                 }
             }.withMessage("Waiting for menu to hide.")
-             .withTimeout(hideDelay + getTimeoutForPopupMenuToBeNotVisible(), TimeUnit.MILLISECONDS);
+                .withTimeout(hideDelay + getTimeoutForPopupMenuToBeNotVisible(), TimeUnit.MILLISECONDS);
         }
 
         public WaitingWrapper waitUntilIsVisible() {
@@ -353,7 +390,12 @@ public abstract class AbstractPopupMenu implements PopupMenu, AdvancedInteractio
                     wait.until().element(getMenuPopup()).is().visible();
                 }
             }.withMessage("The " + getNameOfFragment() + " did not show in the given timeout!")
-             .withTimeout(showDelay + getTimeoutForPopupMenuToBeVisible(), TimeUnit.MILLISECONDS);
+                .withTimeout(showDelay + getTimeoutForPopupMenuToBeVisible(), TimeUnit.MILLISECONDS);
+        }
+
+        @Override
+        public boolean isVisible() {
+            return Utils.isVisible(getMenuPopup());
         }
     }
 }

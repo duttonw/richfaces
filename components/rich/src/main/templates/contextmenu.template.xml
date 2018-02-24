@@ -19,13 +19,14 @@
         <cdk:object name="styleClass" value="#{not empty component.attributes['styleClass'] ? component.attributes['styleClass']:''}" />
 
         <cdk:object name="isDisabled" type="boolean" value="#{isDisabled(facesContext, component)}" />
+        <cdk:object name="menuGroups" value="#{getMenuGroups(facesContext, component)}" />
 
-        <div id="#{clientId}" class="rf-ctx-lbl #{isDisabled ? 'rf-ctx-dis' : 'rf-ctx-unsel '+styleClass} " style="#{style}"
-            cdk:passThroughWithExclusions="">
+        <div id="#{clientId}" class="rf-ctx-lbl #{isDisabled ? 'rf-ctx-dis' : 'rf-ctx-unsel'}">
 
             <c:if test="#{not isDisabled(facesContext, component)}">
                 <div class="rf-ctx-pos">
-                    <div id="#{clientId}_list" class="rf-ctx-lst" style="display:none;min-width:#{getPopupWidth(component)}px;">
+                    <div id="#{clientId}_list" class="rf-ctx-lst #{styleClass}" style="display:none;min-width:#{getPopupWidth(component)}px; #{style}"
+                        cdk:passThroughWithExclusions="">
                         <div class="rf-ctx-lst-bg">
                             <cdk:call expression="renderChildren(facesContext, component)" />
                         </div>
@@ -45,12 +46,11 @@
                         <cdk:scriptOption name="hideDelay" value="#{component.attributes['hideDelay']}" defaultValue='300' />
                         <cdk:scriptOption name="showDelay" value="#{component.attributes['showDelay']}" defaultValue='50' />
                         <cdk:scriptOption name="targetSelector" value="#{component.attributes['targetSelector']}" defaultValue='""' />
+                        <cdk:scriptOption name="sticky" value="#{component.attributes['sticky']}" defaultValue='false' />
                         <cdk:scriptOption attributes="onshow onhide ongroupshow ongrouphide onitemclick" wrapper="eventHandler" />
                     </cdk:scriptObject>
 
-                    new
-                    RichFaces.ui.ContextMenu(#{toScriptArgs(clientId,
-                    options)}).initiateGroups(#{toScriptArgs(getMenuGroups(facesContext, component))});
+                    new RichFaces.ui.ContextMenu(#{toScriptArgs(clientId, options)})<c:if test="#{not empty menuGroups}">.initiateGroups(#{toScriptArgs(menuGroups)})</c:if>;
 
                 </script>
             </c:if>

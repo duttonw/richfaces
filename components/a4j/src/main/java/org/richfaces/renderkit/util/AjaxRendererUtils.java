@@ -29,6 +29,9 @@ import javax.faces.context.FacesContext;
 import org.ajax4jsf.component.AjaxClientBehavior;
 import org.ajax4jsf.javascript.JSFunctionDefinition;
 import org.ajax4jsf.javascript.JSReference;
+import org.richfaces.component.AbstractActionComponent;
+import org.richfaces.component.BasicActionComponent;
+import org.richfaces.component.attribute.AjaxProps;
 import org.richfaces.renderkit.AjaxConstants;
 import org.richfaces.renderkit.AjaxFunction;
 import org.richfaces.renderkit.AjaxOptions;
@@ -49,7 +52,9 @@ public final class AjaxRendererUtils {
     public static final String AJAX_QUEUE_ATTR = "eventsQueue";
     public static final String AJAX_SINGLE_ATTR = "ajaxSingle";
     public static final String AJAX_SINGLE_PARAMETER_NAME = "ajaxSingle";
+    public static final String ERROR_EVENT_NAME = "error";
     public static final String ONBEGIN_ATTR_NAME = "onbegin";
+    public static final String ONERROR_ATTR_NAME = "onerror";
     /**
      * Attribute for keep JavaScript function name for call after complete request.
      */
@@ -184,6 +189,12 @@ public final class AjaxRendererUtils {
         Map<String, Object> parametersMap = RENDERER_UTILS.createParametersMap(facesContext, component);
         ajaxOptions.addParameters(parametersMap);
 
+        if (component instanceof BasicActionComponent) {
+            if (((BasicActionComponent) component).isResetValues()) {
+                ajaxOptions.setParameter(AjaxConstants.RESET_VALUES_PARAMETER, true);
+            }
+        }
+
         return ajaxOptions;
     }
 
@@ -242,6 +253,11 @@ public final class AjaxRendererUtils {
         String handlerScript = getHandlerScript(facesContext, component, ONBEGIN_ATTR_NAME, BEGIN_EVENT_NAME);
         if (!Strings.isNullOrEmpty(handlerScript)) {
             ajaxOptions.set(BEGIN_EVENT_NAME, handlerScript);
+        }
+
+        handlerScript = getHandlerScript(facesContext, component, ONERROR_ATTR_NAME, ERROR_EVENT_NAME);
+        if (!Strings.isNullOrEmpty(handlerScript)) {
+            ajaxOptions.set(ERROR_EVENT_NAME, handlerScript);
         }
 
         String queueId = getQueueId(component);

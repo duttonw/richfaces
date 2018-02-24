@@ -32,18 +32,25 @@ mvn clean richfaces-resources:process -Dskins=blueSky -DstaticResourceMappingFil
    Following configuration will take all <<<@ResourceDependencies>>> defined across project and its dependencies and pre-generate them
    to the given directory and generate configuration for RichFaces resource mapping.
    
+   <Note: CKEditor files need to be excluded from packing.>
+   
 ---
 <plugin>
     <groupId>org.richfaces.cdk</groupId>
-    <artifactId>maven-richfaces-resources-plugin</artifactId>
-    <version>5.0.0-SNAPSHOT</version>
+    <artifactId>richfaces-resource-optimizer-maven-plugin</artifactId>
+    <version>4.5.21-SNAPSHOT</version>
     <configuration>
         <skins>
             <skin>blueSky</skin>
         </skins>
         <excludedFiles>
+            <exclude>^javax.faces</exclude>
+            <exclude>^flot</exclude>
             <exclude>^\Qorg.richfaces.renderkit.html.images.\E.*</exclude>
             <exclude>^\Qorg.richfaces.renderkit.html.iconimages.\E.*</exclude>
+            <exclude>^\Qorg.richfaces.ckeditor\E</exclude>
+            <!-- ignore already generated resources -->
+            <exclude>^\Qorg.richfaces.staticResource\E</exclude>
         </excludedFiles>
         <includedContentTypes>
             <include>application/javascript</include>

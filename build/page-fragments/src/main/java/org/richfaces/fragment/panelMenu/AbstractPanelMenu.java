@@ -33,9 +33,10 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.richfaces.fragment.common.AdvancedInteractions;
+import org.richfaces.fragment.common.AdvancedVisibleComponentIteractions;
 import org.richfaces.fragment.common.Event;
 import org.richfaces.fragment.common.Utils;
+import org.richfaces.fragment.common.VisibleComponentInteractions;
 import org.richfaces.fragment.common.WaitingWrapper;
 import org.richfaces.fragment.common.WaitingWrapperImpl;
 import org.richfaces.fragment.common.picker.ChoicePicker;
@@ -43,25 +44,12 @@ import org.richfaces.fragment.common.picker.ChoicePickerHelper;
 
 import com.google.common.base.Predicate;
 
-public abstract class AbstractPanelMenu implements PanelMenu, PanelMenuGroup, AdvancedInteractions<AbstractPanelMenu.AdvancedAbstractPanelMenuInteractions> {
-
-    public static final String CSS_EXPANDED_SUFFIX = "-exp";
-    public static final String CSS_TRANSPARENT_SUFFIX = "-transparent";
-    public static final String CSS_SELECTED_SUFFIX = "-sel";
-    public static final String CSS_HOVERED_SUFFIX = "-hov";
-    public static final String CSS_DISABLED_SUFFIX = "-dis";
-    public static final String CSS_COLLAPSED_SUFFIX = "-colps";
-    private static final String HEADER_SELECTOR_TO_INVOKE_EVENT_ON = "div[class*=rf-pm-][class*=-gr-hdr]";
+public abstract class AbstractPanelMenu implements PanelMenu, PanelMenuGroup, AdvancedVisibleComponentIteractions<AbstractPanelMenu.AdvancedAbstractPanelMenuInteractions> {
 
     @ArquillianResource
     private JavascriptExecutor executor;
     @Drone
     private WebDriver browser;
-
-    private final AdvancedAbstractPanelMenuInteractions advancedInteractions = new AdvancedAbstractPanelMenuInteractions();
-
-    private Event expandEvent = Event.CLICK;
-    private Event collapseEvent = Event.CLICK;
 
     @Override
     public PanelMenuItem selectItem(ChoicePicker picker) {
@@ -92,7 +80,7 @@ public abstract class AbstractPanelMenu implements PanelMenu, PanelMenuGroup, Ad
         if (isGroupExpanded(groupHeader)) {
             return Graphene.createPageFragment(RichFacesPanelMenuGroup.class, groupRoot);
         }
-        executeEventOn(expandEvent, groupHeader);
+        executeEventOn(advanced().getExpandEvent(), groupHeader);
         advanced().waitUntilMenuGroupExpanded(groupHeader).perform();
         return Graphene.createPageFragment(RichFacesPanelMenuGroup.class, groupRoot);
     }
@@ -116,7 +104,7 @@ public abstract class AbstractPanelMenu implements PanelMenu, PanelMenuGroup, Ad
         if (!isGroupExpanded(groupHeader)) {
             return;
         }
-        executeEventOn(collapseEvent, groupHeader);
+        executeEventOn(advanced().getCollapseEvent(), groupHeader);
         advanced().waitUntilMenuGroupCollapsed(groupHeader).perform();
     }
 
@@ -144,21 +132,64 @@ public abstract class AbstractPanelMenu implements PanelMenu, PanelMenuGroup, Ad
 
     public abstract List<WebElement> getMenuGroups();
 
-    @Override
-    public AdvancedAbstractPanelMenuInteractions advanced() {
-        return advancedInteractions;
-    }
+    public abstract AdvancedAbstractPanelMenuInteractions advanced();
 
-    public class AdvancedAbstractPanelMenuInteractions {
+    public abstract class AdvancedAbstractPanelMenuInteractions implements VisibleComponentInteractions {
 
+        private static final String CSS_EXPANDED_SUFFIX = "-exp";
+        private static final String CSS_TRANSPARENT_SUFFIX = "-transparent";
+        private static final String CSS_SELECTED_SUFFIX = "-sel";
+        private static final String CSS_HOVERED_SUFFIX = "-hov";
+        private static final String CSS_DISABLED_SUFFIX = "-dis";
+        private static final String CSS_COLLAPSED_SUFFIX = "-colps";
+        private static final String HEADER_SELECTOR_TO_INVOKE_EVENT_ON = "div[class*=rf-pm-][class*=-gr-hdr]";
+
+        private Event expandEvent = Event.CLICK;
+        private Event collapseEvent = Event.CLICK;
         private long _timoutForMenuGroupToBeExpanded = -1;
         private long _timeoutForMenuGroupToBeCollapsed = -1;
 
-        public void setupExpandEvent(Event event) {
+        protected String getHeaderSelectorToInovkeEventOn() {
+            return HEADER_SELECTOR_TO_INVOKE_EVENT_ON;
+        }
+
+        protected String getCssExpandedSuffix() {
+            return CSS_EXPANDED_SUFFIX;
+        }
+
+        protected String getCssTransparentSuffix() {
+            return CSS_TRANSPARENT_SUFFIX;
+        }
+
+        protected String getCssSelectedSuffix() {
+            return CSS_SELECTED_SUFFIX;
+        }
+
+        protected String getCssHoveredSuffix() {
+            return CSS_HOVERED_SUFFIX;
+        }
+
+        protected String getCssDisabledSuffix() {
+            return CSS_DISABLED_SUFFIX;
+        }
+
+        protected String getCssCollapsedSuffix() {
+            return CSS_COLLAPSED_SUFFIX;
+        }
+
+        protected Event getExpandEvent() {
+            return expandEvent;
+        }
+
+        protected Event getCollapseEvent() {
+            return collapseEvent;
+        }
+
+        public void setExpandEvent(Event event) {
             expandEvent = event;
         }
 
-        public void setupCollapseEvent(Event event) {
+        public void setCollapseEvent(Event event) {
             collapseEvent = event;
         }
 
@@ -180,7 +211,7 @@ public abstract class AbstractPanelMenu implements PanelMenu, PanelMenuGroup, Ad
                         });
                 }
             }.withMessage("Waiting for Panel Menu group to be expanded!")
-             .withTimeout(getTimoutForMenuGroupToBeExpanded(), TimeUnit.MILLISECONDS);
+                .withTimeout(getTimoutForMenuGroupToBeExpanded(), TimeUnit.MILLISECONDS);
         }
 
         public WaitingWrapper waitUntilMenuGroupCollapsed(final WebElement groupHeader) {
@@ -197,10 +228,10 @@ public abstract class AbstractPanelMenu implements PanelMenu, PanelMenuGroup, Ad
                         });
                 }
             }.withMessage("Waiting for Panel Menu group to be expanded!")
-             .withTimeout(getTimeoutForMenuGroupToBeCollapsed(), TimeUnit.MILLISECONDS);
+                .withTimeout(getTimeoutForMenuGroupToBeCollapsed(), TimeUnit.MILLISECONDS);
         }
 
-        public void setupTimoutForMenuGroupToBeExpanded(long timeoutInMilliseconds) {
+        public void setTimoutForMenuGroupToBeExpanded(long timeoutInMilliseconds) {
             _timoutForMenuGroupToBeExpanded = timeoutInMilliseconds;
         }
 
@@ -208,17 +239,24 @@ public abstract class AbstractPanelMenu implements PanelMenu, PanelMenuGroup, Ad
             return _timoutForMenuGroupToBeExpanded == -1 ? Utils.getWaitAjaxDefaultTimeout(browser) : _timoutForMenuGroupToBeExpanded;
         }
 
-        public void setupTimeoutForMenuGroupToBeCollapsed(long timeoutInMilliseconds) {
+        public void setTimeoutForMenuGroupToBeCollapsed(long timeoutInMilliseconds) {
             _timeoutForMenuGroupToBeCollapsed = timeoutInMilliseconds;
         }
 
         public long getTimeoutForMenuGroupToBeCollapsed() {
             return _timeoutForMenuGroupToBeCollapsed == -1 ? Utils.getWaitAjaxDefaultTimeout(browser) : _timeoutForMenuGroupToBeCollapsed;
         }
+
+        protected abstract WebElement getRootElement();
+
+        @Override
+        public boolean isVisible() {
+            return Utils.isVisible(getRootElement());
+        }
     }
 
     private boolean isGroupExpanded(WebElement groupHeader) {
-        return groupHeader.getAttribute("class").contains(CSS_EXPANDED_SUFFIX);
+        return groupHeader.getAttribute("class").contains(advanced().getCssExpandedSuffix());
     }
 
     private void ensureElementIsEnabledAndVisible(WebElement element) {
@@ -229,7 +267,7 @@ public abstract class AbstractPanelMenu implements PanelMenu, PanelMenuGroup, Ad
     }
 
     private boolean isDisabled(WebElement group) {
-        return group.getAttribute("class").contains(CSS_DISABLED_SUFFIX);
+        return group.getAttribute("class").contains(advanced().getCssDisabledSuffix());
     }
 
     private void checkElementIsVisible(WebElement element) {
@@ -243,7 +281,7 @@ public abstract class AbstractPanelMenu implements PanelMenu, PanelMenuGroup, Ad
     }
 
     private WebElement getHeaderElementDynamically(WebElement element) {
-        return element.findElement(By.cssSelector(HEADER_SELECTOR_TO_INVOKE_EVENT_ON));
+        return element.findElement(By.cssSelector(advanced().getHeaderSelectorToInovkeEventOn()));
     }
 
     private void ensureElementExist(WebElement element) {

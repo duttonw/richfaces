@@ -63,7 +63,6 @@ public class Codec {
      *
      */
     public void setPassword(String p) throws FacesException {
-        byte[] s = { (byte) 0xA9, (byte) 0x9B, (byte) 0xC8, (byte) 0x32, (byte) 0x56, (byte) 0x34, (byte) 0xE3, (byte) 0x03 };
 
         try {
             KeySpec keySpec = new DESKeySpec(p.getBytes("UTF8"));

@@ -69,9 +69,7 @@
          * @return {Boolean} false
          * */
         execAjax : function (tooltip, event) {
-            tooltip.__loading().show();
-            tooltip.__content().hide();
-            tooltip.__show(event);
+            tooltip.__show(event,true);
 
             rf.ajax(tooltip.id, null, $.extend({}, tooltip.options["ajax"], {}));
 
@@ -86,9 +84,7 @@
          *             - true  - in other cases
          * */
         execClient : function (tooltip, event) {
-            tooltip.__show(event);
-
-            return tooltip.__fireShow();
+            tooltip.__show(event, true);
         }
     };
 
@@ -97,11 +93,14 @@
             name:"Tooltip",
 
             /**
-             * @class Tooltip
-             * @name Tooltip
-             *
-             * @constructor
-             * @param {String} componentId - component id
+             * Backing object for rich:tooltip
+             * 
+             * @extends RichFaces.BaseComponent
+             * @memberOf! RichFaces.ui
+             * @constructs RichFaces.ui.Tooltip
+             * 
+             * @param {string} componentId - component id
+             * @param {Object} options - params
              * */
             init : function (componentId, options) {
                 $super.constructor.call(this, componentId);
@@ -127,25 +126,25 @@
                         direction: this.options.direction
                     });
 
-                var handlers = {};
-                handlers[this.options.showEvent + this.namespace] = this.__showHandler;
-                handlers[this.options.hideEvent + this.namespace] = this.__hideHandler;
-
-                rf.Event.bindById(this.target, handlers, this);
-
-                if (this.options.hideEvent == 'mouseleave') {
-                    rf.Event.bindById(this.popupId, this.options.hideEvent + this.namespace, this.__hideHandler, this);
+                if (this.options.attached) {
+                    var handlers = {};
+                    handlers[this.options.showEvent + this.namespace] = this.__showHandler;
+                    handlers[this.options.hideEvent + this.namespace] = this.__hideHandler;
+    
+                    rf.Event.bindById(this.target, handlers, this);
+    
+                    if (this.options.hideEvent == 'mouseleave') {
+                        rf.Event.bindById(this.popupId, this.options.hideEvent + this.namespace, this.__hideHandler, this);
+                    }
                 }
             },
 
             /***************************** Public Methods  ****************************************************************/
             /**
-             * @methodOf
-             * @name PanelMenuItem#hide
-             *
-             * TODO ...
-             *
-             * @return {void} TODO ...
+             * Hides the tooltip
+             * 
+             * @method
+             * @name RichFaces.ui.Tooltip#hide
              */
             hide: function () {
 
@@ -154,6 +153,12 @@
                     window.clearTimeout(tooltip.hidingTimerHandle);
                     tooltip.hidingTimerHandle = undefined;
                 }
+                
+                if (tooltip.loadingDelayHandle) {
+                    window.clearTimeout(tooltip.loadingDelayHandle);
+                    tooltip.loadingDelayHandle = undefined;
+                }
+                
                 if (this.shown) {
                     this.__hide();
                 }
@@ -203,12 +208,11 @@
             },
 
             /**
-             * @methodOf
-             * @name PanelMenuItem#show
-             *
-             * TODO ...
-             *
-             * @return {void} TODO ...
+             * Shows the tooltip
+             * 
+             * @method
+             * @name RichFaces.ui.Tooltip#show
+             * @param [event] {MouseEvent} event that triggered the function, used to postion the tooltip
              */
             show: function (event) {
                 var tooltip = this;
@@ -218,7 +222,19 @@
                 }
 
                 if (!this.shown) {
-                    SHOW_ACTION.exec(this, event);
+                    if (this.mode == "ajax" && this.options.showDelay > 1000) {
+                        tooltip.loadingDelayHandle = window.setTimeout(function() {
+                            tooltip.__loading().show();
+                            tooltip.__content().hide();
+                            tooltip.__show(event);
+                        }, 1000);
+                    } else if (this.mode == "ajax") {
+                        tooltip.__loading().show();
+                        tooltip.__content().hide();
+                    }
+                    this.__delay(tooltip.options.showDelay, function () {
+                        SHOW_ACTION.exec(tooltip, event);
+                    });
                 }
 
             },
@@ -226,27 +242,30 @@
             onCompleteHandler : function () {
                 this.__content().show();
                 this.__loading().hide();
-
-                return this.__fireShow();
             },
 
             /**
              * @private
              * @return {void} TODO ...
              */
-            __show: function (event) {
+            __show: function (event, fireEvent) {
                 var tooltip = this;
-                this.__delay(this.options.showDelay, function () {
-                    if (!tooltip.options.followMouse) {
-                        tooltip.saveShowEvent = event;
-                    }
-                    if (!tooltip.shown) {
+                
+                if (!tooltip.options.followMouse) {
+                    tooltip.saveShowEvent = event;
+                }
+                if (!tooltip.shown) {
+                    if (fireEvent) {
                         tooltip.__fireBeforeShow();
-                        tooltip.popup.show(tooltip.saveShowEvent);
                     }
-                    //for showing tooltip in followMouse mode
+                    tooltip.popup.show(tooltip.saveShowEvent);
+                }
+                //for showing tooltip in followMouse mode
+                if (fireEvent) {
                     tooltip.shown = true;
-                });
+                    tooltip.__fireShow();
+                }
+                
             },
 
             /***************************** Private Methods ****************************************************************/
@@ -330,6 +349,10 @@
                 rf.Event.unbindById(this.target, this.namespace);
                 this.popup.destroy();
                 this.popup = null;
+                if (this.hidingTimerHandle) {
+                    window.clearTimeout(this.hidingTimerHandle);
+                    this.hidingTimerHandle = undefined;
+                }
                 $super.destroy.call(this);
             }
         });

@@ -39,6 +39,16 @@
 
             name: "TreeNode",
 
+            /**
+             * Backing object for rich:treeNode
+             * 
+             * @extends RichFaces.BaseComponent
+             * @memberOf! RichFaces.ui
+             * @constructs RichFaces.ui.TreeNode
+             * 
+             * @param id
+             * @param commonOptions
+             */
             init: function (id, commonOptions) {
                 $superTreeNode.constructor.call(this, id);
                 this.__rootElt = $(this.attachToDom());
@@ -320,6 +330,16 @@
 
             name: "Tree",
 
+            /**
+             * Backing object for rich:tree
+             * 
+             * @extends RichFaces.ui.TreeNode
+             * @memberOf! RichFaces.ui
+             * @constructs RichFaces.ui.Tree
+             * 
+             * @param id
+             * @param options
+             */
             init: function (id, options) {
                 this.__treeRootElt = $(rf.getDomElement(id));
 
@@ -501,14 +521,23 @@
                 return this.__selection;
             },
 
-            contextMenuAttach: function (menu) {
+            __getMenuSelector: function (menu) {
                 var selector = "[id='" + this.id[0].id + "'] ";
                 selector += (typeof menu.options.targetSelector === 'undefined')
                     ?  ".rf-trn-cnt" : menu.options.targetSelector;
                 selector = $.trim(selector);
-                rf.Event.bind(selector, menu.options.showEvent, $.proxy(menu.__showHandler, menu), menu);
-            }
+                return selector;
+            },
 
+            contextMenuAttach: function (menu) {
+                var selector = this.__getMenuSelector(menu);
+                rf.Event.bind(selector, menu.options.showEvent, $.proxy(menu.__showHandler, menu), menu);
+            },
+
+            contextMenuDetach: function (menu) {
+                var selector = this.__getMenuSelector(menu);
+                rf.Event.unbind(selector, menu.options.showEvent);
+            }
         });
 
     // define super class link for Tree

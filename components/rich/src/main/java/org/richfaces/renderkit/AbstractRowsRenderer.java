@@ -36,6 +36,7 @@ import org.ajax4jsf.model.DataVisitResult;
 import org.ajax4jsf.model.DataVisitor;
 import org.richfaces.component.Row;
 import org.richfaces.component.UIDataTableBase;
+import org.richfaces.component.attribute.RowColumnStyleProps;
 
 /**
  * @author Anton Belevich
@@ -137,8 +138,8 @@ public abstract class AbstractRowsRenderer extends RendererBase implements DataV
 
     protected String[] getRowClasses(RowHolderBase rowHolder) {
         String[] rowClasses = new String[0];
-        if (rowHolder.getRow() instanceof UIDataTableBase) {
-            String classes = ((UIDataTableBase) rowHolder.getRow()).getRowClasses();
+        if (rowHolder.getRow() instanceof RowColumnStyleProps) {
+            String classes = ((RowColumnStyleProps) rowHolder.getRow()).getRowClasses();
             if (null != classes) {
                 rowClasses = classes.split(",");
             }
@@ -148,8 +149,8 @@ public abstract class AbstractRowsRenderer extends RendererBase implements DataV
 
     protected String[] getColumnClasses(RowHolderBase rowHolder) {
         String[] columnClasses = new String[0];
-        if (rowHolder.getRow() instanceof UIDataTableBase) {
-            String classes = ((UIDataTableBase) rowHolder.getRow()).getColumnClasses();
+        if (rowHolder.getRow() instanceof RowColumnStyleProps) {
+            String classes = ((RowColumnStyleProps) rowHolder.getRow()).getColumnClasses();
             if (null != classes) {
                 columnClasses = classes.split(",");
             }
@@ -160,8 +161,8 @@ public abstract class AbstractRowsRenderer extends RendererBase implements DataV
     protected String getColumnClass(RowHolderBase rowHolder, int columnNumber) {
         String styleClass = "";
         String[] columnClasses = getColumnClasses(rowHolder);
-        if (columnClasses.length > columnNumber) {
-            styleClass = columnClasses[columnNumber];
+        if (columnClasses.length > 0) {
+            styleClass = columnClasses[columnNumber % columnClasses.length];
         }
 
         return styleClass;

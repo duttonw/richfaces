@@ -268,7 +268,6 @@
         this.calendar = calendar;
         this.monthLabels = calendar.options.monthLabels;
         this.monthLabelsShort = calendar.options.monthLabelsShort;
-        this.weekDayLabels = calendar.options.weekDayLabels;
         this.weekDayLabelsShort = calendar.options.weekDayLabelsShort;
         this.controlLabels = calendar.options.labels;
     };
@@ -288,7 +287,7 @@
             timeEditorFields: CalendarView.timeEditorFields
         });
 
-    // must be :defaultTime, minDaysInFirstWeek, firstWeekday, weekDayLabels, weekDayLabelsShort, monthLabels, monthLabelsShort
+    // must be :defaultTime, minDaysInFirstWeek, firstWeekday, weekDayLabelsShort, monthLabels, monthLabelsShort
 
     // defaults definition
     var defaultOptions = {
@@ -358,8 +357,101 @@
         if (!this.isFocused && this.isVisible) return;
         updateDefaultLabel.call(this, (event.type == "focus" ? "" : this.options.defaultLabel));
     }
+    
+    var keydownhandler = function(calendar) {
+        
+        return function (e) {
+            var code;
+
+            if (e.keyCode) {
+                code = e.keyCode;
+            } else if (e.which) {
+                code = e.which;
+            }
+            
+            if (code == rf.KEYS.TAB) {
+                return true;
+            }
+
+            e.preventDefault();
+            
+            if (calendar.keydownDisabled) { // waiting for ajax request
+                return;
+            }
+
+            var newDate = new Date(calendar.selectedDate || Date.now());
+            
+            var addDays = function (days) {
+                newDate.setDate(newDate.getDate() + days);
+            };
+
+            switch (code) {
+                case rf.KEYS.LEFT:
+                    addDays(-1);
+                    break;
+                case rf.KEYS.RIGHT:
+                    addDays(1);
+                    break;
+                case rf.KEYS.UP:
+                    addDays(-7);
+                    break;
+                case rf.KEYS.DOWN:
+                    addDays(7);
+                    break;
+                case rf.KEYS.PAGEUP:
+                    if (e.shiftKey) {
+                        newDate.setFullYear(newDate.getFullYear() - 1);
+                        break;
+                    }
+                    newDate.setMonth(newDate.getMonth() - 1);
+                    break;
+                case rf.KEYS.PAGEDOWN:
+                    if (e.shiftKey) {
+                        newDate.setFullYear(newDate.getFullYear() + 1);
+                        break;
+                    }
+                    newDate.setMonth(newDate.getMonth() + 1);
+                    break;
+                case 67: // C
+                    calendar.__resetSelectedDate();
+                    return false;
+                case 84: // T
+                    calendar.today();
+                    return false;
+                case 72: // H
+                    calendar.showTimeEditor();
+                    return false;
+                case rf.KEYS.RETURN:
+                    if (!calendar.__getDayCell(newDate).hasClass("rf-cal-dis")) {
+                        calendar.close(true);
+                    }
+                    return false;
+                case rf.KEYS.ESC:
+                    calendar.close(false);
+                    return false;
+                default:
+                    return false;
+            }
+            
+            calendar.__selectDate(newDate);
+            
+            return false;
+        }
+    }
 
     // Constructor definition
+    /**
+     * Backing object for rich:calendar
+     * 
+     * @extends RichFaces.BaseComponent
+     * @memberOf! RichFaces.ui
+     * @constructs RichFaces.ui.Calendar
+     * 
+     * @param componentId {string} component id
+     * @param locale {string} calendar locale
+     * @param options {string}
+     * @param markups
+     */
     rf.ui.Calendar = function(componentId, locale, options, markups) {
 
         // dayListMarkup - day cell markup
@@ -367,7 +459,7 @@
         // weekNumberMarkup - week number cell markup
         //		context: {weekNumber, elementId, component}
         // weekDayMarkup - week day cell markup
-        //		context: {weekDayLabel, weekDayLabelShort, weekDayNumber, isWeekend, elementId, component}
+        //		context: {weekDayLabelShort, weekDayNumber, isWeekend, elementId, component}
 
         // headerMarkup
         // footerMarkup
@@ -376,7 +468,6 @@
 
         // currentDate - date to show month (day not used) (MM/yyyy)
         // selectedDate - selected date (mm/dd/yyyy)
-        // weekDayLabels - collection of week day labels keyed by week day numbers
         // weekDayLabelsShort - collection of week day short labels keyed by week day numbers
         // minDaysInFirstWeek - locale-specific constant defining number of days in the first week
         // firstWeekDay - (0..6) locale-specific constant defining number of the first week day
@@ -425,11 +516,7 @@
         this.options = $.extend(this.options, defaultOptions, locales[locale], options, markups);
 
         // labels
-        var value = options.labels || {};
-        for (var name in defaultLabels) {
-            if (!value[name]) value[name] = defaultLabels[name];
-        }
-        this.options.labels = value;
+        this.options.labels = $.extend({}, defaultLabels, options.labels);
 
         this.popupOffset = [this.options.horizontalOffset, this.options.verticalOffset];
 
@@ -498,7 +585,7 @@
 
         var tempStr = "RichFaces.component('" + this.id + "').";
 
-        var htmlTextHeader = '<table id="' + this.CALENDAR_CONTENT + '" border="0" cellpadding="0" cellspacing="0" class="rf-cal-extr rf-cal-popup ' + this.options.styleClass + '" style="' + popupStyles + this.options.style + '" onclick="' + tempStr + 'skipEventOnCollapse=true;"><tbody>';
+        var htmlTextHeader = '<table id="' + this.CALENDAR_CONTENT + '" border="0" tabindex="-1" cellpadding="0" cellspacing="0" class="rf-cal-extr rf-cal-popup ' + this.options.styleClass + '" style="' + popupStyles + this.options.style + '" onmousedown="' + tempStr + 'skipEventOnCollapse=true;"><tbody>';
         var colspan = (this.options.showWeeksBar ? "8" : "7");
         var htmlHeaderOptional = (this.options.optionalHeaderMarkup) ? '<tr><td class="rf-cal-hdr-optnl" colspan="' + colspan + '" id="' + this.id + 'HeaderOptional"></td></tr>' : '';
         var htmlFooterOptional = (this.options.optionalFooterMarkup) ? '<tr><td class="rf-cal-ftr-optl" colspan="' + colspan + '" id="' + this.id + 'FooterOptional"></td></tr>' : '';
@@ -518,7 +605,7 @@
             if (this.options.showWeeksBar) htmlTextWeekDayBar.push('<td class="rf-cal-day-lbl"><br/></td>');
             var weekDayCounter = this.options.firstWeekDay;
             for (var i = 0; i < 7; i++) {
-                context = {weekDayLabel: this.options.weekDayLabels[weekDayCounter], weekDayLabelShort: this.options.weekDayLabelsShort[weekDayCounter], weekDayNumber:weekDayCounter, isWeekend:this.isWeekend(i), elementId:this.WEEKDAY_ELEMENT_ID + i, component:this};
+                context = {weekDayLabelShort: this.options.weekDayLabelsShort[weekDayCounter], weekDayNumber:weekDayCounter, isWeekend:this.isWeekend(i), elementId:this.WEEKDAY_ELEMENT_ID + i, component:this};
                 var weekDayHtml = this.evaluateMarkup(this.options.weekDayMarkup, context);
                 if (weekDayCounter == 6) weekDayCounter = 0; else weekDayCounter++;
 
@@ -563,6 +650,11 @@
 
         var div = rf.getDomElement(this.CALENDAR_CONTENT);
         div = $(div).replaceWith(htmlTextHeader + htmlHeaderOptional + htmlControlsHeader + htmlTextWeekDayBar.join('') + htmlTextWeek.join('') + htmlControlsFooter + htmlFooterOptional + htmlTextFooter);
+
+        if (!this.options.popup) {
+            rf.getDomElement(this.CALENDAR_CONTENT).title = document.getElementById(this.INPUT_DATE_ID).title;
+        }
+
         this.attachToDom(); // TODO: optimize double $
 
         // memory leaks fix // from old 3.3.x code, may be not needed now
@@ -573,7 +665,24 @@
             var handler = new Function('event', "RichFaces.component('" + this.id + "').switchPopup();");
             rf.Event.bindById(this.POPUP_BUTTON_ID, "click" + this.namespace, handler, this);
             if (!this.options.enableManualInput) {
-                rf.Event.bindById(this.INPUT_DATE_ID, "click" + this.namespace, handler, this);
+                rf.Event.bindById(this.INPUT_DATE_ID, "focus" + this.namespace, this.showPopup, this);
+            } else {
+                var inputKeyDownHandler = function (event) {
+                    var code;
+
+                    if (event.keyCode) {
+                        code = event.keyCode;
+                    } else if (event.which) {
+                        code = event.which;
+                    }
+                    
+                    if (code == rf.KEYS.UP) {
+                        handler();
+                        event.preventDefault();
+                    }
+                }
+                
+                rf.Event.bindById(this.INPUT_DATE_ID, "keydown" + this.namespace, inputKeyDownHandler, this);
             }
             if (this.options.defaultLabel) {
                 updateDefaultLabel.call(this, this.options.defaultLabel);
@@ -587,6 +696,8 @@
         this.isAjaxMode = this.options.mode == "ajax";
 
         //alert(new Date().getTime()-_d.getTime());
+        
+        $(rf.getDomElement(this.CALENDAR_CONTENT)).on("keydown", keydownhandler(this));
     };
 
     // Extend component class and add protected methods from parent class to our container
@@ -613,11 +724,12 @@
                 if (this.options.popup && this.isVisible) {
                     this.scrollElements && rf.Event.unbindScrollEventHandlers(this.scrollElements, this);
                     this.scrollElements = null;
-                    rf.Event.unbind(window.document, "click" + this.namespace);
                 }
                 $super.destroy.call(this);
             },
-
+            __getDayCell: function(date) {
+                return $(rf.getDomElement(this.DATE_ELEMENT_ID + (this.firstDateIndex + date.getDate() - 1)));
+            },
             dateEditorSelectYear: function(value) {
                 if (this.dateEditorYearID) {
                     $(rf.getDomElement(this.dateEditorYearID)).removeClass('rf-cal-edtr-btn-sel');
@@ -706,7 +818,7 @@
             createEditor: function() {
                 var element = $(rf.getDomElement(this.CALENDAR_CONTENT));
                 var zindex = parseInt(element.css('z-index'), 10);
-                var htmlBegin = '<div id="' + this.EDITOR_SHADOW_ID + '" class="rf-cal-edtr-shdw" style="position:absolute; display:none;z-index:' + zindex + '"></div><table border="0" cellpadding="0" cellspacing="0" id="' + this.EDITOR_ID + '" style="position:absolute; display:none;z-index:' + (zindex + 1) + '" onclick="RichFaces.component(\'' + this.id + '\').skipEventOnCollapse=true;"><tbody><tr><td class="rf-cal-edtr-cntr" align="center"><div style="position:relative; display:inline-block;">';
+                var htmlBegin = '<div id="' + this.EDITOR_SHADOW_ID + '" class="rf-cal-edtr-shdw" style="position:absolute; display:none;z-index:' + zindex + '"></div><table border="0" cellpadding="0" cellspacing="0" id="' + this.EDITOR_ID + '" style="position:absolute; display:none;z-index:' + (zindex + 1) + '"><tbody><tr><td class="rf-cal-edtr-cntr" align="center"><div style="position:relative; display:inline-block;">';
                 var htmlContent = '<div id="' + this.EDITOR_LAYOUT_SHADOW_ID + '" class="rf-cal-edtr-layout-shdw"></div>';
 
                 var htmlEnd = '</div></td></tr></tbody></table>';
@@ -740,6 +852,37 @@
                 this.correctEditorButtons(editor, this.TIME_EDITOR_BUTTON_OK, this.TIME_EDITOR_BUTTON_CANCEL);
 
                 this.isTimeEditorLayoutCreated = true;
+                
+                var timeKeyDownHandler = function(calendar) {
+                    return function(e) {
+                        var code;
+    
+                        if (e.keyCode) {
+                            code = e.keyCode;
+                        } else if (e.which) {
+                            code = e.which;
+                        }
+                        
+                        switch(code) {
+                            case rf.KEYS.TAB:
+                                if ((e.target.id == calendar.id + 'TimeMinutes' && !calendar.showSeconds && !calendar.timeType == 2)  ||
+                                        (e.target.id == calendar.id + 'TimeSeconds' && !calendar.timeType == 2) ||
+                                        (e.target.id == calendar.id + 'TimeSign')) {
+                                    e.preventDefault();
+                                    rf.getDomElement(calendar.id + 'TimeHours').focus();
+                                }
+                                break;
+                            case rf.KEYS.ESC:
+                                calendar.hideTimeEditor(false);
+                                break;
+                            case rf.KEYS.RETURN:
+                                calendar.hideTimeEditor(true);
+                                return false;
+                        }
+                    }
+                }
+                
+                $(rf.getDomElement(this.TIME_EDITOR_LAYOUT_ID)).on('keydown', timeKeyDownHandler(this));
             },
 
             correctEditorButtons: function(editor, buttonID1, buttonID2) {
@@ -812,7 +955,7 @@
 
             createSpinnerTable: function(id) {
                 return '<table cellspacing="0" cellpadding="0" border="0"><tbody><tr>' +
-                    '<td class="rf-cal-sp-inp-ctnr">' +
+                    '<td class="rf-cal-sp-inp-cntr">' +
                     '<input id="' + id + '" name="' + id + '" class="rf-cal-sp-inp" type="text" />' +
                     '</td>' +
                     '<td class="rf-cal-sp-btn">' +
@@ -923,6 +1066,12 @@
                 this.hidePopup();
             },
 
+            /**
+            * Hide the popup
+            * 
+            * @method
+            * @name RichFaces.ui.Calendar#hidePopup
+            */
             hidePopup: function() {
 
                 if (!this.options.popup || !this.isVisible) return;
@@ -931,7 +1080,10 @@
                     if (this.isEditorVisible) this.hideEditor();
                     this.scrollElements && rf.Event.unbindScrollEventHandlers(this.scrollElements, this);
                     this.scrollElements = null;
-                    rf.Event.unbind(window.document, "click" + this.namespace);
+                    rf.Event.unbindById(this.id, "focusout" + this.namespace);
+                    if (!this.options.enableManualInput) {
+                        rf.Event.bindById(this.INPUT_DATE_ID, "click" + this.namespace, this.showPopup, this);
+                    }
 
                     $(rf.getDomElement(this.CALENDAR_CONTENT)).hide();
                     this.isVisible = false;
@@ -941,6 +1093,12 @@
                 }
             },
 
+            /**
+             * Show the popup
+             * 
+             * @method
+             * @name RichFaces.ui.Calendar#showPopup
+             */
             showPopup: function(e) {
                 if (!this.isRendered) {
                     this.isRendered = true;
@@ -977,31 +1135,42 @@
 
                     this.isVisible = true;
 
-                    rf.Event.bind(window.document, "click" + this.namespace, this.eventOnCollapse, this);
-
                     this.scrollElements && rf.Event.unbindScrollEventHandlers(this.scrollElements, this);
                     this.scrollElements = null;
                     if (this.options.hidePopupOnScroll) {
                         this.scrollElements = rf.Event.bindScrollEventHandlers(element, this.eventOnScroll, this);
                     }
+                    
+                    $(rf.getDomElement(this.CALENDAR_CONTENT)).focus();
+                    rf.Event.bindById(this.id, "focusout" + this.namespace, this.eventOnCollapse, this);
+                    rf.Event.unbindById(this.INPUT_DATE_ID, "click" + this.namespace);
                 }
             },
 
+            /**
+             * Switch the state of the popup
+             * 
+             * @method
+             * @name RichFaces.ui.Calendar#switchPopup
+             */
             switchPopup: function(e) {
                 this.isVisible ? this.hidePopup() : this.showPopup(e);
             },
 
             eventOnCollapse: function (e) {
-                if (this.skipEventOnCollapse) {
-                    this.skipEventOnCollapse = false;
+                that = this;
+                window.setTimeout(function() {
+                if (that.skipEventOnCollapse) {
+                    that.skipEventOnCollapse = false;
                     return true;
                 }
 
-                if (e.target.id == this.POPUP_BUTTON_ID || (!this.options.enableManualInput && e.target.id == this.INPUT_DATE_ID)) return true;
+                if (e.target.id == that.POPUP_BUTTON_ID || (!that.options.enableManualInput && e.target.id == that.INPUT_DATE_ID)) return true;
 
-                this.hidePopup();
+                that.hidePopup();
 
                 return true;
+                }, 200);
             },
 
             setInputField: function(dateStr, event) {
@@ -1016,6 +1185,17 @@
             getCurrentDate: function() {
                 return this.currentDate;
             },
+
+            /**
+             * Focus the input element
+             * 
+             * @method
+             * @name RichFaces.ui.Calendar#focus
+             */
+            focus: function() {
+                rf.getDomElement(this.INPUT_DATE_ID).focus();
+            },
+
             __getSelectedDate: function() {
                 if (!this.selectedDate) return null; else return this.selectedDate;
             },
@@ -1037,9 +1217,23 @@
                     return this.options.monthLabels[value];
                 } else return value;
             },
+            /**
+             * Get the current year
+             * 
+             * @method
+             * @name RichFaces.ui.Calendar#getCurrentYear
+             * @return {int} current year
+             */
             getCurrentYear: function() {
                 return this.currentDate.getFullYear();
             },
+            /**
+             * Get the number of the current month
+             * 
+             * @method
+             * @name RichFaces.ui.Calendar#getCurrentMonth
+             * @return {int} number of current month, 0-based
+             */
             getCurrentMonth: function(asMonthLabel) {
                 var value = this.currentDate.getMonth();
                 if (asMonthLabel) {
@@ -1150,6 +1344,7 @@
                     this.afterLoad();
                     this.afterLoad = null;
                 }
+                this.keydownDisabled = false;
             },
 
             indexData:function(daysData, isAjaxMode) {
@@ -1355,6 +1550,8 @@
                                 classNames += " rf-cal-sel";
                             }
                             else if (!this.options.disabled && !this.options.readonly && dataobj.enabled) classNames += ' rf-cal-btn';
+                            
+                            if (!dataobj.enabled) classNames += ' rf-cal-dis';
 
                             // add custom style class
                             if (dataobj.customStyleClass) {
@@ -1487,6 +1684,12 @@
                 }
             },
 
+            /**
+             * Select today's date
+             * 
+             * @method
+             * @name RichFaces.ui.Calendar#today
+             */
             today: function(noUpdate, noHighlight) {
 
                 var now = new Date();
@@ -1569,6 +1772,25 @@
                     newSelectedDate = null;
                 }
 
+                if (newSelectedDate) {
+                    var newCell = this.__getDayCell(newSelectedDate);
+
+                    if (newSelectedDate.getMonth() == this.currentDate.getMonth() && newSelectedDate.getFullYear() == this.currentDate.getFullYear() && newCell.hasClass('rf-cal-dis')) { // do not apply date, just select
+                        this.selectedDate = newSelectedDate;
+                        this.clearEffect(this.selectedDateCellId, "rf-cal-sel", (this.options.disabled || this.options.readonly ? null : "rf-cal-btn"));
+                        this.selectedDateCellId = newCell.attr('id');
+                        this.selectedDateCellColor = this.getCellBackgroundColor(e);
+
+                        newCell.removeClass("rf-cal-btn");
+                        newCell.removeClass("rf-cal-hov");
+                        newCell.addClass("rf-cal-sel");
+
+                        this.renderHF();
+                        
+                        return false;
+                    }
+                }
+                
                 // fire user event
                 var flag = true;
                 var isDateChange = false;
@@ -1583,7 +1805,7 @@
                             this.selectedDate = newSelectedDate;
                             if (!oldSelectedDate || (oldSelectedDate - this.selectedDate)) {
                                 // find cell and change style class
-                                var e = $(rf.getDomElement(this.DATE_ELEMENT_ID + (this.firstDateIndex + this.selectedDate.getDate() - 1)));
+                                var e = this.__getDayCell(this.selectedDate);
 
                                 this.clearEffect(this.selectedDateCellId, "rf-cal-sel", (this.options.disabled || this.options.readonly ? null : "rf-cal-btn"));
                                 this.selectedDateCellId = e.attr('id');
@@ -1604,10 +1826,43 @@
                             // change currentDate and call this.onUpdate();
                             if (this.changeCurrentDate(newSelectedDate.getFullYear(), newSelectedDate.getMonth(), noUpdate)) {
                                 //this.selectedDate = newSelectedDate;
+
+                                this.afterLoad = function() {
+                                    this.selectedDate = newSelectedDate;
+                                    var newCell = this.__getDayCell(newSelectedDate);
+
+                                    
+                                        this.clearEffect(this.selectedDateCellId, "rf-cal-sel", (this.options.disabled || this.options.readonly ? null : "rf-cal-btn"));
+                                        this.selectedDateCellId = newCell.attr('id');
+                                        this.selectedDateCellColor = this.getCellBackgroundColor(e);
+
+                                        newCell.removeClass("rf-cal-btn");
+                                        newCell.removeClass("rf-cal-hov");
+                                        newCell.addClass("rf-cal-sel");
+
+                                        this.renderHF();
+
+                                    if (newCell.hasClass('rf-cal-dis')) { // do not apply date, just select
+                                        return;
+                                    }
+
+                                    this.invokeEvent("dateselect", eventData.element, eventData.event, this.selectedDate);
+                                    if (applySelection === true) {
+                                        this.setInputField(this.selectedDate != null ? this.__getSelectedDateString(this.options.datePattern) : "", eventData.event);
+                                    }
+                                }
+                                
+                                if (!this.isAjaxMode) {
+                                    this.afterLoad();
+                                    this.afterLoad = null;
+                                } else {
+                                    this.keydownDisabled = true;
+                                    this.selectedDate = oldSelectedDate;
+                                }
                             } else {
                                 this.selectedDate = oldSelectedDate;
-                                isDateChange = false;
                             }
+                            isDateChange = false;
                         }
                     }
                     else {
@@ -1659,6 +1914,12 @@
                 }
             },
 
+            /**
+             * Show the month containing the selected date
+             * 
+             * @method
+             * @name RichFaces.ui.Calendar#showSelectedDate
+             */
             showSelectedDate: function() {
                 if (!this.selectedDate) return;
                 if (this.currentDate.getMonth() != this.selectedDate.getMonth() || this.currentDate.getFullYear() != this.selectedDate.getFullYear()) {
@@ -1702,7 +1963,14 @@
                 }
             },
 
+            /**
+             * Show the time editor popup
+             * 
+             * @method
+             * @name RichFaces.ui.Calendar#showTimeEditor
+             */
             showTimeEditor: function() {
+                rf.Event.unbindById(this.id, "focusout" + this.namespace);
                 var editor;
                 if (this.timeType == 0) return;
                 if (!this.isEditorCreated) editor = this.createEditor();
@@ -1723,6 +1991,7 @@
 
                 this.clonePosition(rf.getDomElement(this.TIME_EDITOR_LAYOUT_ID), rf.getDomElement(this.EDITOR_LAYOUT_SHADOW_ID), {left: 3, top: 3});
                 this.isEditorVisible = true;
+                rf.getDomElement(this.id + 'TimeHours').focus();
             },
 
             hideEditor: function() {
@@ -1733,6 +2002,12 @@
                 this.isEditorVisible = false;
             },
 
+            /**
+             * Hide the time editor popup
+             * 
+             * @method
+             * @name RichFaces.ui.Calendar#hideTimeEditor
+             */
             hideTimeEditor: function(updateTime) {
                 this.hideEditor();
                 if (updateTime && this.selectedDate) {
@@ -1756,9 +2031,19 @@
                     }
                 }
                 if (this.options.popup && !this.options.showApplyButton) this.close(false);
+                this.skipEventOnCollapse = false;
+                $(rf.getDomElement(this.CALENDAR_CONTENT)).focus();
+                rf.Event.bindById(this.id, "focusout" + this.namespace, this.eventOnCollapse, this);
             },
 
+            /**
+             * Show the date editor popup
+             * 
+             * @method
+             * @name RichFaces.ui.Calendar#showDateEditor
+             */
             showDateEditor: function() {
+                rf.Event.unbindById(this.id, "focusout" + this.namespace);
                 var editor;
                 if (!this.isEditorCreated) editor = this.createEditor();
                 else editor = rf.getDomElement(this.EDITOR_ID);
@@ -1779,25 +2064,62 @@
                 this.isEditorVisible = true;
             },
 
+            /**
+             * Hide the date editor popup
+             * 
+             * @method
+             * @name RichFaces.ui.Calendar#hideDateEditor
+             */
             hideDateEditor: function(updateCurrentDate) {
                 this.hideEditor();
                 if (updateCurrentDate) {
                     this.changeCurrentDate(this.dateEditorYear, this.dateEditorMonth);
                 }
+                this.skipEventOnCollapse = false;
+                $(rf.getDomElement(this.CALENDAR_CONTENT)).focus();
+                rf.Event.bindById(this.id, "focusout" + this.namespace, this.eventOnCollapse, this);
             },
 
+            /**
+            * Get the current date value
+            * 
+            * @method
+            * @name RichFaces.ui.Calendar#getValue
+            * @return {date} current date value
+            */
             getValue: function() {
                 return this.__getSelectedDate();
             },
 
+            /**
+            * Get the current date value as string, formatted by the given pattern
+            * 
+            * @method
+            * @name RichFaces.ui.Calendar#getValueAsString
+            * @param [pattern] {string} date pattern
+            * @return {string} current value
+            */
             getValueAsString: function(pattern) {
                 return this.__getSelectedDateString(pattern);
             },
 
+            /**
+            * Set new date value
+            * 
+            * @method
+            * @name RichFaces.ui.AutocompleteBase#setValue
+            * @param value {date} new date
+            */
             setValue: function(value) {
                 this.__selectDate(value, undefined, undefined, true);
             },
 
+            /**
+             * Clear the current date value
+             * 
+             * @method
+             * @name RichFaces.ui.Calendar#resetValue
+             */
             resetValue: function() {
                 this.__resetSelectedDate();
                 if (this.options.defaultLabel && !this.isFocused) {

@@ -1,3 +1,773 @@
+4.5.21-SNAPSHOT
+----------
+    [#7] Removes usage of FileOutputStream and others to prevent GC overhead
+	[  ] Upgrade cssparser to 0.9.25
+	[  ] Use moono-lisa theme by default
+
+4.5.20.ayg
+----------
+	[  ] Remove old prefixed css attributtes
+	[  ] Downgrade ehcache to 2.4.3 to match hiberante-ehcache 5.0.10
+
+4.5.19.ayg
+----------
+
+	[  ] Upgrade cssparser to 0.9.23
+	[  ] Fix tableSubfooterBackgroundColor color on wine theme
+
+
+4.5.18.ayg
+----------
+
+    [  ] Upgrade cssparser to 0.9.22
+	[  ] Upgrade jQuery to 1.12.4
+	[#2] Custom paste plugin to convert images to embebed base64 img tags
+	[#1] Create new default log implementation for log4j
+
+4.5.17.Final
+------------
+
+    Bug
+    [RF-4491] - pickList doesn't honor property 'disabled' of selectItems
+    [RF-10966] - rich:autocomplete - missing @status attribute, autocomplete and select not unified
+    [RF-12242] - rich:dropDownMenu and showTimeout works wrong
+    [RF-12731] - mobile showcase: a4j:queue/attachQueue are not working
+    [RF-12778] - panelMenu: JS API calls doesn't work
+    [RF-13537] - Autocomplete: onbegin attribute ignored
+    [RF-14268] - mobile showcase: ajax validation messages does not show up without refreshing the page [MyFaces]
+    [RF-14272] - page-fragments: inplace select: remove unnecessary Selenium workaround in select method
+    [RF-14273] - page-fragments: contextMenu: correct the default showEvent and fix workaround for phantomjs
+    [RF-14275] - dataScroller: JS API: invoking fastRewind/fastForward throws NumberFormatException
+    [RF-14277] - extendedDataTable: JS API
+    [RF-14282] - dataTable: add missing clearSorting/Filtering JS API methods to Component reference
+    [RF-14288] - examples: missing checkstyle plugin version
+    [RF-14295] - mobile showcase: visual issues
+    [RF-14297] - RichFaces Update 4.5.15 => 4.5.16 breaks a4j:ajax => method not invoked
+    [RF-14298] - datatable - rowclick listener triggered twice
+    [RF-14299] - Popup-Panel resizing broken in 4k resolution monitors
+    [RF-14301] - autocomplete events invoked on wrong target
+    [RF-14302] - mobile showcase: browsing to sample by url returns to last opened sample
+
+    Component Upgrade
+    [RF-14274] - Upgrade third-party libraries
+
+    Enhancement
+    [RF-14270] - showcase: attachQueue: UX: add intentional delay for showing the status
+    [RF-14287] - page-fragments: select: replace invoking of blur in select method
+    [RF-14290] - integration-tests: limit page load timeout
+    [RF-14294] - Configure the tests to run with Firefox in Travis-ci
+
+    Feature Request
+    [RF-6678] - RichFaces Select components: implement disabled state support for selectItem
+    [RF-13437] - contextMenu: support hiding by clicking outside only
+
+    Task
+    [RF-10782] - simplify width control of Input components
+    [RF-14165] - Clean up Showcase
+    [RF-14279] - Update JSDoc
+    [RF-14280] - Update core maven dependencies for build
+    [RF-14291] - showcase: integration-tests: remove unsupported layout switching
+    [RF-14292] - integration-tests: try to reload the page when loading timed out
+    [RF-14293] - showcase: integration-tests: add missing request guards and cleanup session
+    [RF-14296] - photoalbum: tests: encapsulate fields, add waiting to header panel
+    [RF-14303] - upgrade Tomcat containers version
+
+    Sub-task
+    [RF-14278] - Update documentation of panelMenu JS API
+    [RF-14300] - select: vdl-doc: specify attributes status, onbegin, oncomplete, onbeforedomupdate can only be used in an auto-completing mode
+
+4.5.16.Final
+------------
+
+    Bug
+    [RF-11063] - rich:select is not at same level with text
+    [RF-11735] - [rich:tabPanel] activeItem doesn't work if attribute immediate is set to true
+    [RF-12845] - rich:menuItem does not work as composite component
+    [RF-13776] - a4j:ajax problem with hierarchical component IDs
+    [RF-14252] - @resetValues doesn't work with MyFaces
+    [RF-14254] - filtering is not working properly in rich:select component
+    [RF-14255] - Subtopic missing in processPreSubscriptionEvent
+    [RF-14256] - pickList doesn't fire onremoveitems when keepSourceOrder is true
+    [RF-14257] - rich:fileUpload not throwing the javascript event "onsizerejected" for global maxRequestSize
+    [RF-14258] - fileUpload: js events for error not trigger when same file selected twice
+    [RF-14259] - select: error class is not removed after selecting suggestion->type->delete
+    [RF-14261] - rich:orderingList broken with direction: rtl
+
+    Component Upgrade
+    [RF-14253] - Upgrade third-party libraries
+
+    Enhancement
+    [RF-12609] - inplace input/select : controls are always visible
+    [RF-14248] - unify background colors and gradients
+    [RF-14262] - page-fragments: replace invoking of blur event
+    [RF-14263] - page-fragments: inplace input/select: replace invoking of edit event
+
+    Task
+    [RF-14264] - Update documentation regarding file size handling in rich:fileUpload
+    [RF-14265] - update integration tests dependencies
+
+    Sub-task
+    [RF-14260] - fileUpload: @onsizerejected: update attribute description (VDL doc)
+
+4.5.15.Final
+------------
+
+    Bug
+    [RF-10967] - Drag'n'Drop does not work with PARTIAL_STATE_SAVING FALSE
+    [RF-10969] - Progress bar: not possible to resize
+    [RF-11079] - Increase size of autocomplete
+    [RF-11120] - datatable.ecss: background-repeat on .rf-dt-hdr-c is not set
+    [RF-11171] - [rich:extendedDataTable] table-scrollbar scrolls to the left side instead of holding position after filtering or sorting column
+    [RF-11628] - rich:inputNumberSpinner: arrows ignore input content
+    [RF-11932] - extendedDataTable: cannot unselect selected row with CTRL+Click when using single selection mode
+    [RF-12061] - pickList direction
+    [RF-12539] - rich:editor - wrong method names in JS API
+    [RF-12977] - a4j:queue breaks tabPanel
+    [RF-14247] - page-fragments: hotkey: fix invoking over default (html) element
+
+    Component Upgrade
+    [RF-14243] - Upgrade third-party libraries
+
+    Enhancement
+    [RF-14245] - page-fragments: select: move to item before selection
+
+    Task
+    [RF-14246] - photoalbum: tests: fix logging in with g+
+
+4.5.14.Final
+------------
+
+    Bug
+    [RF-10265] - rich:tree - toggling fires @onbegin event handler, but omits @onbeforedomupdate and @oncomplete
+    [RF-12097] - Richfaces 4.2.0 invalid css entry for *.rf-insl-tt
+    [RF-12295] - Facelets exception on postback when partial state saving is off
+    [RF-12979] - rich:contextMenu inside rich:accordion displays incorrectly
+    [RF-14159] - Autosized popup panel has wrong size after re-render
+    [RF-14225] - Behavior of rich:select component with duplicate labels
+    [RF-14229] - rich:dragSource - error on dropover when using custom options
+    [RF-14231] - FocusManager: cannot focus on component inside iteration component
+    [RF-14233] - rich:dragSource - empty dragOptions cause error
+    [RF-14235] - rich:popupPanel - style attribute is applied twice
+
+    Component Upgrade
+    [RF-14226] - Upgrade third-party libraries
+
+    Enhancement
+    [RF-14128] - Add profile for WF 10
+    [RF-14227] - Incorrect information in Developer Guide
+    [RF-14230] - Provide better handling for RichFaces.ui.Droppable
+    [RF-14239] - provide better parent menu resolutions for menu items
+
+    Feature Request
+    [RF-7872] - Tables: columns visibility
+
+    Task
+    [RF-14234] - Add profile for EAP 6.4
+    [RF-14240] - photoalbum: stabilize tests
+    [RF-14241] - page-fragments: contextMenu: fix the page fragment after refactoring in contextMenu
+    [RF-14242] - showcase: integration-tests: contextMenu: fix locators
+
+    Sub-task
+    [RF-14232] - Document @showColumnControl and add example to showcase
+
+4.5.13.Final
+------------
+
+    Bug
+    [RF-10813] - Calendar: css class doesn't follow naming conventions
+    [RF-11635] - rich:calendar missing attribute title
+    [RF-11915] - MenuGroup with all items disabled or no items causes JS error
+    [RF-11941] - mobile showcase - a4j:queue - Warning generated on server side
+    [RF-12092] - a4j:poll : a4j:status never clears
+    [RF-12337] - rich:popupPanel impacts layout even if not shown
+    [RF-12527] - Drag indicator is not visible when popup panel is open
+    [RF-12653] - rich:autocomplete needs two clicks to hide popup
+    [RF-12661] - rich:tooltip causes NPE with null value
+    [RF-13127] - onvalid and oninvalide pass wrong element when using rich:element with String field
+    [RF-13165] - The rowclick event of the rich:dataTable is not recognized as a valid server-side event during an ajax postback
+    [RF-13167] - disabled contextMenu/dropDownMenu/menuGroup/menuItem is missing styleClass
+    [RF-13441] - contextMenu - when showEvent is dblclick then context menu disappear after invoking
+    [RF-14200] - mobile showcase: links to VDL doc and Component reference
+    [RF-14213] - fileUpload: custom progressBar is used only for the first item when uploading multiple items
+    [RF-14215] - extendedDataTable: keyboard navigation fails when using lower values of @clientRows
+    [RF-14218] - fileupload: error in browser console during upload
+
+    Component Upgrade
+    [RF-14217] - Upgrade third-party libraries
+
+    Enhancement
+    [RF-11705] - showcase, rich:popupPanel - low contrast of close button
+    [RF-14219] - page-fragments: editor: 'type' method: append the text to the end of the content with Selenium 2.48
+    [RF-14221] - Incorrect description of "header" attribute in rich:panel tag doc (http://docs.jboss.org/richfaces/latest_4_5_X/vdldoc/)
+
+    Task
+    [RF-14024] - rich:select - clarify usage of autoComplete
+    [RF-14203] - showcase: cleanup release profile
+    [RF-14211] - component reference: tree: add images for default node examples
+    [RF-14212] - vdl-doc: tree: add default value of @useDefaultNode
+    [RF-14214] - showcase: stabilize integration tests with tomcat+myfaces
+    [RF-14220] - component reference: select: add sample and more informations about using select in auto-completing mode
+    [RF-14223] - showcase: stabilize integration tests
+
+4.5.12.Final
+------------
+
+    Bug
+    [RF-10642] - Autocomplete does not have a title attribute
+    [RF-11327] - Inplace Input - typing a space into the input field
+    [RF-14205] - rich:chart does not render sparse datasets
+    [RF-14206] - fileUpload: custom progressBar is not used
+
+    Component Upgrade
+    [RF-14204] - Upgrade third-party libraries
+
+    Enhancement
+    [RF-10935] - Component reference: add section about icons of collapsible panel
+    [RF-14201] - showcase: put integration tests to default tests directory
+    [RF-14207] - VDL-doc: a4j:ajax doesn't specify default for @execute
+
+    Feature Request
+    [RF-10169] - Panel Menu - propagate top{Group,Item}* customization attributes to their regular equivalent
+    [RF-11902] - [rich:autocomplete] attachQueue doesn't work
+    [RF-12643] - Fix deprecations warnings in Java code
+    [RF-12887] - Nodes with types that are not listed in <rich:treeNode> are not rendered
+    [RF-12948] - rich:autocomplete problems with nested rich:placeholder
+    [RF-13139] - popupPanel duplicated if double clicking links for opening popup
+    [RF-13408] - ExtendedDataTable, ajax loading delay of 1000ms
+    [RF-14199] - rich:calendar disabled dates can be selected by using keyboard
+
+    Task
+    [RF-14198] - photoalbum: stabilize TestUserLogging test
+    [RF-14202] - cleanup profiles for integration tests
+
+    Sub-task
+    [RF-14208] - update component reference and add a showcase example for default node
+
+4.5.11.Final
+------------
+
+    Bug
+    [RF-12098] - PickList doesn't accept comma in string value
+    [RF-13045] - param and hashParam: attribute @rendered is not working
+    [RF-13259] - DataTable rowClasses with columnGroup is not rendered
+    [RF-14163] - showcase: correct references to bean
+    [RF-14164] - rich:notifyMessage, notifyMessages: attributes @style and @title are not applied to created message component
+    [RF-14169] - showcase: panel: bad description in lookCustomization sample
+    [RF-14171] - @resetValues was added to not listed components
+    [RF-14172] - validator: @event cannot be a ValueExpression
+    [RF-14174] - validator: @immediate does not work and has wrong description
+    [RF-14175] - calendar: unused attribute @weekDayLabels
+    [RF-14176] - chart: attribute @style does not work
+    [RF-14178] - validator: @onbeforesubmit cannot be used with MyFaces
+    [RF-14179] - VDL-doc: specified default values are not correct
+    [RF-14194] - Misprint in format string of MessageFormat.format in ResourceServletContainerInitializer
+    [RF-14197] - page-fragments: dataGrid: getRecordsInRow contains bad condition
+
+    Component Upgrade
+    [RF-14170] - Upgrade third-party libraries
+    [RF-14182] - Upgrade testing dependencies
+
+    Enhancement
+    [RF-14162] - showcase: add missing links to VDL Documentation/Component Reference in some examples
+    [RF-14168] - showcase: collapsibleSubTable demo: wrong output in cars total count
+    [RF-14183] - page-fragments: inputNumberSlider: dragging the handle starts from wrong value
+    [RF-14186] - Hide @converter and @value in components extending UIOutput
+    [RF-14190] - Provide better contrast for selected items
+    [RF-14192] - showcase: focus: fix simple and delayed samples
+    [RF-14193] - Allow skipping resource optimization during build
+    [RF-14196] - page-fragments: dataGrid: make methods for returning of elements in advanced interactions public
+
+    Feature Request
+    [RF-10779] - rich:dataGrid - support classes for header, footer, rows and columns
+    [RF-14166] - rich:calendar keyboard support to close calendar
+
+    Task
+    [RF-14157] - showcase: fix integration tests
+    [RF-14158] - update VDL doc for notify's @sticky attribute
+    [RF-14173] - VDL-doc: validator: add missing documentation of attributes
+    [RF-14189] - Remove unused arquillian-warp test dependencies
+
+    Sub-task
+    [RF-14187] - calendar: document keyboard support for closing the popup
+    [RF-14195] - vdl-doc: tables + dataGrid: add description to attributes
+
+4.5.10.Final
+------------
+
+    Bug
+    [RF-11053] - Showcase: layout broken in data grid sample
+    [RF-11558] - showcase - rich:notify - sample Attributes of Notify - in some configuration it is not possible to close notification
+    [RF-12174] - Showcase: pages with textarea might overflow
+    [RF-12558] - showcase - rich:panelMenu - repeatedly selecting of item from menu does not update outputPanel
+    [RF-12658] - NotifyStack generates invalid JS
+    [RF-12923] - rich:notifyMessage, notifyMessages: some attributes are not applied to created message component
+    [RF-14130] - Exception when skin properties replaced
+    [RF-14143] - Richfaces 4.5.8 Fileupload not working on WF 8.2 and Apache Cluster (with SSON)
+    [RF-14144] - ScrollerPage calls getRowCount() on Tree model if one the same view.
+    [RF-14147] - Resource-Optimizer skips ckeditor.js
+    [RF-14148] - JSF implementation detection within ResourceTrackerImpl is insufficient for classpaths with multiple implementations
+
+    Component Upgrade
+    [RF-14149] - Upgrade third-party libraries
+
+    Enhancement
+    [RF-11212] - showcase - rich:popupPanel - Login panel positioning sample - should use <h:inputSecret> for password inputs
+    [RF-11636] - showcase - a4j:region - alter the example layout to look better
+    [RF-13050] - Showcase - not all demos have references for beans which are used in them
+    [RF-14156] - contextMenu with dynamic group doesn't work properly
+
+    Feature Request
+    [RF-11213] - showcase - rich:calendar - Simple calendar sample - should change text value of buttons 'today' and 'clean' when changing locale
+    [RF-11324] - Link Showcase to Tag Reference and possibly component docs
+    [RF-14150] - rich:dataTable - trigger built-in filtering on RETURN
+
+    Task
+    [RF-14140] - Stabilize integration tests on Tomcat
+    [RF-14145] - Clean up showcase
+
+4.5.9.Final
+-----------
+
+    Bug
+    [RF-11402] - Metamer: rich:inplaceSelect: scroller disappear when move by mouse
+    [RF-12488] - detached contextmenu menu fails
+    [RF-12510] - jsFunction data called before completittion
+    [RF-12759] - rich:componentControl doesn't work on commandButton
+    [RF-12820] - AutoComplete Layout Table is broken
+    [RF-12841] - Tooltip: JavaScript Error with showDelay and partial update
+    [RF-14081] - Rerendering of drag indicator not reflected when dragging an element
+    [RF-14102] - orderingList, pickList: @collectionType can only be a String
+    [RF-14119] - page-fragments: status: status state is not returned correctly
+    [RF-14120] - page-fragments: editor: type method is changing editor's text even if in readonly mode
+    [RF-14122] - autocomplete: autofill does not work for upper case beginning letter
+    [RF-14129] - rich:select list doesn't opens, if first element in the list is empty (with solution)
+    [RF-14133] - mobile showcase with myfaces: cannot display any example
+    [RF-14136] - [rich:toolbar] hideDelay does not work
+    [RF-14138] - components/rich cannot be compiled with java 1.6
+
+    Component Upgrade
+    [RF-14113] - Upgrade third-party libraries
+
+    Enhancement
+    [RF-14101] - Replace Showcase tests for a4j:status
+    [RF-14115] - page-fragments: editor: wait for inner frame to be visible before switching to it
+    [RF-14121] - showcase: editor: decrease autosaving frequency
+
+    Feature Request
+    [RF-7824] - Add "focus" method to focusable components
+    [RF-11842] - Support for macrosubstitutions in the contextMenu
+
+    Sub-task
+    [RF-14118] - Document text substitutions in rich:contextMenu
+    [RF-14125] - Add focus() to JS API documentation
+    [RF-14131] - Document @dragOptions for rich:dragSource
+
+4.5.8.Final
+-----------
+
+    Bug
+    [RF-11176] - [a4j:commandButton] [a4j:commandLink] missing base attribute onerror
+    [RF-11711] - a4j:queue - review usage of attributes onsubmit, oncomplete, onevent, onbeforedomupdate and onerror
+    [RF-11805] - a4j:queue onerror doesn't seem to work
+    [RF-12351] - rich:extendedDataTable frozen columns cause alternating row color to be out of sync with unfrozen part of table
+    [RF-13558] - pickList, orderingList: list doesn't scroll when using keys
+    [RF-14056] - Repository sync problem
+    [RF-14074] - rich:calendar popup disappeared in IE in special case.
+    [RF-14076] - tab: @onbegin and @status are not working
+    [RF-14077] - pickList: @caption element is not visible
+    [RF-14079] - panelMenuGroup and item: @onunselect does not work
+    [RF-14082] - inputNumberSpinner: @inputPosition does not work
+    [RF-14086] - Rich:chart with a4j:ajax re-render fails on WF 9 and Tomcat
+    [RF-14087] - Autocomplete needs two clicks to open
+    [RF-14089] - panelMenuGroup: @hoverClass does not work
+    [RF-14092] - FileUpload doesn't preserve filename encoding
+    [RF-14093] - rich:pickList source order not preserved for the beginning of the list
+    [RF-14094] - pickList: the state of buttons is not updated after removing item(s) when @keepSourceOrdered=true
+    [RF-14097] - a4j:mediaoutput does not work on wildfly 8.2
+    [RF-14098] - autocomplete: @onerror does not work
+    [RF-14100] - Highlighting of rich:dropDownMenu on refresh
+    [RF-14106] - Showcase: chart component sample is not rendered
+    [RF-14108] - mobile showcase with myfaces: cannot open any example
+
+    Component Upgrade
+    [RF-14073] - Upgrade third-party libraries
+    [RF-14083] - Upgrade JSF
+    [RF-14096] - Upgrade WildFly 8 and 9 Arquillian profiles
+
+    Enhancement
+    [RF-13271] - AjaxEventsProps is missing @onerror attribute
+    [RF-14067] - page-fragments: calendar: add missing wait messages
+    [RF-14071] - showcase: integration tests: deploy the war only once
+    [RF-14109] - Showcase: a4j:status samples, user experience
+
+    Feature Request
+    [RF-11781] - rich:list and rich:dataScroller: numbering on other than the first page
+    [RF-14078] - rich:calendar focus does not come to apply and today button
+
+    Sub-task
+    [RF-14103] - Update rich:calendar documentation for keyboard navigation
+
+4.5.7.Final
+-----------
+
+    Bug
+    [RF-11159] - rich:panelMenuGroup component don't save it's expanded property
+    [RF-11413] - Popup panel, component values on popup panel are not updated after validation process fails
+    [RF-12037] - Fileupload:onbegin, oncomplete and onbeforedomupdate does not work
+    [RF-12777] - rich:picklist - selectItemClass disables the buttons
+    [RF-14060] - column: @sortType, @filterType: flaws in vdl doc
+    [RF-14063] - rich:fileUpload - URI too long
+    [RF-14064] - calendar: day picker: wrong/different styling of hovered day
+
+    Component Upgrade
+    [RF-14059] - Upgrade third-party libraries
+
+    Feature Request
+    [RF-4308] - rich:pickList: keep sort order of source list after add/remove operations
+    [RF-14031] - Redesign the AbstractPopupMenu page fragment to enable more complex ContextMenu interactions
+
+    Task
+    [RF-14050] - fileUpload: add default value of @maxFileSize to VDL doc
+    [RF-14051] - photoalbum: fix TestAddImage tests
+    [RF-14052] - Update TESTS.md with WildFly 9 profile
+
+4.5.6.Final
+-----------
+
+    Bug
+    [RF-11091] - Autocomplete component is wrongly aligned
+    [RF-11606] - rich:select : doesn't cast selectItem value
+    [RF-12054] - TabPanel onitemchange of outer tab fired by inner tab
+    [RF-12362] - skin color parameters do not support "transparent"
+    [RF-14025] - Photoalbum login via social sites
+    [RF-14035] - Showcase context menu: JS error in console
+    [RF-14039] - Collapsible Panel Icon Regression
+    [RF-14043] - rich:tabPanel does not switch if rich:tab has number value name
+    [RF-14044] - push: error in browser console after push enabled/disabled
+
+    Component Upgrade
+    [RF-14038] - Upgrade third-party libraries
+
+    Enhancement
+    [RF-14023] - rich:contextMenu - on ajax re-render the destroy function doesn`t clean up properly
+    [RF-14034] - PageFragments: Implement workaround for contextClick on PhantomJS
+
+    Feature Request
+    [RF-6524] - maxRequestSize for richfile upload should be made configurable per component and not globally.
+    [RF-12395] - fileUpload validations must be done on client
+
+    Task
+    [RF-13882] - Showcase-test failed on phantomJS
+    [RF-14042] - Create Arquillian profile for WildFly 9
+
+4.5.5.Final
+-----------
+
+    Bug
+    [RF-11766] - rich:tree - selectionChangeListener isn't called when the model org.richfaces.model.TreeNode is used
+    [RF-12491] - Datatable model is accessed in tab panel which is not rendered using switch type "server"
+    [RF-12764] - rich:select - javascript error when using myfaces with french locale
+    [RF-13138] - a4j:log - should print partial-response value in a level=debug, but prints [Object] instead
+    [RF-14003] - Richfaces included jboss-el-api_3.0_spec-1.0.4.Final.jar in the pom.xml
+    [RF-14011] - a4j:mediaoutput does not work on wildfly 8.2 , uploaded Image is broken
+    [RF-14015] - rich:calendar month and year selection does not work
+    [RF-14016] - treeNode: missing @toggleListener in taglib and docs
+    [RF-14018] - rich:select - js error - this.cache is undefined (or similar js error)
+    [RF-14020] - Richfaces 4.5.2 not working in Websphere
+    [RF-14026] - collapsiblePanel regression with switchType="client" and expanded="false"
+    [RF-14027] - tooltip doesn't work with popupPanel (4.5.x).
+    [RF-14032] - rich:calendar - pressing a key after manually changing the year resets the date
+    [RF-14033] - calendar: fragment: DayPicker: selecting of a day uses unnecessary ctrl key
+
+    Component Upgrade
+    [RF-14012] - Upgrade third-party libraries
+    [RF-14030] - Upgrade Arquillian Core to 1.1.8
+
+    Feature Request
+    [RF-13203] - a4j:queue should have status attribute
+    [RF-14019] - Accordian Panel Item breaks in <= IE8 when Array polyfil is used
+    [RF-14022] - Add support for "resetValues" for AbstractActionComponents (UIMenuItem, UIPanelMenuItem, UITab)
+
+    Task
+    [RF-13996] - Travis build failures due to VM termination
+    [RF-14009] - log: document @mode=console
+
+4.5.4.Final
+-----------
+
+    Bug
+    [RF-13977] - Remote Command Injection (EL Injection)
+    [RF-13990] - Cannot deploy Showcase in JBDS 8
+    [RF-13991] - GraphValidator is not working on Tomcat
+    [RF-13994] - FileUpload: 'status' attribute not working
+    [RF-14000] - Showcase: root path doesn't redirect to index page on EAP 6.3
+    [RF-14002] - Calendar: cannot close popup by clicking on button
+
+    Component Upgrade
+    [RF-13971] - Upgrade testing dependencies
+    [RF-13995] - Upgrade third-party libraries
+
+    Enhancement
+    [RF-11376] - rich:panelMenu - barely visible label of submenu when it is hovered
+    [RF-11770] - showcase - rich:dataScroller - the fastStep should be set to more than default 1
+    [RF-12934] - ajax request for rich:tooltip should respect the showDelay parameter
+
+    Feature Request
+    [RF-6687] - Navigate Calendar with keyboard
+    [RF-11684] - rich:dataScroller optimize behaviour of fastStep
+    [RF-11984] - rich:fileUpload: implement file extension filtering
+    [RF-12799] - Log: add attribute hotkey
+    [RF-13251] - FocusManager to support complex components like rich:autocomplete
+
+    Task
+    [RF-10350] - Client API: collapsiblePanel api improvements
+    [RF-13997] - Remove .jsp files from projects
+    [RF-14001] - Add atmosphere-runtime-native to dependency managment
+    Sub-task
+    [RF-13998] - Add documentation for keyboard navigation
+
+4.5.3.Final
+-----------
+
+    Bug
+    [RF-10714] - Message: icon trimmed
+    [RF-10817] - Panel menu item: same icon for enabled and disabled state
+    [RF-10834] - File upload: default labels not used
+    [RF-10964] - autocomplete delete key behavior creates inconsistent state
+    [RF-10971] - rich:tooltip doesn't work in rich:extendedDataTable
+    [RF-11218] - showcase - rich:fileUpload - there is no file name information of uploaded file
+    [RF-11678] - rich:extendedDataTable column resize problem when placed in absolute positioned container
+    [RF-11679] - rich:extendedDataTable window resize problem when placed in absolute positioned container
+    [RF-12482] - rich:fileUpload, the upload button disappeared after deleting a uploaded file
+    [RF-13177] - rich:extendedDataTable scrolling broken on OS-X
+    [RF-13595] - rich:validator doesn't work when loaded via ajax (re-render)
+    [RF-13711] - a4j:ajax status does not work as expected
+    [RF-13721] - dataTable: columnClasses attribute doesn't work as described
+    [RF-13780] - Random JavaScript error due to missing attribute 'richfaces.RICH_CONTAINER'
+    [RF-13949] - push: error in browser console after push enabled/disabled
+    [RF-13950] - Photoalbum tests need to be migrated + create testing profiles
+    [RF-13957] - select: clicking on the bottom part of the input does not trigger onclick event
+    [RF-13958] - collapsibleSubTable: the most nested CST remains collapsed after parent CST re-expands
+    [RF-13959] - a4j:mediaOutput doesn't work if createContent is an EL expression
+    [RF-13961] - push: initialization of topic with subtopic will prevent sending push messages to this topic or to its subtopics
+    [RF-13962] - typo in rich:hotKey description on showcase
+    [RF-13963] - a4j calls and repeatable components
+    [RF-13965] - rich:select popup not displayed after clearing whole input
+    [RF-13968] - Showcase: autocomplete sample is using wrong attribute autoFill instead of autofill
+    [RF-13969] - rich:accordion height of first element is wrongly computed when switchType is "client".
+    [RF-13978] - UIDataAdaptor doesn't handle VisitHint.SKIP_ITERATION, doesn't check unrendered columns
+    [RF-13979] - editor: 'basic' toolbar is same as 'full'
+    [RF-13980] - Initially Page loaded with Data in ExtendedDatatable, after zoom out in Browser the Data is not displayed in ExtendedDatatable.
+    [RF-13982] - Photoalbum - image for FB login missing
+    [RF-13988] - collapsiblePanel stops rendering of following components
+
+    Component Upgrade
+    [RF-13730] - Upgrade Mojarra in build/pom.xml
+    [RF-13975] - Upgrade third-party libraries
+
+    Enhancement
+    [RF-13939] - Rich:chart plotClick shouldn't be restricted to series points.
+    [RF-13964] - Pom Cleanup
+
+4.5.2.Final
+-----------
+
+    Bug
+    [RF-12695] - rich:select incorrect behavior on IE with many selectItems
+    [RF-13913] - Problem with rich:collapsiblePanel state/PartialViewState
+    [RF-13925] - tooltip: the @onshow is called before the tooltip is displayed
+    [RF-13927] - Nested collapsibleSubTable not collapse All Sub Level SubTable
+    [RF-13928] - a4j:push events (dataavailable) do not trigger a4j:ajax listener
+    [RF-13929] - a4j:push does not work with subtopics and JMS
+    [RF-13930] - rich:select broken with empty list
+    [RF-13931] - Showcase: remove reference to richfaces-parent
+    [RF-13933] - ExtendedDataTable duplicates inside ui:repeat
+    [RF-13935] - JMS Push long delay between eneable and disable after upgrade atmosphere
+    [RF-13938] - page-fragments: inputNumber*: the setValue does not clean the input
+    [RF-13941] - ExtendedDataTable - selecting all rows not working
+    [RF-13942] - rich:select single item list still present
+    [RF-13945] - ajax requests in multipart forms cause error in < 2.2.0
+    [RF-13946] - The "onclick"event is not triggered when clicking on the bottom part of "rich:select" component.
+    [RF-13952] - richfaces-core defines finalName conflicted with components/rich/pom.xml
+    [RF-13954] - showcase: cannot be deployed on tomcat
+
+    Component Upgrade
+    [RF-13926] - Update weld-servlet dependency to 2.2+
+
+    Enhancement
+    [RF-13907] - Positioning attributes - JointPoint and Direction Doc is confusing
+    [RF-13914] - Showcase online: websockets don't work
+    [RF-13937] - page-fragments: ignore StaleElementReference exceptions in all waiting methods
+
+    Feature Request
+    [RF-13932] - page-fragments: autocomplete: reimplement confirm and select methods so they will not submit the form with HTTP unnecessarily
+
+    Task
+    [RF-13934] - Create Arquillian profile for WildFly 8.2
+
+4.5.1.Final
+-----------
+
+    Bug
+    [RF-12166] - richfaces distribution - missing assembler.xml in showcase sources
+    [RF-12654] - PartialViewRender skips check for whether column is rendered before checking if children can be rendered
+    [RF-13828] - a4j jsFunction does not work inside a form with enctype="multipart/form-data"
+    [RF-13883] - render-attribute of a4j:commandLink is ignored
+    [RF-13892] - rich:contextMenu with rich:dataTable - after ajax re-render of table contextMenu no longer works
+    [RF-13893] - Resource optimization - Invalid reference for gradientA.png
+    [RF-13898] - Not able to tab out from rich:select field in a table.
+    [RF-13899] - selected item in rich:select not highlighted after refresh
+    [RF-13904] - RF can be deployed to Mojarra < 2.1.28
+    [RF-13905] - Select: attribute onlistshow doesn't work when enableManualInput=true
+    [RF-13906] - Calendar - Show selected date JS error
+    [RF-13908] - Validation quickstart: UnsupportedOperationException after confirmation of the registration
+    [RF-13909] - Attribute render doesn't work in command button/link, jsFunction
+    [RF-13912] - rich:select inside panelGrid
+    [RF-13916] - Nested collapsibleSubTable only collapse ten row BUG
+    [RF-13917] - Showcase: update the version of RF in readme
+    [RF-13922] - Ajax requests fail if triggered outside of form
+    [RF-13923] - Editor toolbar configuration cannot be changed
+
+    Component Upgrade
+    [RF-13902] - Upgrade dependencies in jsf-test
+    [RF-13915] - Upgrade third-party libraries
+
+    Enhancement
+    [RF-11088] - rich:select modify manualInput behavior to avoid single item scoped item list popup when editing value
+    [RF-13232] - Enable flexible changing of the deployed archive name for general deployments, e.g. CoreDeployment
+    [RF-13867] - Provide a way to access FlotCharts options
+
+    Feature Request
+    [RF-13532] - Support JSF 2.2 resetValues attribute for a4j:ajax
+    [RF-13855] - Rich line chart string value on one of axis
+    [RF-13861] - rich:chart doesn't preserve ordering of data
+    [RF-13900] - rich:select should support selection by first character if enableManualInput is not used
+
+4.5.0.Final
+-----------
+
+    Bug
+    [RF-13881] - page-fragments: extended data table: change locator for row elements
+
+    Task
+    [RF-13873] - Stabilize failing integration tests
+
+4.5.0.CR2
+-----------
+
+    Bug
+    [RF-13217] - ITFileUpload framework test freezes on PhantomJS
+    [RF-13839] - Drop-down menu page fragment should have show event aligned with the component
+    [RF-13845] - Showcase select sample - new autocomplete like sample has wrong color or typed text
+    [RF-13851] - Selected item in rich:select is not highlighted.
+    [RF-13852] - When rich:select is included in EDT, navigation with up/down keys in the select list is not possible.
+    [RF-13854] - The width option of the style attribute in rich:select does not work
+    [RF-13860] - Richfaces Photoalbum example - tree navigation doesn't work after deployment into EAP-6.3.1 with JRE-1.6
+    [RF-13862] - Headers are stationary in rich:extendedTable with tabbed rich:column movement
+    [RF-13864] - The tab key does not render the value when entered manually in rich:select
+    [RF-13865] - Revert the rename of a4jSkin to richSkin, changing it back to a4jSkin
+    [RF-13869] - page-fragments: editor: switching to correct frame
+    [RF-13872] - Ajax doesn't accept array in execute/render anymore
+    [RF-13874] - integration tests: tests with Category FailingOnPhantomJS are skipped on Chrome
+    [RF-13875] - RF 4.5 : a4j:push component fails on reconnect in push-demo
+    [RF-13876] - Command button/link, jsFunction and poll missing parameter bypassUpdates
+
+    Enhancement
+    [RF-13301] - Favor use of Page Fragments in Framework Tests
+    [RF-13853] - page-fragments: refactor implementation part of orderingList, pickList
+    [RF-13870] - showcase tests: select correct war classifier for activated integration profile
+
+    Feature Request
+    [RF-13859] - Selecting an item while typing in rich:select does not work when enableManualInput=false.
+
+4.5.0.CR1
+-----------
+
+    Bug
+    [RF-8904] - Update project build to integrate jsDoc
+    [RF-12312] - rich:select - duplicate labels
+    [RF-13290] - Push framework tests fail after upgrade to 1.0.17 (probably Warp issue)
+    [RF-13504] - Test that the ExtendedPartialViewContext writes the ClientWindow ID updates to the partial response
+    [RF-13522] - Component reference - text for links to figures doesn't contain "Figure" prefix
+    [RF-13788] - ExtendedDataTable supports the undocumented attribute "render"
+    [RF-13812] - rich:validator misunderstands EL expressions inside Bean Validation 1.1
+    [RF-13816] - Include Page Fragments in the RichFaces distribution and javadoc
+    [RF-13818] - JSF server vs application Please upgrade to at least Mojarra 2.1.28 or 2.2.6
+    [RF-13821] - InputNumber* component class changes cause backward compatibility problems
+    [RF-13822] - Mobile showcase: fileupload sample is not working [myfaces]
+    [RF-13823] - showcase: contextMenu: missing picturesUtils.js resource [myfaces]
+    [RF-13826] - Media output: onclick doesn't work
+    [RF-13827] - Selection mode simple and multiple in ExtendedDataTable throws JS error in Chrome 36
+    [RF-13830] - Tooltip not attached must specify target=""
+    [RF-13838] - ExtendedPartialViewContext.java is missing method setPartialRequest
+    [RF-13840] - a4j:jsFunction - oncomplete is called twice
+    [RF-13843] - rich:fileUpload should use feature detection for File API
+    [RF-13846] - page-fragments: orderingList, pickList: rename method getContentAreaElements to getContentAreaElement
+    [RF-13848] - page-fragments: orderingList: remove duplicated field
+    [RF-13849] - page-fragments: pickList: stackoverflow in orderingList part
+
+    Component Upgrade
+    [RF-13475] - NullPointException when using Richfaces with ehcache
+    [RF-13841] - Upgrade Selenium to 2.43.1
+
+    Enhancement
+    [RF-13414] - The showcase chart demo of event handling renders seemingly redundant info
+    [RF-13831] - Review page fragments
+    [RF-13832] - Built-in filtering and sorting inside richcollapsibleSubTable
+    [RF-13833] - Doc for r:tree selectionChangeListener attribute is misplaced with toggleListener attribute doc
+    [RF-13847] - page-fragments: pickList: rename methods for returning contentAreaElement
+    [RF-13850] - page-fragments: refactor implementation part of collapsiblePanel, dataGrid, fileUpload, inplaceSelect, orderingList, pickList
+
+    Task
+    [RF-13834] - Alias the javascript method RichFaces.component to RichFaces.$
+    [RF-13835] - Revert package and class names changes in 4.5
+    [RF-13837] - Add "chart" prefix to chart components
+
+4.5.0.Beta2
+-----------
+
+    Bug
+    [RF-11090] - rich:collapsibleSubTable cannot be nested
+    [RF-11656] - Nested collapsibleSubTable always expanded
+    [RF-12399] - Showcase: rich:contextmenu cannot find image
+    [RF-13081] - Facets "disabled" not working for dataScroller
+    [RF-13645] - contextMenu for extendedDataTable breaks after ajax render of contextMenu
+    [RF-13655] - Popup Panel autosize does not work when its content is dynamically updated
+    [RF-13708] - Photoalbum: refresh over index page throws error
+    [RF-13722] - Document CDK Maven Changes for 4.5
+    [RF-13747] - a4j:commandLink does not have a default event name
+    [RF-13781] - Enable RichFaces to be built with the jdk6
+    [RF-13783] - Placeholder: attribute styleClass doesn't work inside inplace input and inplace select
+    [RF-13787] - Push with EAP 6.3 not using WebSockets
+    [RF-13790] - Showcase - dataTable Styling example - broken styling after built in sorting/filtering is enabled
+    [RF-13791] - Push in Showcase with EAP 6.2
+    [RF-13794] - FileUpload serverError on upload on Wildfly
+    [RF-13795] - RichFaces build is broken when running integration with release profile
+    [RF-13798] - Showcase: select sample is not working [myfaces]
+    [RF-13803] - Push on Tomcat 8: Unable to load current conversations from the associated request
+    [RF-13804] - rich:select selectFirst attribute not working
+    [RF-13814] - Photoalbum cannot be deployed to EAP
+    [RF-13817] - Both the Component Reference are missing the Revision History appendices
+
+    Component Upgrade
+    [RF-13774] - Upgrade MyFaces to 2.2.4
+    [RF-13805] - Upgrade jsf-test to 1.1.8
+
+    Enhancement
+    [RF-12674] - Write framework tests for Autocomplete tokenizing feature
+    [RF-13056] - Showcase - delete unused configuration for GAE
+    [RF-13796] - Chart component - documentation improvement
+
+    Feature Request
+    [RF-8701] - dataScroller: add facets support for customizations
+    [RF-13797] - Integration tests - enable HTTPS testing on Wildfly
+    [RF-13807] - Add a an autocomplete sample for the select component to the showcase
+
+    Task
+    [RF-13765] - EDT: meta-components @footer, @header and @body are not documented
+    [RF-13800] - docs: rich:select: add information about autocomplete functionality
+
+
 5.0.0.Alpha3
 ------------
 

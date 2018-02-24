@@ -11,8 +11,8 @@
   rf.push = {
 
     options: {
-      transport: "long-polling",
-      fallbackTransport: undefined,
+      transport: "websocket",
+      fallbackTransport: "long-polling",
       logLevel: "info"
     },
 
@@ -128,6 +128,10 @@
      * Handles messages transported using Atmosphere
      */
     _messageCallback: function(response) {
+      if (response.state && response.state === "opening") {
+          this._lastMessageNumber = -1;
+          return;
+      }
       var suspendMessageEndMarker = /^(<!--[^>]+-->\s*)+/;
       var messageTokenExpr = /<msg topic="([^"]+)" number="([^"]+)">([^<]*)<\/msg>/g;
 
@@ -166,9 +170,11 @@
      * Handles errors during Atmosphere initialization and transport
      */
     _errorCallback: function(response) {
-      for (var address in newlySubcribed) {
-        this._subscribedTopics[address] = true;
-        $(document).trigger('error.push.RICH.' + address, response);
+      for (var address in this.newlySubcribed) {
+        if (this.newlySubcribed.hasOwnProperty(address)) {
+          this._subscribedTopics[address] = true;
+          $(document).trigger('error.push.RICH.' + address, response);
+        }
       }
     },
 
@@ -176,13 +182,15 @@
      * Initializes Atmosphere connection
      */
     _connect: function() {
-      var newlySubcribed = {};
+      this.newlySubcribed = {};
 
       var topics = [];
       for (var address in this._handlersCounter) {
-        topics.push(address);
-        if (!this._subscribedTopics[address]) {
-          newlySubcribed[address] = true;
+        if (this._handlersCounter.hasOwnProperty(address)) {
+          topics.push(address);
+          if (!this._subscribedTopics[address]) {
+            this.newlySubcribed[address] = true;
+          }
         }
       }
 
@@ -218,7 +226,7 @@
             var messageCallback = $.proxy(this._messageCallback, this);
             var errorCallback = $.proxy(this._errorCallback, this);
 
-            $.atmosphere.subscribe(url, messageCallback, {
+            atmosphere.subscribe(url, messageCallback, {
               transport: this.options.transport,
               fallbackTransport: this.options.fallbackTransport,
               logLevel: this.options.logLevel,
@@ -226,7 +234,7 @@
             });
 
             // fire subscribed events
-            for (var address in newlySubcribed) {
+            for (var address in this.newlySubcribed) {
               this._subscribedTopics[address] = true;
               $(document).trigger('subscribed.push.RICH.' + address);
             }
@@ -239,7 +247,7 @@
      * Ends Atmosphere connection
      */
     _disconnect: function() {
-      $.atmosphere.unsubscribe();
+      atmosphere.unsubscribe();
     }
   };
 

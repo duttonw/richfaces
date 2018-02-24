@@ -24,15 +24,15 @@ package org.richfaces.fragment.collapsiblePanel;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.graphene.GrapheneElement;
-import org.jboss.arquillian.graphene.GrapheneElementImpl;
 import org.jboss.arquillian.graphene.wait.FluentWait;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
-import org.richfaces.fragment.common.AdvancedInteractions;
+import org.richfaces.fragment.common.AdvancedVisibleComponentIteractions;
 import org.richfaces.fragment.common.Icon;
 import org.richfaces.fragment.common.Utils;
+import org.richfaces.fragment.common.VisibleComponentInteractions;
 import org.richfaces.fragment.common.WaitingWrapper;
 import org.richfaces.fragment.common.WaitingWrapperImpl;
 import org.richfaces.fragment.panel.AbstractPanel;
@@ -42,7 +42,7 @@ import com.google.common.base.Predicate;
 /**
  * @author <a href="mailto:jstefek@redhat.com">Jiri Stefek</a>
  */
-public abstract class RichFacesCollapsiblePanel<HEADER, BODY> extends AbstractPanel<HEADER, BODY> implements CollapsiblePanel<HEADER, BODY>, AdvancedInteractions<RichFacesCollapsiblePanel<HEADER, BODY>.AdvancedCollapsiblePanelInteractions> {
+public abstract class RichFacesCollapsiblePanel<HEADER, BODY> extends AbstractPanel<HEADER, BODY> implements CollapsiblePanel<HEADER, BODY>, AdvancedVisibleComponentIteractions<RichFacesCollapsiblePanel<HEADER, BODY>.AdvancedCollapsiblePanelInteractions> {
 
     @ArquillianResource
     private WebDriver browser;
@@ -55,8 +55,6 @@ public abstract class RichFacesCollapsiblePanel<HEADER, BODY> extends AbstractPa
     private Icon rightIconElement;
     @FindBy(className = "rf-cp-lbl")
     private GrapheneElement labelElement;
-    @FindBy(className = "rf-cp-lbl-colps")
-    private GrapheneElement labelCollapsedElement;
 
     @FindBy(className = "rf-cp-b")
     private GrapheneElement bodyElement;
@@ -71,19 +69,9 @@ public abstract class RichFacesCollapsiblePanel<HEADER, BODY> extends AbstractPa
     }
 
     @Override
-    protected GrapheneElement getHeaderElement() {
-        return headerElement;
-    }
-
-    @Override
-    protected GrapheneElement getBodyElement() {
-        return (Utils.isVisible(bodyElement) ? bodyElement : emptyBodyElement);
-    }
-
-    @Override
     public CollapsiblePanel<HEADER, BODY> collapse() {
         if (!advanced().isCollapsed()) {
-            getHeaderElement().click();
+            advanced().getHeaderElement().click();
             advanced().waitUntilPanelIsCollapsed().perform();
         }
         return this;
@@ -92,24 +80,34 @@ public abstract class RichFacesCollapsiblePanel<HEADER, BODY> extends AbstractPa
     @Override
     public CollapsiblePanel<HEADER, BODY> expand() {
         if (advanced().isCollapsed()) {
-            getHeaderElement().click();
+            advanced().getHeaderElement().click();
             advanced().waitUntilPanelIsExpanded().perform();
         }
         return this;
     }
 
-    public class AdvancedCollapsiblePanelInteractions {
+    public class AdvancedCollapsiblePanelInteractions extends AdvancedPanelInteractions implements VisibleComponentInteractions {
 
         private static final String COLLAPSED_HEADER_CLASS = "rf-cp-hdr-colps";
 
         private long _timeoutForPanelIsSwitched = -1;
 
-        public WebElement getBodyElement() {
-            return RichFacesCollapsiblePanel.this.getBodyElement();
+        protected GrapheneElement getEmptyBodyElement() {
+            return emptyBodyElement;
         }
 
-        public WebElement getHeaderElement() {
-            return RichFacesCollapsiblePanel.this.getHeaderElement();
+        @Override
+        public WebElement getBodyElement() {
+            return (Utils.isVisible(bodyElement) ? bodyElement : getEmptyBodyElement());
+        }
+
+        protected String getCollapsedHeaderClass() {
+            return COLLAPSED_HEADER_CLASS;
+        }
+
+        @Override
+        public GrapheneElement getHeaderElement() {
+            return headerElement;
         }
 
         public WebElement getLabelElement() {
@@ -124,16 +122,12 @@ public abstract class RichFacesCollapsiblePanel<HEADER, BODY> extends AbstractPa
             return rightIconElement;
         }
 
-        public GrapheneElement getRootElement() {
-            return new GrapheneElementImpl(RichFacesCollapsiblePanel.this.getRootElement());
-        }
-
         public long getTimeoutForPanelIsSwitched() {
             return _timeoutForPanelIsSwitched == -1 ? Utils.getWaitAjaxDefaultTimeout(browser) : _timeoutForPanelIsSwitched;
         }
 
         public boolean isCollapsed() {
-            return getHeaderElement().getAttribute("class").contains(COLLAPSED_HEADER_CLASS);
+            return getHeaderElement().getAttribute("class").contains(getCollapsedHeaderClass());
         }
 
         /**
@@ -173,6 +167,11 @@ public abstract class RichFacesCollapsiblePanel<HEADER, BODY> extends AbstractPa
                 }
             }.withMessage("Waiting for panel to expand.")
                 .withTimeout(getTimeoutForPanelIsSwitched(), TimeUnit.MILLISECONDS);
+        }
+
+        @Override
+        public boolean isVisible() {
+            return Utils.isVisible(getRootElement());
         }
     }
 }

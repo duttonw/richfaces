@@ -20,20 +20,22 @@
  */
 package org.richfaces.component;
 
+import javax.faces.component.UICommand;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+
 import org.richfaces.cdk.annotations.Attribute;
+import org.richfaces.cdk.annotations.Description;
 import org.richfaces.cdk.annotations.JsfComponent;
 import org.richfaces.cdk.annotations.JsfRenderer;
 import org.richfaces.cdk.annotations.Tag;
 import org.richfaces.cdk.annotations.TagType;
 import org.richfaces.component.attribute.AccesskeyProps;
-import org.richfaces.component.attribute.AjaxProps;
+import org.richfaces.component.attribute.AjaxCommandProps;
+import org.richfaces.component.attribute.BypassProps;
 import org.richfaces.component.attribute.CommandButtonProps;
 import org.richfaces.component.attribute.CoreProps;
 import org.richfaces.renderkit.AjaxConstants;
-
-import javax.faces.component.UICommand;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
 
 /**
  * <p>
@@ -43,9 +45,21 @@ import javax.faces.context.FacesContext;
  * @author Nick Belaevski
  */
 @JsfComponent(renderer = @JsfRenderer(type = "org.richfaces.CommandButtonRenderer"), tag = @Tag(type = TagType.Facelets))
-public abstract class AbstractCommandButton extends AbstractActionComponent implements MetaComponentResolver, AccesskeyProps, AjaxProps, CommandButtonProps, CoreProps {
+public abstract class AbstractCommandButton extends BasicActionComponent implements MetaComponentResolver, AccesskeyProps, AjaxCommandProps, BypassProps, CommandButtonProps, CoreProps {
     public static final String COMPONENT_TYPE = "org.richfaces.CommandButton";
     public static final String COMPONENT_FAMILY = UICommand.COMPONENT_FAMILY;
+
+    /**
+     * Ids of components that will participate in the "execute" portion of the Request Processing Lifecycle. Can be a single id,
+     * a space or comma separated list of Id's, or an EL Expression evaluating to an array or Collection. Any of the keywords
+     * "@this", "@form", "@all", "@none", "@region" may be specified in the identifier list. Some components make use of
+     * additional keywords.<br/>
+     * Default value is "@region" which resolves to form if no region is present.
+     */
+    @Attribute(generate = false)
+    public Object getExecute() {
+        return super.getExecute();
+    }
 
     /**
      * Absolute or relative URL of the image to be displayed for this button. If specified, this "input" element will

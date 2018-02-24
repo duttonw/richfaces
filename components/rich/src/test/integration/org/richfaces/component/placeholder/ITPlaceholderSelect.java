@@ -1,4 +1,4 @@
-/**
+/*
  * JBoss, Home of Professional Open Source
  * Copyright 2012, Red Hat, Inc. and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
@@ -26,7 +26,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.openqa.selenium.support.FindBy;
-import org.richfaces.integration.UIDeployment;
+import org.richfaces.integration.RichDeployment;
 import org.richfaces.shrinkwrap.descriptor.FaceletAsset;
 
 import category.Failing;
@@ -41,46 +41,43 @@ public class ITPlaceholderSelect extends AbstractPlaceholderTest {
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
-        UIDeployment deployment = new UIDeployment(ITPlaceholderSelect.class);
+        RichDeployment deployment = new RichDeployment(ITPlaceholderSelect.class);
 
         deployment.archive().addClasses(PlaceHolderValueConverter.class, PlaceHolderValue.class);
 
         FaceletAsset p;
-        p = deployment.baseFacelet("index.xhtml");
+        p = placeholderFacelet("index.xhtml", deployment);
         p.body("<rich:select id='input' enableManualInput='true'>");
-        p.form("    <f:selectItems value='#{placeHolderValue.items}' />");
+        p.body("    <f:selectItems value='#{placeHolderValue.items}' />");
         p.body("    <rich:placeholder id='placeholderID' styleClass='#{param.styleClass}' value='Placeholder Text' />");
         p.body("</rich:select>");
 
-        p = deployment.baseFacelet("selector.xhtml");
+        p = placeholderFacelet("selector.xhtml", deployment);
         p.body("<rich:select id='input' />");
         p.body("<rich:placeholder id='placeholderID' value='Placeholder Text' selector='[id=input]' />");
 
-        p = deployment.baseFacelet("rendered.xhtml");
+        p = placeholderFacelet("rendered.xhtml", deployment);
         p.body("<rich:select id='input'>");
         p.body("    <rich:placeholder id='placeholderID' value='Placeholder Text' rendered='false' />");
         p.body("</rich:select>");
 
-        p = deployment.baseFacelet("converter.xhtml");
+        p = placeholderFacelet("converter.xhtml", deployment);
         p.body("<rich:select id='input' >");
         p.body("    <rich:placeholder id='placeholderID' converter='placeHolderValueConverter' value='#{placeHolderValue}' />");
         p.body("</rich:select>");
 
-        p = deployment.baseFacelet("submit.xhtml");
+        p = placeholderFacelet("submit.xhtml", deployment);
         p.form("<rich:select id='input' value='#{placeHolderValue.value2}' enableManualInput='true' >");
         p.form("    <f:selectItems value='#{placeHolderValue.items}' />");
         p.form("    <rich:placeholder id='placeholderID' value='Placeholder Text' />");
         p.form("</rich:select>");
+        p.form("<br />");
         p.form("<a4j:commandButton id='ajaxSubmit' value='ajax submit' execute='@form' render='output' />");
         p.form("<h:commandButton id='httpSubmit' value='http submit' />");
         p.form("<br />");
         p.form("<h:outputText id='output' value='#{placeHolderValue.value2}' />");
 
         return deployment.getFinalArchive();
-    }
-    @Override
-    Input input() {
-        return firstInput;
     }
 
     @Override
@@ -93,13 +90,9 @@ public class ITPlaceholderSelect extends AbstractPlaceholderTest {
         return "item1";
     }
 
-    /**
-     * The select component does behave differently - delegates to defaultLabel implementation
-     */
-    @Test
     @Override
-    @Category(Failing.class)
-    public void when_text_is_changed_then_text_changes_color_to_default_and_removes_placeholder_style_classes() {
+    Input input() {
+        return firstInput;
     }
 
     /**
@@ -109,5 +102,14 @@ public class ITPlaceholderSelect extends AbstractPlaceholderTest {
     @Override
     @Category(Failing.class)
     public void testAjaxSendsEmptyValue() {
+    }
+
+    /**
+     * The select component does behave differently - delegates to defaultLabel implementation
+     */
+    @Test
+    @Override
+    @Category(Failing.class)
+    public void testWhenTextIsChanged_textChangesColorToDefaultAndRemovesPlaceholderStyleClasses() {
     }
 }

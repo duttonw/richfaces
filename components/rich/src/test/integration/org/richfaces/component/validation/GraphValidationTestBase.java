@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.richfaces.component.validation;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -64,7 +63,7 @@ public abstract class GraphValidationTestBase extends ValidationTestBase {
         submitValueAndCheckMessage("foobar", equalTo(""));
     }
 
-    protected static void addIndexPage(org.richfaces.deployment.Deployment deployment) {
+    protected static void addIndexPage(org.richfaces.deployment.BaseDeployment deployment) {
         FaceletAsset p = new FaceletAsset();
 
         p.body("<h:form id='form'>");
@@ -75,6 +74,9 @@ public abstract class GraphValidationTestBase extends ValidationTestBase {
         p.body("    <h:outputText id='out' value='#{graphBean.value}'></h:outputText>");
         p.body("    <h:commandButton id='submit' value='Submit'/>");
         p.body("</h:form>");
+        p.body("<br />");
+        p.body("<input id='blurButton' value='blur' type='button' />");
+        p.body("<br />");
         p.body("<rich:message id='textMessage' for='text' />");
         p.body("<rich:message id='graphMessage' for='validator' />");
         p.body("<rich:messages id='uiMessage' />");

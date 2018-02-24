@@ -24,17 +24,17 @@ package org.richfaces.fragment.inplaceInput;
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.findby.FindByJQuery;
 import org.jboss.arquillian.graphene.fragment.Root;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
-import org.richfaces.fragment.common.AdvancedInteractions;
+import org.richfaces.fragment.common.Actions;
+import org.richfaces.fragment.common.AdvancedVisibleComponentIteractions;
 import org.richfaces.fragment.common.Event;
 import org.richfaces.fragment.common.TextInputComponentImpl;
 import org.richfaces.fragment.common.Utils;
+import org.richfaces.fragment.common.VisibleComponentInteractions;
 
-public class RichFacesInplaceInput implements InplaceInput, AdvancedInteractions<RichFacesInplaceInput.AdvancedInplaceInputInteractions> {
+public class RichFacesInplaceInput implements InplaceInput, AdvancedVisibleComponentIteractions<RichFacesInplaceInput.AdvancedInplaceInputInteractions> {
 
     @FindBy(className = "rf-ii-fld")
     private TextInputComponentImpl textInput;
@@ -45,11 +45,8 @@ public class RichFacesInplaceInput implements InplaceInput, AdvancedInteractions
     @FindByJQuery(".rf-ii-btn:eq(1)")
     private WebElement cancelButton;
 
-    @FindBy(css = "span[id$=Label]")
+    @FindBy(className = "rf-ii-lbl")
     private WebElement label;
-
-    @FindBy(css = "span[id$=Edit] span[id$=Btn]")
-    private WebElement controls;
 
     @FindBy(css = "span[id$=Edit] > input[id$=Input]")
     private WebElement editInputElement;
@@ -59,9 +56,6 @@ public class RichFacesInplaceInput implements InplaceInput, AdvancedInteractions
 
     @Drone
     private WebDriver browser;
-
-    @ArquillianResource
-    private JavascriptExecutor executor;
 
     private final AdvancedInplaceInputInteractions advancedInteractions = new AdvancedInplaceInputInteractions();
 
@@ -77,12 +71,12 @@ public class RichFacesInplaceInput implements InplaceInput, AdvancedInteractions
 
     @Override
     public ConfirmOrCancel type(String text) {
-        Utils.triggerJQ(executor, advanced().getEditByEvent().getEventName(), root);
+        advanced().switchToEditingState();
         if (!advanced().isInState(InplaceComponentState.ACTIVE)) {
             throw new IllegalStateException("You should set correct editBy event. Current: " + advanced().getEditByEvent()
                 + " did not changed the inplace input for editing!");
         }
-        textInput.clear().sendKeys(text);
+        getTextInput().clear().sendKeys(text);
         return new ConfirmOrCancelImpl();
     }
 
@@ -95,17 +89,17 @@ public class RichFacesInplaceInput implements InplaceInput, AdvancedInteractions
 
         @Override
         public WebElement getConfirmButton() {
-            return confirmButton;
+            return advanced().getConfirmButtonElement();
         }
 
         @Override
         public WebElement getInput() {
-            return editInputElement;
+            return advanced().getEditInputElement();
         }
 
         @Override
         public WebElement getCancelButton() {
-            return cancelButton;
+            return advanced().getCancelButtonElement();
         }
 
         @Override
@@ -113,22 +107,30 @@ public class RichFacesInplaceInput implements InplaceInput, AdvancedInteractions
         }
     }
 
-    public class AdvancedInplaceInputInteractions {
+    public class AdvancedInplaceInputInteractions implements VisibleComponentInteractions {
 
         private static final String RF_II_CHNG_CLASS = "rf-ii-chng";
         private static final String RF_II_ACT_CLASS = "rf-ii-act";
         private final Event DEFAULT_EDIT_EVENT = Event.CLICK;
         private Event editByEvent = DEFAULT_EDIT_EVENT;
 
+        protected String getChangedClass() {
+            return RF_II_CHNG_CLASS;
+        }
+
+        protected String geActiveClass() {
+            return RF_II_ACT_CLASS;
+        }
+
         protected Event getEditByEvent() {
             return editByEvent;
         }
 
-        public void setupEditByEvent() {
+        public void setEditByEvent() {
             editByEvent = DEFAULT_EDIT_EVENT;
         }
 
-        public void setupEditByEvent(Event event) {
+        public void setEditByEvent(Event event) {
             editByEvent = event;
         }
 
@@ -137,22 +139,22 @@ public class RichFacesInplaceInput implements InplaceInput, AdvancedInteractions
         }
 
         public boolean isInState(InplaceComponentState state) {
-            return root.getAttribute("class").contains(getClassForState(state));
+            return getRootElement().getAttribute("class").contains(getClassForState(state));
         }
 
         public String getClassForState(InplaceComponentState state) {
             switch (state) {
                 case ACTIVE:
-                    return RF_II_ACT_CLASS;
+                    return geActiveClass();
                 case CHANGED:
-                    return RF_II_CHNG_CLASS;
+                    return getChangedClass();
                 default:
                     throw new UnsupportedOperationException();
             }
         }
 
         public String getLabelValue() {
-            return label.getText().trim();
+            return getLabelInputElement().getText().trim();
         }
 
         public WebElement getCancelButtonElement() {
@@ -169,6 +171,21 @@ public class RichFacesInplaceInput implements InplaceInput, AdvancedInteractions
 
         public WebElement getLabelInputElement() {
             return label;
+        }
+
+        @Override
+        public boolean isVisible() {
+            return Utils.isVisible(getRootElement());
+        }
+
+        /**
+         * Switch component to editing state, if it is not there already, by triggering the @editEvent on the label element.
+         */
+        public void switchToEditingState() {
+            if (!isInState(InplaceComponentState.ACTIVE)) {
+                new Actions(browser).moveToElement(getLabelInputElement()).triggerEventByWDOtherwiseByJS(getEditByEvent(),
+                    getLabelInputElement()).perform();
+            }
         }
     }
 }

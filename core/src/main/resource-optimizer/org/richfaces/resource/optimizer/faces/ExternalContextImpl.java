@@ -21,13 +21,13 @@
  */
 package org.richfaces.resource.optimizer.faces;
 
+import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -325,8 +325,8 @@ public class ExternalContextImpl extends ExternalContext {
         File file = new File(webRoot, path);
         if (file.exists()) {
             try {
-                return new FileInputStream(file);
-            } catch (FileNotFoundException e) {
+                return new BufferedInputStream(Files.newInputStream(file.toPath()));
+            } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }

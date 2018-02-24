@@ -21,12 +21,13 @@
  */
 package org.richfaces.cache;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Properties;
@@ -186,7 +187,7 @@ public class CacheManager {
             File file = new File(configFile);
 
             if (file.exists()) {
-                InputStream in = new FileInputStream(file);
+                InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()));
 
                 try {
                     Properties props = new Properties();

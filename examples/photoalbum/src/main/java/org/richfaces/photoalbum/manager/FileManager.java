@@ -29,7 +29,6 @@ package org.richfaces.photoalbum.manager;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -178,7 +177,7 @@ public class FileManager {
         String avatarPath = File.separator + user.getLogin() + File.separator + Constants.AVATAR_JPG;
         createDirectoryIfNotExist(avatarPath);
         try {
-            InputStream is = new FileInputStream(avatarData);
+            InputStream is = java.nio.file.Files.newInputStream(avatarData.toPath());
             return writeFile(avatarPath, is, "", Constants.AVATAR_SIZE, true);
         } catch (IOException ioe) {
             error.fire(new ErrorEvent("error saving avatar"));

@@ -81,13 +81,13 @@
          * @return {Boolean} false
          * */
         execAjax : function (oldPanel, newPanel) {
-            var options = $.extend({}, newPanel.getTogglePanel().options["ajax"], {});
+            var options = $.extend({}, newPanel.getTogglePanel().options["ajax"], oldPanel.options.ajax);
 
             this.__setActiveItem(newPanel);
             rf.ajax(newPanel.id, null, options);
 
             if (oldPanel) {
-                this.__setActiveItem(oldPanel);
+                oldPanel.getTogglePanel().activeItem = oldPanel.getName();
             }
 
             return false;
@@ -140,12 +140,14 @@
             name:"TabPanel",
 
             /**
-             * @class TabPanel
-             * @name TabPanel
-             *
-             * @constructor
-             * @param {String} componentId - component id
-             * @param {Hash} options - params
+             * Backing object for rich:tabPanel
+             * 
+             * @extends RichFaces.ui.TogglePanel
+             * @memberOf! RichFaces.ui
+             * @constructs RichFaces.ui.TabPanel
+             * 
+             * @param {string} componentId - component id
+             * @param {Object} options - params
              * */
             init : function (componentId, options) {
                 rf.ui.TogglePanel.call(this, componentId, options);

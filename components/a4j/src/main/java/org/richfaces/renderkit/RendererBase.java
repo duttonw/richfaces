@@ -159,6 +159,10 @@ public abstract class RendererBase extends Renderer {
         }
     }
 
+    public boolean isAlreadyRendered(UIComponent component) {
+        return false;
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -170,7 +174,7 @@ public abstract class RendererBase extends Renderer {
         // Test for correct parameters.
         checkForCorrectParams(context, component, "encodeEnd");
 
-        if (component.isRendered()) {
+        if (component.isRendered() && !isAlreadyRendered(component)) {
             ResponseWriter writer = context.getResponseWriter();
 
             doEncodeEnd(writer, context, component);
@@ -222,7 +226,8 @@ public abstract class RendererBase extends Renderer {
     }
 
     /**
-     * Template method for custom decoding of concrete renderer. All parameters checking if performed in original {@see decode }
+     * Template method for custom decoding of concrete renderer. All parameters checking if performed in original {@see
+     * decode(FacesContext, UIComponent) }
      * method.
      *
      * @param context
@@ -233,7 +238,7 @@ public abstract class RendererBase extends Renderer {
 
     /**
      * Template method for custom start encoding of concrete renderer. All parameters checking and writer is performed in
-     * original {@link encodeBegin } method.
+     * original {@link encodeBegin(FacesContext, UIComponent) } method.
      *
      * @param writer
      * @param context
@@ -254,7 +259,7 @@ public abstract class RendererBase extends Renderer {
 
     /**
      * Template method for custom finish encoding of concrete renderer. All parameters checking and writer is performed in
-     * original {@link encodeEnd } method.
+     * original {@link encodeEnd(FacesContext, UIComponent) } method.
      *
      * @param writer
      * @param context

@@ -22,9 +22,13 @@
 
 package org.richfaces.component;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterators;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.el.ValueExpression;
 import javax.faces.component.UIComponent;
@@ -32,7 +36,6 @@ import javax.faces.component.UIComponentBase;
 import javax.faces.component.UINamingContainer;
 import javax.faces.component.UniqueIdVendor;
 import javax.faces.context.FacesContext;
-import javax.faces.el.ValueBinding;
 import javax.faces.event.AbortProcessingException;
 import javax.faces.event.FacesEvent;
 import javax.faces.event.FacesListener;
@@ -42,13 +45,8 @@ import javax.faces.render.Renderer;
 
 import org.richfaces.renderkit.html.ScriptsRenderer;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 public abstract class UITransient extends UIComponentBase {
     private String id;
@@ -89,13 +87,13 @@ public abstract class UITransient extends UIComponentBase {
 
     @SuppressWarnings("deprecation")
     @Override
-    public ValueBinding getValueBinding(String name) {
+    public javax.faces.el.ValueBinding getValueBinding(String name) {
         return null;
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public void setValueBinding(String name, ValueBinding binding) {
+    public void setValueBinding(String name, javax.faces.el.ValueBinding binding) {
         // do nothing
 
     }
@@ -229,7 +227,7 @@ public abstract class UITransient extends UIComponentBase {
 
     @Override
     public Iterator<UIComponent> getFacetsAndChildren() {
-        return Iterators.emptyIterator();
+        return ImmutableSet.<UIComponent>of().iterator();
     }
 
     @Override

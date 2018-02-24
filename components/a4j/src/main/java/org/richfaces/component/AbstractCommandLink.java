@@ -30,7 +30,8 @@ import org.richfaces.cdk.annotations.JsfRenderer;
 import org.richfaces.cdk.annotations.Tag;
 import org.richfaces.cdk.annotations.TagType;
 import org.richfaces.component.attribute.AccesskeyProps;
-import org.richfaces.component.attribute.AjaxProps;
+import org.richfaces.component.attribute.AjaxCommandProps;
+import org.richfaces.component.attribute.BypassProps;
 import org.richfaces.component.attribute.CoreProps;
 import org.richfaces.component.attribute.LinkProps;
 import org.richfaces.renderkit.AjaxConstants;
@@ -43,12 +44,24 @@ import org.richfaces.renderkit.AjaxConstants;
  * @author Nick Belaevski
  */
 @JsfComponent(renderer = @JsfRenderer(type = "org.richfaces.CommandLinkRenderer"), tag = @Tag(type = TagType.Facelets))
-public abstract class AbstractCommandLink extends AbstractActionComponent implements MetaComponentResolver, AccesskeyProps, AjaxProps, CoreProps, LinkProps {
+public abstract class AbstractCommandLink extends BasicActionComponent implements MetaComponentResolver, AccesskeyProps, AjaxCommandProps, BypassProps, CoreProps, LinkProps {
     public static final String COMPONENT_TYPE = "org.richfaces.CommandLink";
     public static final String COMPONENT_FAMILY = UICommand.COMPONENT_FAMILY;
 
+    /**
+     * Ids of components that will participate in the "execute" portion of the Request Processing Lifecycle. Can be a single id,
+     * a space or comma separated list of Id's, or an EL Expression evaluating to an array or Collection. Any of the keywords
+     * "@this", "@form", "@all", "@none", "@region" may be specified in the identifier list. Some components make use of
+     * additional keywords.<br/>
+     * Default value is "@region" which resolves to form if no region is present.
+     */
+    @Attribute(generate = false)
+    public Object getExecute() {
+        return super.getExecute();
+    }
+
     @Attribute(hidden = true)
-    private String target;
+    public abstract String getTarget();
 
     /**
      * This attribute specifies the position of the current element in the tabbing order for the current document.

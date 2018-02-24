@@ -23,6 +23,7 @@ package org.richfaces.component;
 import javax.faces.component.UIComponentBase;
 
 import org.richfaces.cdk.annotations.Attribute;
+import org.richfaces.cdk.annotations.Description;
 import org.richfaces.cdk.annotations.EventName;
 import org.richfaces.cdk.annotations.JsfComponent;
 import org.richfaces.cdk.annotations.JsfRenderer;
@@ -46,19 +47,13 @@ public abstract class AbstractPopupPanel extends UIComponentBase implements Even
     public static final String COMPONENT_TYPE = "org.richfaces.PopupPanel";
     public static final String COMPONENT_FAMILY = "org.richfaces.PopupPanel";
 
-    @Attribute
-    public abstract String getStyle();
-
-    @Attribute
-    public abstract String getStyleClass();
-
     /**
      * Defines options that were specified on the client side
      */
     @Attribute(hidden = true)
     public abstract String getVisualOptions();
 
-    @Attribute(defaultValue = "100")
+    @Attribute(defaultValue = "100", description = @Description("Attribute is similar to the standard HTML attribute and can specify window placement relative to the content. Default value is \"100\"."))
     public abstract int getZindex();
 
     /**
@@ -258,23 +253,11 @@ public abstract class AbstractPopupPanel extends UIComponentBase implements Even
     @Attribute(events = @EventName("resize"))
     public abstract String getOnresize();
 
-    @Attribute(events = @EventName("show"))
-    public abstract String getOnshow();
-
-    @Attribute(events = @EventName("hide"))
-    public abstract String getOnhide();
-
     /**
      * The client-side script method to be called before the modal panel is moved
      */
     @Attribute(events = @EventName("move"))
     public abstract String getOnmove();
-
-    @Attribute(events = @EventName("beforeshow"))
-    public abstract String getOnbeforeshow();
-
-    @Attribute(events = @EventName("beforehide"))
-    public abstract String getOnbeforehide();
 
     @Override
     public String getFamily() {

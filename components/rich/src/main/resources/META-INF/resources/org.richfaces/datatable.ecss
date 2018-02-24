@@ -1,9 +1,9 @@
 .rf-dt {
-    background-color: '#{richSkin.tableBackgroundColor}';
+    background-color: '#{a4jSkin.tableBackgroundColor}';
     border-collapse: collapse;
-    border-width: '#{richSkin.tableBorderWidth}';
+    border-width: '#{a4jSkin.tableBorderWidth}';
     border-style: solid;
-    border-color: '#{richSkin.tableBorderColor}';
+    border-color: '#{a4jSkin.tableBorderColor}';
     empty-cells: show;
 }
 
@@ -20,28 +20,28 @@
 }
 
 .rf-dt-c {
-    border-bottom-width: '#{richSkin.tableBorderWidth}';
+    border-bottom-width: '#{a4jSkin.tableBorderWidth}';
     border-bottom-style: solid;
-    border-bottom-color: '#{richSkin.tableBorderColor}';
-    border-right-width: '#{richSkin.tableBorderWidth}';
+    border-bottom-color: '#{a4jSkin.tableBorderColor}';
+    border-right-width: '#{a4jSkin.tableBorderWidth}';
     border-right-style: solid;
-    border-right-color: '#{richSkin.tableBorderColor}';
-    color: '#{richSkin.generalTextColor}';
-    font-family: '#{richSkin.generalFamilyFont}';
-    font-size: '#{richSkin.generalSizeFont}';
+    border-right-color: '#{a4jSkin.tableBorderColor}';
+    color: '#{a4jSkin.generalTextColor}';
+    font-family: '#{a4jSkin.generalFamilyFont}';
+    font-size: '#{a4jSkin.generalSizeFont}';
     padding: 4px;
 }
 
 .rf-dt-nd {
-    border-bottom-width: '#{richSkin.tableBorderWidth}';
+    border-bottom-width: '#{a4jSkin.tableBorderWidth}';
     border-bottom-style: solid;
-    border-bottom-color: '#{richSkin.tableBorderColor}';
-    border-right-width: '#{richSkin.tableBorderWidth}';
+    border-bottom-color: '#{a4jSkin.tableBorderColor}';
+    border-right-width: '#{a4jSkin.tableBorderWidth}';
     border-right-style: solid;
-    border-right-color: '#{richSkin.tableBorderColor}';
-    color: '#{richSkin.generalTextColor}';
-    font-family: '#{richSkin.generalFamilyFont}';
-    font-size: '#{richSkin.generalSizeFont}';
+    border-right-color: '#{a4jSkin.tableBorderColor}';
+    color: '#{a4jSkin.generalTextColor}';
+    font-family: '#{a4jSkin.generalFamilyFont}';
+    font-size: '#{a4jSkin.generalSizeFont}';
     padding: 4px;
 }
 
@@ -54,18 +54,19 @@
 }
 
 .rf-dt-hdr-c {
-    border-bottom-width: '#{richSkin.tableBorderWidth}';
+    border-bottom-width: '#{a4jSkin.tableBorderWidth}';
     border-bottom-style: solid;
-    border-bottom-color: '#{richSkin.tableBorderColor}';
-    border-right-width: '#{richSkin.tableBorderWidth}';
+    border-bottom-color: '#{a4jSkin.tableBorderColor}';
+    border-right-width: '#{a4jSkin.tableBorderWidth}';
     border-right-style: solid;
-    border-right-color: '#{richSkin.tableBorderColor}';
-    background-color: '#{richSkin.tableHeaderBackgroundColor}';
-    background-image: "#{richSkin.imageUrl('colHdrGrad.png')}";
+    border-right-color: '#{a4jSkin.tableBorderColor}';
+    background-color: '#{a4jSkin.tableHeaderBackgroundColor}';
+    background-image: "#{a4jSkin.imageUrl('colHdrGrad.png')}";
+    background-repeat: repeat-x;
     background-position: top left;
-    color: '#{richSkin.tableHeaderTextColor}';
-    font-family: '#{richSkin.generalFamilyFont}';
-    font-size: '#{richSkin.generalSizeFont}';
+    color: '#{a4jSkin.tableHeaderTextColor}';
+    font-family: '#{a4jSkin.generalFamilyFont}';
+    font-size: '#{a4jSkin.generalSizeFont}';
     font-weight: bold;
     padding: 4px;
     text-align: center;
@@ -80,18 +81,36 @@
 }
 
 .rf-dt-shdr-c {
-    border-bottom-width: '#{richSkin.tableBorderWidth}';
+    border-bottom-width: '#{a4jSkin.tableBorderWidth}';
     border-bottom-style: solid;
-    border-bottom-color: '#{richSkin.tableBorderColor}';
-    border-right-width: '#{richSkin.tableBorderWidth}';
+    border-bottom-color: '#{a4jSkin.tableBorderColor}';
+    border-right-width: '#{a4jSkin.tableBorderWidth}';
     border-right-style: solid;
-    border-right-color: '#{richSkin.tableBorderColor}';
-    background-color: '#{richSkin.tableHeaderBackgroundColor}';
-    background-image: "#{richSkin.imageUrl('colHdrGrad.png')}";
+    border-right-color: '#{a4jSkin.tableBorderColor}';
+    background-color: '#{a4jSkin.tableHeaderBackgroundColor}';
+    background-image: "#{a4jSkin.imageUrl('colHdrGrad.png')}";
+    background-repeat: repeat-x;
     background-position: top left;
-    color: '#{richSkin.tableHeaderTextColor}';
-    font-family: '#{richSkin.generalFamilyFont}';
-    font-size: '#{richSkin.generalSizeFont}';
+    color: '#{a4jSkin.tableHeaderTextColor}';
+    font-family: '#{a4jSkin.generalFamilyFont}';
+    font-size: '#{a4jSkin.generalSizeFont}';
+    font-weight: bold;
+    padding: 4px;
+    text-align: center;
+}
+
+.rf-dt-flt-c {
+    border-bottom-width: '#{a4jSkin.tableBorderWidth}';
+    border-bottom-style: solid;
+    border-bottom-color: '#{a4jSkin.tableBorderColor}';
+    border-right-width: '#{a4jSkin.tableBorderWidth}';
+    border-right-style: solid;
+    border-right-color: '#{a4jSkin.tableBorderColor}';
+    background-color: '#{a4jSkin.tableHeaderBackgroundColor}';
+    background-position: top left;
+    color: '#{a4jSkin.tableHeaderTextColor}';
+    font-family: '#{a4jSkin.generalFamilyFont}';
+    font-size: '#{a4jSkin.generalSizeFont}';
     font-weight: bold;
     padding: 4px;
     text-align: center;
@@ -106,25 +125,25 @@
 }
 
 .rf-dt-sftr-c {
-    border-bottom-width: '#{richSkin.tableBorderWidth}';
+    border-bottom-width: '#{a4jSkin.tableBorderWidth}';
     border-bottom-style: solid;
-    border-bottom-color: '#{richSkin.tableBorderColor}';
-    border-right-width: '#{richSkin.tableBorderWidth}';
+    border-bottom-color: '#{a4jSkin.tableBorderColor}';
+    border-right-width: '#{a4jSkin.tableBorderWidth}';
     border-right-style: solid;
-    border-right-color: '#{richSkin.tableBorderColor}';
-    background-color: '#{richSkin.tableSubfooterBackgroundColor}';
-    color: '#{richSkin.generalTextColor}';
-    font-family: '#{richSkin.generalFamilyFont}';
-    font-size: '#{richSkin.generalSizeFont}';
+    border-right-color: '#{a4jSkin.tableBorderColor}';
+    background-color: '#{a4jSkin.tableSubfooterBackgroundColor}';
+    color: '#{a4jSkin.generalTextColor}';
+    font-family: '#{a4jSkin.generalFamilyFont}';
+    font-size: '#{a4jSkin.generalSizeFont}';
     font-weight: bold;
     padding: 4px;
     text-align: center;
 }
 
 .rf-dt-th {
-    border-bottom-width: '#{richSkin.tableBorderWidth}';
+    border-bottom-width: '#{a4jSkin.tableBorderWidth}';
     border-bottom-style: solid;
-    border-bottom-color: '#{richSkin.tableBorderColor}';
+    border-bottom-color: '#{a4jSkin.tableBorderColor}';
 }
 
 .rf-dt-ftr {
@@ -136,16 +155,16 @@
 }
 
 .rf-dt-ftr-c {
-    border-bottom-width: '#{richSkin.tableBorderWidth}';
+    border-bottom-width: '#{a4jSkin.tableBorderWidth}';
     border-bottom-style: solid;
-    border-bottom-color: '#{richSkin.tableBorderColor}';
-    border-right-width: '#{richSkin.tableBorderWidth}';
+    border-bottom-color: '#{a4jSkin.tableBorderColor}';
+    border-right-width: '#{a4jSkin.tableBorderWidth}';
     border-right-style: solid;
-    border-right-color: '#{richSkin.tableBorderColor}';
-    color: '#{richSkin.generalTextColor}';
-    background-color: '#{richSkin.tableFooterBackgroundColor}';
-    font-family: '#{richSkin.generalFamilyFont}';
-    font-size: '#{richSkin.generalSizeFont}';
+    border-right-color: '#{a4jSkin.tableBorderColor}';
+    color: '#{a4jSkin.generalTextColor}';
+    background-color: '#{a4jSkin.tableFooterBackgroundColor}';
+    font-family: '#{a4jSkin.generalFamilyFont}';
+    font-size: '#{a4jSkin.generalSizeFont}';
     font-weight: bold;
     padding: 4px;
     text-align: center;
@@ -158,4 +177,45 @@
 
 .rf-stt-col {
     background-image: url("#{resource['org.richfaces:down_icon.gif']}");
+}
+
+.rf-dt-c-srt {
+    cursor: pointer;
+    color:'#{a4jSkin.generalLinkColor}';
+}
+
+.rf-dt-c-srt:hover {
+    color:'#{a4jSkin.hoverLinkColor}';
+}
+
+.rf-dt-srt-btn {
+    height: 1em;
+    width: 25px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.rf-dt-srt-uns {
+    background: "url(#{resource['org.richfaces:sort_uns.gif']}) no-repeat center";
+}
+
+.rf-dt-srt-asc {
+    background: "url(#{resource['org.richfaces:sort_asc.gif']}) no-repeat center";
+}
+
+.rf-dt-srt-des {
+    background: "url(#{resource['org.richfaces:sort_des.gif']}) no-repeat center";
+}
+
+.rf-dt-flt-cnt {
+    text-align: center;
+    height: 27px;
+}
+
+.rf-dt-flt-i {
+    width: 80%
+}
+
+.rf-dt-flt-i-err {
+    background-color: '#{a4jSkin.warningBackgroundColor}';
 }

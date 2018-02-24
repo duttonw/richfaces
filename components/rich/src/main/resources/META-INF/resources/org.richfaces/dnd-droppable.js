@@ -19,6 +19,16 @@
     var defaultOptions = {
     };
 
+    /**
+     * Backing object for rich:dropTarget
+     * 
+     * @extends RichFaces.BaseNonVisualComponent
+     * @memberOf! RichFaces.ui
+     * @constructs RichFaces.ui.Droppable
+     * 
+     * @param id
+     * @param options
+     */
     rf.ui.Droppable = function(id, options) {
         this.options = {};
         $.extend(this.options, defaultOptions, options || {});
@@ -51,12 +61,16 @@
 
     $.extend(rf.ui.Droppable.prototype, (function() {
         return {
+            name: "Droppable",
             drop : function(e) {
                 var ui = e.rf.data;
                 if (this.accept(ui.draggable)) {
                     this.__callAjax(e, ui);
                 }
-                var dragIndicatorObj = this.__getIndicatorObject(ui.helper);
+                var dragIndicatorObj;
+                if (ui.draggable.data('indicator')) {
+                    dragIndicatorObj = this.__getIndicatorObject(ui.helper);
+                }
                 if (dragIndicatorObj) {
                     ui.helper.removeClass(dragIndicatorObj.getAcceptClass());
                     ui.helper.removeClass(dragIndicatorObj.getRejectClass());
@@ -69,7 +83,10 @@
             dropover : function(e) {
                 var ui = e.rf.data;
                 var draggable = ui.draggable;
-                var dragIndicatorObj = this.__getIndicatorObject(ui.helper);
+                var dragIndicatorObj;
+                if (ui.draggable.data('indicator')) {
+                    dragIndicatorObj = this.__getIndicatorObject(ui.helper);
+                }
                 this.dropElement.addClass("rf-drp-hvr");
                 if (dragIndicatorObj) {
                     if (this.accept(draggable)) {
@@ -97,7 +114,10 @@
             dropout : function(e) {
                 var ui = e.rf.data;
                 var draggable = ui.draggable;
-                var dragIndicatorObj = this.__getIndicatorObject(ui.helper);
+                var dragIndicatorObj;
+                if (ui.draggable.data('indicator')) {
+                    dragIndicatorObj = this.__getIndicatorObject(ui.helper);
+                }
                 this.dropElement.removeClass("rf-drp-hvr rf-drp-hlight");
                 if (dragIndicatorObj) {
                     ui.helper.removeClass(dragIndicatorObj.getAcceptClass());
@@ -125,7 +145,7 @@
                 }
                 return accept;
             },
-            
+
             __getIndicatorObject: function(helper) {
                 var indicatorCloneId = helper.attr('id');
                 if (indicatorCloneId) {

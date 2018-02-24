@@ -10,23 +10,35 @@
     };
 
     // constructor definition
+    /**
+     * Parent object for menu components
+     * 
+     * @extends RichFaces.ui.MenuBase
+     * @memberOf! RichFaces.ui
+     * @constructs RichFaces.ui.Menu
+     * 
+     * @param componentId
+     * @param options
+     */
     rf.ui.Menu = function(componentId, options) {
         this.options = {};
         $.extend(this.options, defaultOptions, options || {});
         $.extend(this.options.cssClasses, buildCssClasses.call(this, this.options.cssRoot));
         $super.constructor.call(this, componentId, this.options);
+        this.popup.popup.attr('data-rf-parentmenu', componentId);
         this.id = componentId;
         this.namespace = this.namespace || "." + rf.Event.createNamespace(this.name, this.id);
         this.groupList = new Array();
 
         this.target = this.getTarget();
+        this.targetComponent = rf.component(this.target);
+
         if (this.target) {
             var menu = this;
             $(document).ready(function() {
-                var targetComponent = rf.component(menu.target);
-                if (targetComponent && targetComponent.contextMenuAttach) {
-                    targetComponent.contextMenuAttach(menu);
-                    $('body').on('rich:ready' + menu.namespace, '[id="' + menu.target + '"]', function() {targetComponent.contextMenuAttach(menu)});
+                if (menu.targetComponent && menu.targetComponent.contextMenuAttach) {
+                    menu.targetComponent.contextMenuAttach(menu);
+                    $('body').on('rich:ready' + menu.namespace, '[id="' + menu.target + '"]', function() {menu.targetComponent.contextMenuAttach(menu)});
                 } else {
                     rf.Event.bindById(menu.target, menu.options.showEvent, $.proxy(menu.__showHandler, menu), menu)
                 }
@@ -59,7 +71,9 @@
         return {
             name : "Menu",
             initiateGroups : function(groupOptions) {
-                for (var i in groupOptions) {
+                if (!groupOptions) { return; }
+
+                for (var i = 0; i < groupOptions.length; i++) {
                     var groupId = groupOptions[i].id;
                     if (null != groupId) {
                         this.groupList[groupId] = new rf.ui.MenuGroup(
@@ -115,13 +129,19 @@
 
             destroy : function() {
                 // clean up code here
+                // forget this menu during the DOM cleanup, f.i. after AJAX rerender
+                if (this.menuManager.openedMenu === this.id) {
+                    this.menuManager.deletedMenuId();
+                }
                 this.detach(this.id);
 
                 if (this.target) {
                     rf.Event.unbindById(this.target, this.options.showEvent);
-                    var targetComponent = rf.component(this.target);
-                    if (targetComponent && targetComponent.contextMenuAttach) {
+                    if (this.targetComponent && this.targetComponent.contextMenuAttach) {
                         $('body').off('rich:ready' + this.namespace, '[id="' + this.target + '"]');
+                        if(this.targetComponent.contextMenuDetach) {
+                            this.targetComponent.contextMenuDetach(this);
+                        }
                     }
                 }
 

@@ -1,4 +1,4 @@
-/**
+/*
  * JBoss, Home of Professional Open Source
  * Copyright 2012, Red Hat, Inc. and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
@@ -24,18 +24,16 @@ package org.richfaces.component.placeholder;
 import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.warp.impl.utils.URLUtils;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.webapp30.WebAppDescriptor;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.support.FindBy;
-import org.richfaces.integration.UIDeployment;
+import org.richfaces.integration.RichDeployment;
 import org.richfaces.shrinkwrap.descriptor.FaceletAsset;
 
 import category.Smoke;
-
 import com.google.common.base.Function;
 
 /**
@@ -48,14 +46,14 @@ public class ITPlaceholderInputText extends AbstractPlaceholderTest {
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
-        UIDeployment deployment = new UIDeployment(ITPlaceholderInputText.class);
+        RichDeployment deployment = new RichDeployment(ITPlaceholderInputText.class);
 
         deployment.archive().addClasses(PlaceHolderValueConverter.class, PlaceHolderValue.class);
         deployment.webXml(new Function<WebAppDescriptor, WebAppDescriptor>() {
             public WebAppDescriptor apply(WebAppDescriptor input) {
                 return input.getOrCreateContextParam()
-                        .paramName("javax.faces.PROJECT_STAGE")
-                        .paramValue("SystemTest")
+                    .paramName("javax.faces.PROJECT_STAGE")
+                    .paramValue("SystemTest")
                     .up();
             }
         });
@@ -103,14 +101,14 @@ public class ITPlaceholderInputText extends AbstractPlaceholderTest {
     @Test
     @Category(Smoke.class)
     public void testComponentSourceWithSelector() throws Exception {
-        URL selectorUrl = URLUtils.buildUrl(contextPath, "selector.jsf?selector=input");
-        sourceChecker.checkComponentSource(selectorUrl, "placeholder-with-selector.xmlunit.xml", By.tagName("body"));
+        URL url = new URL(getContextPath(), "selector.jsf?selector=input");
+        getSourceChecker().checkComponentSource(url, "placeholder-with-selector.xmlunit.xml", By.tagName("body"));
     }
 
     @Test
     @Category(Smoke.class)
     public void testComponentSourceWithoutSelector() throws Exception {
-        URL urL = new URL(contextPath.toExternalForm() + "index.jsf");
-        sourceChecker.checkComponentSource(urL, "placeholder-without-selector.xmlunit.xml", By.tagName("body"));
+        URL url = new URL(getContextPath().toExternalForm() + "index.jsf");
+        getSourceChecker().checkComponentSource(url, "placeholder-without-selector.xmlunit.xml", By.tagName("body"));
     }
 }

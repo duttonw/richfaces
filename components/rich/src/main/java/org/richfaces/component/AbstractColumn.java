@@ -32,6 +32,9 @@ import org.richfaces.cdk.annotations.Description;
 import org.richfaces.cdk.annotations.Facet;
 import org.richfaces.cdk.annotations.JsfComponent;
 import org.richfaces.cdk.annotations.Tag;
+import org.richfaces.component.attribute.ColumnProps;
+import org.richfaces.component.attribute.StyleClassProps;
+import org.richfaces.component.attribute.StyleProps;
 import org.richfaces.application.CoreConfiguration;
 import org.richfaces.model.Filter;
 import org.richfaces.model.FilterField;
@@ -46,20 +49,20 @@ import org.richfaces.model.SortField;
 @JsfComponent(type = AbstractColumn.COMPONENT_TYPE, family = AbstractColumn.COMPONENT_FAMILY, facets = {
         @Facet(name = "header", description = @Description("Column header")),
         @Facet(name = "footer", description = @Description("Column footer")) }, tag = @Tag(name = "column"))
-public abstract class AbstractColumn extends javax.faces.component.UIColumn implements Column {
+public abstract class AbstractColumn extends javax.faces.component.UIColumn implements Column, ColumnProps, StyleClassProps, StyleProps {
     public static final String COMPONENT_TYPE = "org.richfaces.Column";
     public static final String COMPONENT_FAMILY = "org.richfaces.Column";
     private static Boolean builtInSortControlsEnabled;
     private static Boolean builtInFilterControlsEnabled;
 
     /**
-     * if "true" next column begins from the first row
+     * If "true" next column begins from the first row.
      */
     @Attribute
     public abstract boolean isBreakRowBefore();
 
     /**
-     * Defines order which will be used for sorting column: unsorted (default), ascending, descending
+     * Defines order which will be used for sorting column: unsorted (default), ascending, descending.
      */
     @Attribute
     public abstract SortOrder getSortOrder();
@@ -71,14 +74,14 @@ public abstract class AbstractColumn extends javax.faces.component.UIColumn impl
     public abstract Filter<?> getFilter();
 
     /**
-     * Defines current filtering value
+     * Defines current filtering value.
      */
     @Attribute
     public abstract Object getFilterValue();
 
     /**
      * Defines current filter type. Possible values: string, custom.
-     * If custom is used, no filter box is created, you are responsible for e creating your own filter input
+     * If custom is used, no filter box is created, you are responsible for creating your own filter input.<br/>
      * Default: string
      */
     @Attribute(defaultValue = "string")
@@ -97,34 +100,34 @@ public abstract class AbstractColumn extends javax.faces.component.UIColumn impl
     public abstract String getSubmittedFilterValue();
 
     /**
-     * Defines current filtering value. Possible values: string, custom.
-     * If custom is used, no filter box is created, you are responsible for e creating your own filter input
+     * Defines current sorting type. Possible values: string, custom.
+     * If custom is used, no sorting controls are created, you are responsible for creating your own.<br/>
      * Default: string
      */
     @Attribute(defaultValue = "string")
     public abstract String getSortType();
 
     /**
-     * Corresponds to the HTML rowspan attribute
+     * Corresponds to the HTML rowspan attribute.
      */
     @Attribute
     public abstract int getRowspan();
 
     /**
-     * Corresponds to the HTML colspan attribute
+     * Corresponds to the HTML colspan attribute.
      */
     @Attribute
     public abstract int getColspan();
 
     /**
-     * Defines value binding to the comparator that is used to compare the values
+     * Defines value binding to the comparator that is used to compare the values.
      */
     @Attribute
     public abstract Comparator<?> getComparator();
 
     /**
      * Defines EL expression which returns true if given row should be displayed (EL expressions should use variable defined in
-     * filterVar attribute of dataTable)
+     * filterVar attribute of dataTable).
      */
     @Attribute
     public abstract Object getFilterExpression();
@@ -136,34 +139,16 @@ public abstract class AbstractColumn extends javax.faces.component.UIColumn impl
     public abstract Object getSortBy();
 
     /**
-     * Assigns one or more space-separated CSS class names to any footer generated for this component
-     */
-    @Attribute
-    public abstract String getFooterClass();
-
-    /**
-     * Assigns one or more space-separated CSS class names to any header generated for this component
-     */
-    @Attribute
-    public abstract String getHeaderClass();
-
-    /**
      * Attribute defines width of column.
      */
     @Attribute
     public abstract String getWidth();
 
     /**
-     * CSS style rules to be applied to the component
+     * Allows customizing column name in column visibility control in rich:extendedDataTable (showColumnControl)
      */
     @Attribute
-    public abstract String getStyle();
-
-    /**
-     * Assigns one or more CSS class names to the component. Corresponds to the HTML "class" attribute.
-     */
-    @Attribute
-    public abstract String getStyleClass();
+    public abstract String getName();
 
     public FilterField getFilterField() {
         FilterField field = null;

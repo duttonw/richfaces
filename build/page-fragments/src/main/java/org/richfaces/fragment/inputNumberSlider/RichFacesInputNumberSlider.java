@@ -22,19 +22,20 @@
 package org.richfaces.fragment.inputNumberSlider;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jboss.arquillian.graphene.condition.element.WebElementConditionFactory;
 import org.jboss.arquillian.graphene.fragment.Root;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.FindBy;
-import org.richfaces.fragment.common.AdvancedInteractions;
+import org.richfaces.fragment.common.AdvancedVisibleComponentIteractions;
 import org.richfaces.fragment.common.TextInputComponentImpl;
 import org.richfaces.fragment.common.Utils;
+import org.richfaces.fragment.common.VisibleComponentInteractions;
 
 import com.google.common.base.Preconditions;
 
-public class RichFacesInputNumberSlider extends AbstractNumberInput implements InputNumberSlider, AdvancedInteractions<RichFacesInputNumberSlider.AdvancedInputNumberSliderInteractions> {
+public class RichFacesInputNumberSlider extends AbstractNumberInput implements InputNumberSlider,
+    AdvancedVisibleComponentIteractions<RichFacesInputNumberSlider.AdvancedInputNumberSliderInteractions> {
 
     @FindBy(className = "rf-insl-inc")
     private WebElement arrowIncrease;
@@ -87,21 +88,43 @@ public class RichFacesInputNumberSlider extends AbstractNumberInput implements I
         advanced().dragHandleToPointInTrace((int) (n * advanced().getWidth()));
     }
 
-    public class AdvancedInputNumberSliderInteractions extends AbstractNumberInput.AdvancedNumberInputInteractions {
+    protected void scrollToView() {
+        new Actions(browser).moveToElement(advanced().getRootElement()).perform();
+    }
+
+    public class AdvancedInputNumberSliderInteractions extends AbstractNumberInput.AdvancedNumberInputInteractions
+        implements VisibleComponentInteractions {
 
         public void dragHandleToPointInTrace(int pixelInTrace) {
-            Preconditions.checkArgument(pixelInTrace >= 0 && pixelInTrace <= getWidth(), "Cannot slide outside the trace.");
-            if (!new WebElementConditionFactory(root).isVisible().apply(browser)) {
+            Preconditions.checkArgument(pixelInTrace >= 0 && pixelInTrace <= getWidth(),
+                "Cannot slide outside the trace.");
+            if (!Utils.isVisible(advanced().getRootElement())) {
                 throw new RuntimeException("Trace is not visible.");
             }
             scrollToView();
-            Actions actions = new Actions(browser).clickAndHold(handle);
-            actions.moveToElement(root, pixelInTrace, 0);
-            actions.release(handle).build().perform();
+            // clickAndHold(element) replaced by moveToElement with offset + clickAndHold (RF-14183)
+            Actions actions = new Actions(browser).moveToElement(advanced().getHandleElement(), 0, 0).clickAndHold();
+            actions.moveToElement(advanced().getRootElement(), pixelInTrace, 0);
+            actions.release(advanced().getHandleElement()).build().perform();
         }
 
         public int getWidth() {
-            return Utils.getLocations(handleContainer).getWidth();
+            return Utils.getLocations(getHandleContainer()).getWidth();
+        }
+
+        @Override
+        public WebElement getArrowIncreaseElement() {
+            return arrowIncrease;
+        }
+
+        @Override
+        public WebElement getArrowDecreaseElement() {
+            return arrowDecrease;
+        }
+
+        @Override
+        public TextInputComponentImpl getInput() {
+            return input;
         }
 
         public WebElement getRootElement() {
@@ -110,6 +133,10 @@ public class RichFacesInputNumberSlider extends AbstractNumberInput implements I
 
         public WebElement getDisabledHandleElement() {
             return disabledHandle;
+        }
+
+        protected WebElement getHandleContainer() {
+            return handleContainer;
         }
 
         public WebElement getHandleElement() {
@@ -135,29 +162,10 @@ public class RichFacesInputNumberSlider extends AbstractNumberInput implements I
         public WebElement getSliderElement() {
             return sliderElement;
         }
-    }
 
-    private void scrollToView() {
-        new Actions(browser).moveToElement(root).perform();
-    }
-
-    @Override
-    protected WebElement getArrowIncreaseElement() {
-        return arrowIncrease;
-    }
-
-    @Override
-    protected WebDriver getBrowser() {
-        return browser;
-    }
-
-    @Override
-    protected WebElement getArrowDecreaseElement() {
-        return arrowDecrease;
-    }
-
-    @Override
-    protected TextInputComponentImpl getInput() {
-        return input;
+        @Override
+        public boolean isVisible() {
+            return Utils.isVisible(getRootElement());
+        }
     }
 }

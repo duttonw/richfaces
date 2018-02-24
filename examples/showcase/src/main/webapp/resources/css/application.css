@@ -32,6 +32,16 @@ p {
     padding: 0 0 10px;
 }
 
+textarea {
+    max-width: 300px;
+    max-height: 200px;
+}
+
+textarea.cke_source {
+    max-width: none;
+    max-height: none;
+}
+
 #page {
     margin: 0 auto;
     width: 987px;
@@ -294,4 +304,28 @@ a.show,a.hide {
 
 textarea[disabled],input[type="text"][disabled],input[type="password"][disabled],select[disabled] {
     -webkit-text-fill-color: #B6AD84;
+}
+
+.vdlPanel {
+    border: 2px solid;
+    float: right;
+    position:relative;
+    top: -16px;
+    right: -21px;
+}
+
+.vdlPanelBody {
+    padding: 6px;
+}
+
+.vdlPanelBody a {
+    font-size: 12px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.vdlPanelBody a.ref {
+    border-top: 2px solid black;
+    margin-top: 4px;
+    padding-top: 4px;
 }

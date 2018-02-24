@@ -32,17 +32,15 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.FindBy;
 import org.richfaces.fragment.common.AdvancedInteractions;
 import org.richfaces.fragment.common.Utils;
 import org.richfaces.fragment.configuration.RichFacesPageFragmentsConfiguration;
 import org.richfaces.fragment.configuration.RichFacesPageFragmentsConfigurationContext;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
 
 /**
- * Automatically setups hotkey from widget, if no hotkey from user is set.
+ * Automatically set hotkey from widget, if no hotkey from user is set.
  */
 public class RichFacesHotkey implements Hotkey, AdvancedInteractions<RichFacesHotkey.AdvancedHotkeyInteractions> {
 
@@ -55,14 +53,12 @@ public class RichFacesHotkey implements Hotkey, AdvancedInteractions<RichFacesHo
     @ArquillianResource
     private Actions actions;
 
-    @FindBy(tagName = "script")
-    private WebElement script;
-
     private final RichFacesPageFragmentsConfiguration configuration = RichFacesPageFragmentsConfigurationContext.getProxy();
 
     private final AdvancedHotkeyInteractions interactions = new AdvancedHotkeyInteractions();
     private String hotkey;
     private String selector;
+    private boolean firefoxKeyboardWorkaroundPerformed = false;
 
     public enum ModifierKeys {
 
@@ -85,25 +81,33 @@ public class RichFacesHotkey implements Hotkey, AdvancedInteractions<RichFacesHo
         return interactions;
     }
 
-    @Override
-    public void invoke() {
-        invoke(driver.findElement(advanced().getSelector().or(Utils.BY_HTML)));
+    protected Actions getActions() {
+        return actions;
     }
 
     @Override
-    public void invoke(WebElement element) {
-        Preconditions.checkNotNull(element);
+    public void invoke() {
+        invoke(advanced().getSelector().isPresent() ? driver.findElement(advanced().getSelector().get()) : null);
+    }
 
-        String hotkey = advanced().getHotkey();
-        if (hotkey == null || hotkey.trim().isEmpty()) {
+    @Override
+    public void invoke(WebElement elementOrNull) {
+        if (elementOrNull == null || elementOrNull.getTagName().equalsIgnoreCase("body") || elementOrNull.getTagName().equalsIgnoreCase("html")) {
+            if (!firefoxKeyboardWorkaroundPerformed) {
+                Utils.performFirefoxKeyboardWorkaround(driver);
+                firefoxKeyboardWorkaroundPerformed = true;
+            }
+        }
+        String key = advanced().getHotkey();
+        if (key == null || key.trim().isEmpty()) {
             throw new IllegalArgumentException(
                 "The hotkey can not be null nor empty! Set it up correctly with #setUp(String) method.");
         }
-        actions.sendKeys(element, hotkey).perform();
+        getActions().sendKeys(elementOrNull, key).perform();
     }
 
     @Override
-    public void setupHotkey(String hotkey) {
+    public void setHotkey(String hotkey) {
         if (hotkey == null || hotkey.isEmpty()) {
             throw new IllegalArgumentException(
                 "Hotkey cannot be empty or null. Set up hotkey from widget if you want to reset it.");
@@ -112,7 +116,7 @@ public class RichFacesHotkey implements Hotkey, AdvancedInteractions<RichFacesHo
     }
 
     @Override
-    public void setupSelector(String selector) {
+    public void setSelector(String selector) {
         if (selector == null || selector.isEmpty()) {
             throw new IllegalArgumentException("Selector cannot be empty or null.");
         }
@@ -145,11 +149,15 @@ public class RichFacesHotkey implements Hotkey, AdvancedInteractions<RichFacesHo
 
     public class AdvancedHotkeyInteractions {
 
-        private String previousKeyText = "";
+        private final String previousKeyText = "";
+
+        protected RichFacesPageFragmentsConfiguration getConfiguration() {
+            return configuration;
+        }
 
         public String getHotkey() {
-            if (configuration.isUseJSInteractionStrategy()) {
-                setupFromWidget();
+            if (getConfiguration().isUseJSInteractionStrategy()) {
+                setFromWidget();
             }
             return hotkey;
         }
@@ -163,13 +171,13 @@ public class RichFacesHotkey implements Hotkey, AdvancedInteractions<RichFacesHo
                 .selector(selector)));
         }
 
-        public void setupFromWidget() {
-            setupHotkeyFromWidget();
-            setupSelectorFromWidget();
+        public void setFromWidget() {
+            setHotkeyFromWidget();
+            setSelectorFromWidget();
         }
 
-        public void setupHotkeyFromWidget() {
-            Optional<String> hotkeyText = Utils.getComponentOption(rootElement, "key");
+        public void setHotkeyFromWidget() {
+            Optional<String> hotkeyText = Utils.getComponentOption(getRootElement(), "key");
             if (!hotkeyText.isPresent()) {
                 throw new NullPointerException("The hotkey value is null.");
             }
@@ -178,11 +186,11 @@ public class RichFacesHotkey implements Hotkey, AdvancedInteractions<RichFacesHo
             if (previousKeyText.equals(hotkeyText.get())) {
                 return;
             }
-            setupHotkey(hotkeyText.get());
+            setHotkey(hotkeyText.get());
         }
 
-        public void setupSelectorFromWidget() {
-            selector = Utils.getComponentOptionDocumentObjectSafe(rootElement, "selector").orNull();
+        public void setSelectorFromWidget() {
+            selector = Utils.<String>getComponentOptionDocumentObjectSafe(getRootElement(), "selector").orNull();
         }
     }
 }

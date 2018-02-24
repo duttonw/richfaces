@@ -2,6 +2,16 @@
 
     rf.ui = rf.ui || {};
 
+    /**
+     * Backing object for rich:inplaceSelect
+     * 
+     * @extends RichFaces.ui.InplaceBase
+     * @memberOf! RichFaces.ui
+     * @constructs RichFaces.ui.InplaceSelect
+     * 
+     * @param id
+     * @param options
+     */
     rf.ui.InplaceSelect = function(id, options) {
         var mergedOptions = $.extend({}, defaultOptions, options);
         $super.constructor.call(this, id, mergedOptions);
@@ -57,12 +67,19 @@
                 $super.onshow.call(this);
                 if (this.openOnEdit) {
                     this.__showPopup();
+                    this.list.__scrollToSelectedItem();
                 }
             },
             onhide: function() {
                 this.__hidePopup();
             },
 
+            /**
+             * Show the popup list of options
+             * 
+             * @method
+             * @name RichFaces.ui.InplaceSelect#showPopup
+             */
             showPopup: function() {
                 $super.__show.call(this);
 
@@ -71,6 +88,13 @@
                 this.popupList.show();
                 this.__hideLabel();
             },
+
+            /**
+             * Hide the popup list
+             * 
+             * @method
+             * @name RichFaces.ui.InplaceSelect#hidePopup
+             */
             hidePopup: function() {
             	$super.__hide.call(this);
             },
@@ -101,6 +125,19 @@
                 this.list.__selectItemByValue(value);
             },
             onblur: function(e) {
+                /*
+                 * reset the state; (RF-11402) 
+                 * in IE clicking on the scrollbar triggers blur but doesn't trigger mouseup
+                 * in Chrome clicking on the scrollbar triggers blur when the page is scrolled
+                 */
+                window.clearTimeout(this.timeoutId);
+                this.timeoutId = undefined;
+                if (this.isMouseDown || (this.isMouseUp && !this.isSaved)) {
+                    this.isMouseDown = false;
+                    this.isMouseUp = false;
+                    this.__setInputFocus();
+                    return;
+                }
                 this.__hidePopup();
                 $super.onblur.call(this);
             },
@@ -168,6 +205,7 @@
             },
             __blurHandler: function(e) {
                 if (this.saveOnSelect || !this.isMouseDown) {
+                    this.isMouseUp = false;
                     if (this.isEditState()) {
                         this.timeoutId = window.setTimeout($.proxy(function() {
                             this.onblur(e);
@@ -186,6 +224,7 @@
             },
             __onListMouseUp: function(e) {
                 this.isMouseDown = false;
+                this.isMouseUp = !!this.timeoutId; // set only if blur was triggered
                 this.__setInputFocus();
             },
             __showLabel: function(e) {
@@ -205,6 +244,9 @@
             },
             setValue: function(value) {
                 var item = this.list.__selectItemByValue(value);
+                if (!item) {
+                    return;
+                }
                 var clientSelectItem = item.data('clientSelectItem');
                 this.__setValue(clientSelectItem.label);
                 if (this.__isValueChanged()) {

@@ -21,22 +21,32 @@
  */
 package org.richfaces.fragment.editor;
 
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.arquillian.drone.api.annotation.Drone;
+import org.jboss.arquillian.graphene.findby.ByJQuery;
 import org.jboss.arquillian.graphene.fragment.Root;
+import org.jboss.arquillian.graphene.wait.FluentWait;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.support.FindBy;
-import org.richfaces.fragment.common.AdvancedInteractions;
+import org.richfaces.fragment.common.AdvancedVisibleComponentIteractions;
 import org.richfaces.fragment.common.ClearType;
+import org.richfaces.fragment.common.Utils;
+import org.richfaces.fragment.common.VisibleComponentInteractions;
+import org.richfaces.fragment.common.WaitingWrapper;
+import org.richfaces.fragment.common.WaitingWrapperImpl;
 import org.richfaces.fragment.editor.toolbar.RichFacesEditorToolbar;
 
 /**
  * @author <a href="mailto:jhuska@redhat.com">Juraj Huska</a>
  */
-public class RichFacesEditor implements Editor, AdvancedInteractions<RichFacesEditor.AdvancedEditorInteractions> {
+public class RichFacesEditor implements Editor, AdvancedVisibleComponentIteractions<RichFacesEditor.AdvancedEditorInteractions> {
 
     @Root
     private WebElement root;
@@ -44,11 +54,14 @@ public class RichFacesEditor implements Editor, AdvancedInteractions<RichFacesEd
     @Drone
     private WebDriver browser;
 
-    @FindBy(css = ".cke_toolbox")
-    private RichFacesEditorToolbar toolbar;
-
     @ArquillianResource
     private JavascriptExecutor executor;
+
+    @FindBy(tagName = "iframe")
+    private WebElement frameElement;
+
+    @FindBy(css = ".cke_toolbox")
+    private RichFacesEditorToolbar toolbar;
 
     private final AdvancedEditorInteractions advancedInteractions = new AdvancedEditorInteractions();
 
@@ -62,6 +75,13 @@ public class RichFacesEditor implements Editor, AdvancedInteractions<RichFacesEd
         advanced().clear(ClearType.JS);
     }
 
+    /**
+     * @return the executor
+     */
+    protected JavascriptExecutor getExecutor() {
+        return executor;
+    }
+
     @Override
     public String getText() {
         try {
@@ -71,26 +91,46 @@ public class RichFacesEditor implements Editor, AdvancedInteractions<RichFacesEd
         }
     }
 
-    private WebElement switchToEditorActiveArea() {
-        browser.switchTo().frame(0);
+    protected WebElement switchToEditorActiveArea() {
+        advanced().waitForFrameElementToBeVisible().perform();
+        browser.switchTo().frame(advanced().getFrameElement());
         WebElement activeArea = browser.findElement(By.tagName("body"));
-        activeArea.click();
         return activeArea;
     }
 
     @Override
     public void type(String text) {
         try {
-            switchToEditorActiveArea().sendKeys(text);
-            // needs to do both ways, various JS events then do not work otherwise
-            ((JavascriptExecutor) browser).executeScript("document.body.textContent= document.body.textContent + '" + text
-                + "'");
+            if (browser instanceof PhantomJSDriver) {
+                // workaround for https://github.com/detro/ghostdriver/issues/335
+                if (!Utils.<Boolean>invokeRichFacesJSAPIFunction(advanced().getRootElement(), "isReadOnly()")) {
+                    switchToEditorActiveArea();
+                    executor.executeScript(String.format("document.body.textContent = document.body.textContent + '%s'", text));
+                }
+            } else {
+                // following is a workaround to put the typed text to the end of the editor's content (works with Selenium 2.46,
+                // 2.48)
+                WebElement area = switchToEditorActiveArea();
+                boolean hasNoText = area.getText().isEmpty();
+                // focus in editor
+                area.click();
+                if (hasNoText) {
+                    area.sendKeys(text);
+                } else {
+                    // focus on last element (<br>)
+                    area.findElement(ByJQuery.selector("*:last")).click();
+                    // move cursor to the end and append text
+                    area.sendKeys(Keys.ARROW_DOWN, Keys.ARROW_DOWN, text);
+                }
+            }
         } finally {
             browser.switchTo().defaultContent();
         }
     }
 
-    public class AdvancedEditorInteractions {
+    public class AdvancedEditorInteractions implements VisibleComponentInteractions {
+
+        private long _timeoutForFrameElementToBeVisible = -1;
 
         public void clear(ClearType clearType) {
             try {
@@ -103,7 +143,7 @@ public class RichFacesEditor implements Editor, AdvancedInteractions<RichFacesEd
                     case ESCAPE_SQ:
                         throw new UnsupportedOperationException("Unsupported Op.");
                     case JS:
-                        executor.executeScript("arguments[0].innerHTML = '';", activeArea);
+                        getExecutor().executeScript("arguments[0].innerHTML = '';", activeArea);
                         break;
                     case WD:
                         throw new UnsupportedOperationException("Unsupported Op.");
@@ -115,8 +155,41 @@ public class RichFacesEditor implements Editor, AdvancedInteractions<RichFacesEd
             }
         }
 
+        public WebElement getFrameElement() {
+            return frameElement;
+        }
+
+        public WebElement getRootElement() {
+            return root;
+        }
+
+        public long getTimeoutForFrameElementToBeVisible() {
+            return (_timeoutForFrameElementToBeVisible == -1L) ? Utils.getWaitAjaxDefaultTimeout(browser) : _timeoutForFrameElementToBeVisible;
+        }
+
         public RichFacesEditorToolbar getToolbar() {
             return toolbar;
+        }
+
+        @Override
+        public boolean isVisible() {
+            return Utils.isVisible(getRootElement());
+        }
+
+        public void setTimeoutForFrameElementToBeVisible(long timeoutInMilliseconds) {
+            _timeoutForFrameElementToBeVisible = timeoutInMilliseconds;
+        }
+
+        public WaitingWrapper waitForFrameElementToBeVisible() {
+            return new WaitingWrapperImpl() {
+
+                @Override
+                protected void performWait(FluentWait<WebDriver, Void> wait) {
+                    wait.until().element(getFrameElement()).is().visible();
+                }
+            }
+                .withMessage("Waiting for inner frame element to be visible.")
+                .withTimeout(getTimeoutForFrameElementToBeVisible(), TimeUnit.MILLISECONDS);
         }
     }
 }

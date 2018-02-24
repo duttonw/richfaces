@@ -1,46 +1,49 @@
 package org.richfaces.component.tabPanel;
 
-import static org.jboss.arquillian.graphene.Graphene.waitModel;
+import static java.lang.Boolean.parseBoolean;
+
+import static org.jboss.arquillian.graphene.Graphene.guardAjax;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.net.URL;
-import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jboss.arquillian.graphene.findby.FindByJQuery;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.arquillian.warp.Activity;
-import org.jboss.arquillian.warp.Warp;
-import org.jboss.arquillian.warp.WarpTest;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
 import org.richfaces.component.tabPanel.model.TabPanelItemChangeEventBean;
-import org.richfaces.integration.UIDeployment;
+import org.richfaces.fragment.tabPanel.RichFacesTabPanel;
+import org.richfaces.integration.RichDeployment;
 import org.richfaces.shrinkwrap.descriptor.FaceletAsset;
+
 @RunAsClient
 @RunWith(Arquillian.class)
-@WarpTest
 public class ITTabPanelItemChangeEventTest {
 
     @Drone
     private WebDriver browser;
-
     @ArquillianResource
     private URL contextPath;
+    @FindBy(css = "[id$='invoked']")
+    private WebElement invokedElement;
+    @FindBy(css = "[id$='reset']")
+    private WebElement resetButton;
+    @FindBy(css = "[id$='tabPanel']")
+    private RichFacesTabPanel tabPanel;
 
-    @FindByJQuery(".rf-tab-hdr:visible")
-    private List<WebElement> tabs;
-
-    @Deployment
+    @Deployment(testable = false)
     public static WebArchive createDeployment() {
-        UIDeployment deployment = new UIDeployment(ITTabPanelItemChangeEventTest.class);
+        RichDeployment deployment = new RichDeployment(ITTabPanelItemChangeEventTest.class);
 
-        deployment.archive().addClasses(TabPanelItemChangeEventBean.class, ItemChangeEventInspection.class);
+        deployment.archive().addClasses(TabPanelItemChangeEventBean.class);
 
         addIndexPage(deployment);
 
@@ -52,32 +55,46 @@ public class ITTabPanelItemChangeEventTest {
     public void test() {
         browser.get(contextPath.toExternalForm());
 
-        Warp.initiate(new Activity() {
-            public void perform() {
-                tabs.get(1).click();
-                waitModel().until().element(tabs.get(1)).attribute("class").contains("rf-tab-hdr-act");
-            }
-        }).inspect(new ItemChangeEventInspection());
+        assertFalse(isInvoked());
 
-        Warp.initiate(new Activity() {
-            public void perform() {
-                tabs.get(0).click();
-                waitModel().until().element(tabs.get(0)).attribute("class").contains("rf-tab-hdr-act");
-            }
-        }).inspect(new ItemChangeEventInspection());
+        guardAjax(tabPanel).switchTo(1);
+        assertTrue(isInvoked());
+
+        // reset invocation
+        guardAjax(resetButton).click();
+        assertFalse(isInvoked());
+
+        guardAjax(tabPanel).switchTo(0);
+        assertTrue(isInvoked());
+
+        // reset invocation
+        guardAjax(resetButton).click();
+        assertFalse(isInvoked());
+
+        // switch to the same element
+        guardAjax(tabPanel).switchTo(0);
+        assertFalse(isInvoked());
     }
 
-    private static void addIndexPage(UIDeployment deployment) {
+    private boolean isInvoked() {
+        return parseBoolean(invokedElement.getText());
+    }
+
+    private static void addIndexPage(RichDeployment deployment) {
         FaceletAsset p = new FaceletAsset();
         p.body("<h:form id='myForm'>");
-        p.body("<rich:tabPanel id='tabPanel' binding='#{tabPanelItemChangeEventBean.tabPanel}' itemChangeListener='#{tabPanelItemChangeEventBean.itemChangeListener}'>");
-        p.body("    <rich:tab id='tab0' name='tab0' header='tab0 header'>");
-        p.body("        content of tab 1");
-        p.body("    </rich:tab>");
-        p.body("    <rich:tab id='tab1' name='tab1' header='tab1 header'>");
-        p.body("        content of tab 2");
-        p.body("    </rich:tab>");
-        p.body("</rich:tabPanel> ");
+        p.body("    <rich:tabPanel id='tabPanel' binding='#{tabPanelItemChangeEventBean.tabPanel}' itemChangeListener='#{tabPanelItemChangeEventBean.itemChangeListener}'>");
+        p.body("        <rich:tab id='tab0' name='tab0' header='tab0 header' render='invoked'>");
+        p.body("            content of tab 1");
+        p.body("        </rich:tab>");
+        p.body("        <rich:tab id='tab1' name='tab1' header='tab1 header' render='invoked'>");
+        p.body("            content of tab 2");
+        p.body("        </rich:tab>");
+        p.body("    </rich:tabPanel>");
+        p.body("    <br/>");
+        p.body("    invoked: <h:outputText id='invoked' value='#{tabPanelItemChangeEventBean.invoked}' />");
+        p.body("    <br/>");
+        p.body("    <a4j:commandButton id='reset' action='#{tabPanelItemChangeEventBean.reset}' value='clear events' render='invoked' />");
         p.body("</h:form>");
 
         deployment.archive().addAsWebResource(p, "index.xhtml");

@@ -21,14 +21,10 @@
  */
 package org.richfaces.photoalbum.util;
 
-/**
- * Convenience class to determine in which environment application running.
- *
- * @author Andrey Markhel
- */
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Properties;
 
 import javax.faces.context.FacesContext;
@@ -52,7 +48,7 @@ public class Environment {
             final Properties props = new Properties();
             HttpSession session = (HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(false);
             final ServletContext servletContext = session.getServletContext();
-            props.load(new FileInputStream(servletContext.getRealPath("WEB-INF/classes/" + ENVIRONMENT_PROPERTIES)));
+            props.load(Files.newInputStream(new File(servletContext.getRealPath("WEB-INF/classes/" + ENVIRONMENT_PROPERTIES)).toPath()));
             return props.getProperty(ENVIRONMENT);
         } catch (FileNotFoundException e) {
             // Do nothing.
@@ -68,7 +64,7 @@ public class Environment {
             final Properties props = new Properties();
             final ServletContext servletContext = ((HttpSession) FacesContext.getCurrentInstance().getExternalContext()
                 .getSession(false)).getServletContext();
-            props.load(new FileInputStream(servletContext.getRealPath("WEB-INF/classes/" + ENVIRONMENT_PROPERTIES)));
+            props.load(Files.newInputStream(new File(servletContext.getRealPath("WEB-INF/classes/" + ENVIRONMENT_PROPERTIES)).toPath()));
             return props.getProperty(SHOW_HELP_ICONS_STRATEGY);
         } catch (FileNotFoundException e) {
             // Do nothing.

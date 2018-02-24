@@ -32,10 +32,11 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.richfaces.fragment.common.Actions;
-import org.richfaces.fragment.common.AdvancedInteractions;
+import org.richfaces.fragment.common.AdvancedVisibleComponentIteractions;
 import org.richfaces.fragment.common.Event;
 import org.richfaces.fragment.common.TypeResolver;
 import org.richfaces.fragment.common.Utils;
+import org.richfaces.fragment.common.VisibleComponentInteractions;
 import org.richfaces.fragment.common.WaitingWrapper;
 import org.richfaces.fragment.common.WaitingWrapperImpl;
 
@@ -48,7 +49,7 @@ import com.google.common.base.Predicate;
  * @author <a href="mailto:jstefek@redhat.com">Jiri Stefek</a>
  * @param <CONTENT>
  */
-public abstract class RichFacesTooltip<CONTENT> implements Tooltip<CONTENT>, AdvancedInteractions<RichFacesTooltip<CONTENT>.AdvancedTooltipInteractions> {
+public abstract class RichFacesTooltip<CONTENT> implements Tooltip<CONTENT>, AdvancedVisibleComponentIteractions<RichFacesTooltip<CONTENT>.AdvancedTooltipInteractions> {
 
     @Root
     private WebElement root;
@@ -81,7 +82,7 @@ public abstract class RichFacesTooltip<CONTENT> implements Tooltip<CONTENT>, Adv
 
     @Override
     public RichFacesTooltip<CONTENT> hide(WebElement target) {
-        advanced().setupTarget(target);
+        advanced().setTarget(target);
         return hide();
     }
 
@@ -99,11 +100,11 @@ public abstract class RichFacesTooltip<CONTENT> implements Tooltip<CONTENT>, Adv
 
     @Override
     public RichFacesTooltip<CONTENT> show(WebElement target) {
-        advanced().setupTarget(target);
+        advanced().setTarget(target);
         return show();
     }
 
-    public class AdvancedTooltipInteractions {
+    public class AdvancedTooltipInteractions implements VisibleComponentInteractions {
 
         private final ByJQuery tooltipsSelector = ByJQuery.selector(".rf-tt:visible");
         private final Event DEFAULT_SHOW_EVENT = Event.MOUSEOVER;
@@ -118,8 +119,8 @@ public abstract class RichFacesTooltip<CONTENT> implements Tooltip<CONTENT>, Adv
         private long _timeoutForTooltipToBeVisible = -1;
 
         protected void acquireLastVisibleTooltipIDIfNotSet() {
-            if (idOfTooltip == null) {
-                this.idOfTooltip = driver.findElement(ByJQuery.selector(".rf-tt:last:visible")).getAttribute("id");
+            if (getIdOfTooltip() == null) {
+                setIdOfTooltip(driver.findElement(ByJQuery.selector(".rf-tt:last:visible")).getAttribute("id"));
             }
         }
 
@@ -131,19 +132,31 @@ public abstract class RichFacesTooltip<CONTENT> implements Tooltip<CONTENT>, Adv
             return idOfTooltip;
         }
 
+        public WebElement getRootElement() {
+            return root;
+        }
+
+        protected void setIdOfTooltip(String id) {
+            this.idOfTooltip = id;
+        }
+
         protected Event getShowEvent() {
             return showEvent;
         }
 
         protected WebElement getTarget() {
             if (target == null) {
-                return root;
+                return getRootElement();
             }
             return target;
         }
 
         protected int getTooltipsBefore() {
             return tooltipsBefore;
+        }
+
+        protected ByJQuery getTooltipsSelector() {
+            return tooltipsSelector;
         }
 
         /**
@@ -157,30 +170,35 @@ public abstract class RichFacesTooltip<CONTENT> implements Tooltip<CONTENT>, Adv
         }
 
         protected void initiateTooltipsBefore() {
-            tooltipsBefore = driver.findElements(tooltipsSelector).size();
+            tooltipsBefore = driver.findElements(getTooltipsSelector()).size();
         }
 
-        public void setupHideEvent() {
+        @Override
+        public boolean isVisible() {
+            return Utils.isVisible(getRootElement());
+        }
+
+        public void setHideEvent() {
             this.hideEvent = DEFAULT_HIDE_EVENT;
         }
 
-        public void setupHideEvent(Event event) {
+        public void setHideEvent(Event event) {
             this.hideEvent = event;
         }
 
-        public void setupShowEvent() {
+        public void setShowEvent() {
             this.showEvent = DEFAULT_SHOW_EVENT;
         }
 
-        public void setupShowEvent(Event event) {
+        public void setShowEvent(Event event) {
             this.showEvent = event;
         }
 
-        public void setupTarget() {
-            this.target = null;
+        public void setTarget() {
+            setTarget(null);
         }
 
-        public void setupTarget(WebElement target) {
+        public void setTarget(WebElement target) {
             this.target = target;
         }
 
@@ -193,22 +211,22 @@ public abstract class RichFacesTooltip<CONTENT> implements Tooltip<CONTENT>, Adv
                             @Override
                             public boolean apply(WebDriver input) {
                                 if (getTooltipsBefore() == 0) {
-                                    return driver.findElements(tooltipsSelector).isEmpty();
+                                    return driver.findElements(getTooltipsSelector()).isEmpty();
                                 } else {
-                                    return driver.findElements(tooltipsSelector).size() < getTooltipsBefore();
+                                    return driver.findElements(getTooltipsSelector()).size() < getTooltipsBefore();
                                 }
                             }
                         });
                     }
                 }.withTimeout(getTimoutForTooltipToBeNotVisible(), TimeUnit.MILLISECONDS)
-                 .withMessage("Waiting until some tooltip disappears. There were " + getTooltipsBefore() + " tooltips before, now there are: " + driver.findElements(tooltipsSelector).size())
+                .withMessage("Waiting until some tooltip disappears. There were " + getTooltipsBefore() + " tooltips before, now there are: " + driver.findElements(getTooltipsSelector()).size())
                 : new WaitingWrapperImpl() {
                     @Override
                     protected void performWait(FluentWait<WebDriver, Void> wait) {
                         wait.until().element(driver, By.id(getIdOfTooltip())).is().not().visible();
                     }
                 }.withTimeout(getTimoutForTooltipToBeNotVisible(), TimeUnit.MILLISECONDS)
-                 .withMessage("Waiting until tooltip is not visible.");
+                .withMessage("Waiting until tooltip is not visible.");
         }
 
         public WaitingWrapper waitUntilTooltipIsVisible() {
@@ -219,22 +237,22 @@ public abstract class RichFacesTooltip<CONTENT> implements Tooltip<CONTENT>, Adv
                         wait.until(new Predicate<WebDriver>() {
                             @Override
                             public boolean apply(WebDriver input) {
-                                return driver.findElements(tooltipsSelector).size() > getTooltipsBefore();
+                                return driver.findElements(getTooltipsSelector()).size() > getTooltipsBefore();
                             }
                         });
                     }
                 }.withTimeout(getTimeoutForTooltipToBeVisible(), TimeUnit.MILLISECONDS)
-                 .withMessage("Waiting until a new tooltip appears. There were " + getTooltipsBefore() + " tooltips before, now there are: " + driver.findElements(tooltipsSelector).size())
+                .withMessage("Waiting until a new tooltip appears. There were " + getTooltipsBefore() + " tooltips before, now there are: " + driver.findElements(getTooltipsSelector()).size())
                 : new WaitingWrapperImpl() {
                     @Override
                     protected void performWait(FluentWait<WebDriver, Void> wait) {
                         wait.until().element(driver, By.id(getIdOfTooltip())).is().visible();
                     }
                 }.withTimeout(getTimeoutForTooltipToBeVisible(), TimeUnit.MILLISECONDS)
-                 .withMessage("Waiting until tooltip is visible.");
+                .withMessage("Waiting until tooltip is visible.");
         }
 
-        public void setupTimoutForTooltipToBeNotVisible(long timeoutInMilliseconds) {
+        public void setTimoutForTooltipToBeNotVisible(long timeoutInMilliseconds) {
             _timoutForTooltipToBeNotVisible = timeoutInMilliseconds;
         }
 
@@ -242,7 +260,7 @@ public abstract class RichFacesTooltip<CONTENT> implements Tooltip<CONTENT>, Adv
             return _timoutForTooltipToBeNotVisible == -1 ? Utils.getWaitAjaxDefaultTimeout(driver) : _timoutForTooltipToBeNotVisible;
         }
 
-        public void setupTimeoutForTooltipToBeVisible(long timeoutInMilliseconds) {
+        public void setTimeoutForTooltipToBeVisible(long timeoutInMilliseconds) {
             _timeoutForTooltipToBeVisible = timeoutInMilliseconds;
         }
 

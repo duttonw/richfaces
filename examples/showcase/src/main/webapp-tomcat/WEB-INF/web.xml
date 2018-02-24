@@ -76,12 +76,8 @@
         <url-pattern>/org.richfaces.resources/*</url-pattern>
     </servlet-mapping>
     <welcome-file-list>
-        <welcome-file>index.html</welcome-file>
-        <welcome-file>index.htm</welcome-file>
-        <welcome-file>index.jsp</welcome-file>
-        <welcome-file>default.html</welcome-file>
-        <welcome-file>default.htm</welcome-file>
-        <welcome-file>default.jsp</welcome-file>
+        <welcome-file>index.jsf</welcome-file>
+        <welcome-file>faces/index.xhtml</welcome-file>
     </welcome-file-list>
     <mime-mapping>
         <extension>xcss</extension>
@@ -99,14 +95,6 @@
     <context-param>
         <param-name>org.richfaces.push.jms.enabled</param-name>
         <param-value>false</param-value>
-    </context-param>
-    <context-param>
-        <param-name>org.richfaces.push.jms.connectionUsername</param-name>
-        <param-value>guest</param-value>
-    </context-param>
-    <context-param>
-        <param-name>org.richfaces.push.jms.connectionPassword</param-name>
-        <param-value>password</param-value>
     </context-param>
     <context-param>
         <param-name>org.richfaces.push.session.maxInactiveInterval</param-name>
