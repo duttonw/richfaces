@@ -1,5 +1,5 @@
 4.5.21.ayg
-----------ç
+----------
     [#9] Upgraded CKEditor to 4.9.0
     [#7] Removes usage of FileOutputStream and others to prevent GC overhead
 	[  ] Upgrade cssparser to 0.9.25
