@@ -1,6 +1,6 @@
-4.5.22-SNAPSHOT
+4.5.22.ayg
 ----------
-
+	[  ] Upgraded CKEditor to 4.9.1
 4.5.21.ayg
 ----------
     [#9] Upgraded CKEditor to 4.9.0
