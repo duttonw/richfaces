@@ -1,4 +1,4 @@
-4.5.23-SNAPSHOT
+4.5.23.ayg
 ----------
 	[ ] Remove a4j:mediaOutput to mitigate CVE-2018-12532
 
