@@ -15,6 +15,7 @@ node_modules
 .checkstyle
 overlays
 nb*.xml
+.tern-project
 
 .factorypath
 .checkstyle
