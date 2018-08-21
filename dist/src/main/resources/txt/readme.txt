@@ -182,7 +182,6 @@ a4j:ajax
 a4j:commandLink
 a4j:commandButton
 a4j:push
-a4j:mediaOutput
 a4j:status
 a4j:jsFunction
 a4j:log
