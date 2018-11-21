@@ -85,7 +85,7 @@ public class InitializationListener implements SystemEventListener {
             initializePushContext();
         }
 
-        if (!jmsEnabled) {
+        if (getConfiguration(pushJMSEnabled) == null) {
             logWarningWhenConnectionFactoryPresent();
         }
     }
