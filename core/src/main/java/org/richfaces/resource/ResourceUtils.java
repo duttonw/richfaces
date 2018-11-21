@@ -87,7 +87,6 @@ import org.ajax4jsf.util.base64.Codec;
 import org.richfaces.log.Logger;
 import org.richfaces.log.RichfacesLogger;
 import org.richfaces.util.FastJoiner;
-import org.richfaces.util.LookAheadObjectInputStream;
 import org.richfaces.util.PropertiesUtil;
 
 import com.google.common.base.Function;
@@ -239,49 +238,12 @@ public final class ResourceUtils {
         return objectArray;
     }
 
-    public static Object decodeObjectData(String encodedData) {
-        byte[] objectArray = decodeBytesData(encodedData);
-
-        try {
-            ObjectInputStream in = new LookAheadObjectInputStream(new ByteArrayInputStream(objectArray));
-            return in.readObject();
-        } catch (StreamCorruptedException e) {
-            RESOURCE_LOGGER.error(Messages.getMessage(Messages.STREAM_CORRUPTED_ERROR), e);
-        } catch (IOException e) {
-            RESOURCE_LOGGER.error(Messages.getMessage(Messages.DESERIALIZE_DATA_INPUT_ERROR), e);
-        } catch (ClassNotFoundException e) {
-            RESOURCE_LOGGER.error(Messages.getMessage(Messages.DATA_CLASS_NOT_FOUND_ERROR), e);
-        }
-
-        return null;
-    }
-
     public static String encodeBytesData(byte[] data) {
         if (data != null) {
             try {
                 byte[] dataArray = encrypt(data);
 
                 return new String(dataArray, "ISO-8859-1");
-            } catch (Exception e) {
-                RESOURCE_LOGGER.error(Messages.getMessage(Messages.QUERY_STRING_BUILDING_ERROR), e);
-            }
-        }
-
-        return null;
-    }
-
-    public static String encodeObjectData(Object data) {
-        if (data != null) {
-            try {
-                ByteArrayOutputStream dataStream = new ByteArrayOutputStream(1024);
-                ObjectOutputStream objStream = new ObjectOutputStream(dataStream);
-
-                objStream.writeObject(data);
-                objStream.flush();
-                objStream.close();
-                dataStream.close();
-
-                return encodeBytesData(dataStream.toByteArray());
             } catch (Exception e) {
                 RESOURCE_LOGGER.error(Messages.getMessage(Messages.QUERY_STRING_BUILDING_ERROR), e);
             }
