@@ -296,11 +296,11 @@ public class ResourceHandlerImpl extends ResourceHandlerWrapper {
     @Override
     public String getRendererTypeForResourceName(String resourceName) {
 
-        if (resourceName.endsWith(".ecss")) {
+        if (resourceName != null && resourceName.endsWith(".ecss")) {
             return "javax.faces.resource.Stylesheet";
         }
 
-        if (resourceName.endsWith(ResourceLibraryRenderer.RESOURCE_LIBRARY_EXTENSION)) {
+        if (resourceName != null && resourceName.endsWith(ResourceLibraryRenderer.RESOURCE_LIBRARY_EXTENSION)) {
             return ResourceLibraryRenderer.RENDERER_TYPE;
         }
 
