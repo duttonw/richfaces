@@ -47,7 +47,7 @@ public class ITStatelessViews {
     public static WebArchive createDeployment() {
         RichDeployment deployment = new RichDeployment(ITStatelessViews.class);
 
-        deployment.addMavenDependency("org.richfaces:richfaces-a4j:4.5.24.ayg");
+        deployment.addMavenDependency("org.richfaces:richfaces-a4j:4.5.25-SNAPSHOT");
 
         addIndexPage(deployment);
 
