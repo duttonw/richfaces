@@ -353,7 +353,13 @@ public class ExtendedPartialViewContext extends PartialViewContextWrapper {
         // RF-13740, MyFaces doesn't call for renderIds in advance
         if (renderIds == null) {
             renderIds = new LinkedHashSet<String>();
-            visitActivatorAtRender();
+            PhaseId currentPhaseId = facesContext.getCurrentPhaseId();
+            // NEW: Do this only in the RENDER_RESPONSE Phase
+            // to fix #25
+            // https://github.com/albfernandez/richfaces/issues/25
+            if (currentPhaseId == PhaseId.RENDER_RESPONSE) {
+                visitActivatorAtRender();
+            }
         }
 
         return Boolean.TRUE.equals(renderAll) || renderIds.contains(ALL);
