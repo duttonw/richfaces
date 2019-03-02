@@ -2,7 +2,7 @@
 
                       RichFaces - Ajax enabled JSF 2.0 component library
 
-                              RichFaces 4.5.25.ayg irc-client sample
+                              RichFaces 4.5.26-SNAPSHOT irc-client sample
 					      	    http://richfaces.org
                                                               March 2011
                      This software is distributed under the terms of the 
