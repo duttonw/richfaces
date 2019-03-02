@@ -1,4 +1,4 @@
-4.5.25-SNAPSHOT
+4.5.25.ayg 2019-03-02
 ----------
 	[#25] a4j onComplete functions do not work properly (in combination with PrimeFaces)
 
