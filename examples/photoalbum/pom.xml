@@ -64,7 +64,7 @@ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 
     <properties>
         <version.richfaces>4.6.10-SNAPSHOT</version.richfaces>
-        <version.metadata-extractor>2.10.0</version.metadata-extractor>
+        <version.metadata-extractor>2.13.0</version.metadata-extractor>
         <version.jackson>1.9.13</version.jackson>
         <javax.faces.PROJECT_STAGE>Development</javax.faces.PROJECT_STAGE>
 
