@@ -63,7 +63,7 @@
         <version.richfaces>4.6.10-SNAPSHOT</version.richfaces>
         <version.hibernate-validator>5.4.3.Final</version.hibernate-validator>
         <version.jboss-spec>3.0.3.Final</version.jboss-spec>
-        <version.junit>4.12</version.junit>
+        <version.junit>4.13.1</version.junit>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
