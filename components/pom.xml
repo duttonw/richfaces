@@ -46,7 +46,7 @@
     </modules>
 
     <properties>
-        <version.richfaces>4.6.10-SNAPSHOT</version.richfaces>
+        <version.richfaces>4.6.10.ayg</version.richfaces>
     </properties>
 
     <build>
