@@ -60,8 +60,8 @@
 	</issueManagement>
 	
     <properties>
-        <version.richfaces>4.6.10-SNAPSHOT</version.richfaces>
-        <version.hibernate-validator>5.4.3.Final</version.hibernate-validator>
+        <version.richfaces>4.6.10.ayg</version.richfaces>
+        <version.hibernate-validator>6.0.23.Final</version.hibernate-validator>
         <version.jboss-spec>3.0.3.Final</version.jboss-spec>
         <version.junit>4.12</version.junit>
 
